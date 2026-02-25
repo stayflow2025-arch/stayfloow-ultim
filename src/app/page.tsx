@@ -1,21 +1,30 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Search, MapPin, Calendar, Users, Building, Car, Compass, ChevronRight } from 'lucide-react';
+import { Building, Car, Compass, ChevronRight, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import AdvancedSearchBar from '@/components/search/AdvancedSearchBar';
 
 export default function Home() {
   const heroImage = PlaceHolderImages.find(img => img.id === 'hero-home');
-  const categories = [
-    { id: 'accommodations', name: 'Séjours', icon: Building, description: 'Hôtels, Riads, Villas', image: PlaceHolderImages[1] },
-    { id: 'cars', name: 'Location de voitures', icon: Car, description: 'SUV, Berlines, 4x4', image: PlaceHolderImages[3] },
-    { id: 'circuits', name: 'Circuits', icon: Compass, description: 'Excursions désert, Croisières', image: PlaceHolderImages[2] },
+  
+  const propertyTypes = [
+    { name: 'Hôtels', image: 'https://picsum.photos/seed/hotel/400/300', count: '820,412' },
+    { name: 'Appartements', image: 'https://picsum.photos/seed/apt/400/300', count: '915,234' },
+    { name: 'Complexes hôteliers', image: 'https://picsum.photos/seed/resort/400/300', count: '145,098' },
+    { name: 'Villas', image: 'https://picsum.photos/seed/villa/400/300', count: '450,123' },
+  ];
+
+  const uniqueStays = [
+    { name: 'Riad Dar Al-Andalus', location: 'Fès, Maroc', rating: 9.8, price: '120 €', image: 'https://picsum.photos/seed/unique1/400/500' },
+    { name: 'Desert Cave Hotel', location: 'Ghardaïa, Algérie', rating: 9.5, price: '85 €', image: 'https://picsum.photos/seed/unique2/400/500' },
+    { name: 'Nile Floating Palace', location: 'Louxor, Égypte', rating: 9.6, price: '150 €', image: 'https://picsum.photos/seed/unique3/400/500' },
+    { name: 'Royal Algerian Tent', location: 'Timimoun, Algérie', rating: 9.7, price: '110 €', image: 'https://picsum.photos/seed/unique4/400/500' },
   ];
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-[#f5f5f5]">
       {/* Header */}
       <header className="bg-primary text-white py-4 px-6 sticky top-0 z-50 shadow-md">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
@@ -23,10 +32,10 @@ export default function Home() {
             StayFloow<span className="text-secondary">.com</span>
           </Link>
           <div className="hidden md:flex items-center space-x-6">
-            <Link href="/search?type=accommodations" className="hover:text-secondary transition-colors font-medium">Séjours</Link>
-            <Link href="/search?type=cars" className="hover:text-secondary transition-colors font-medium">Voitures</Link>
-            <Link href="/search?type=circuits" className="hover:text-secondary transition-colors font-medium">Circuits</Link>
-            <Button variant="outline" className="text-primary bg-white hover:bg-white/90 border-none font-bold" asChild>
+            <Link href="/search?type=accommodations" className="hover:bg-white/10 px-3 py-2 rounded-md transition-colors font-medium">Séjours</Link>
+            <Link href="/search?type=cars" className="hover:bg-white/10 px-3 py-2 rounded-md transition-colors font-medium">Voitures</Link>
+            <Link href="/search?type=circuits" className="hover:bg-white/10 px-3 py-2 rounded-md transition-colors font-medium">Circuits</Link>
+            <Button variant="outline" className="text-white border-white hover:bg-white/10 font-bold" asChild>
               <Link href="/partners/join">Devenir partenaire</Link>
             </Button>
             <Button variant="ghost" className="text-white hover:bg-white/10">Se connecter</Button>
@@ -35,151 +44,111 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative h-[600px] flex items-center justify-center overflow-hidden">
-        <Image 
-          src={heroImage?.imageUrl || ''} 
-          alt={heroImage?.description || ''} 
-          fill 
-          className="object-cover"
-          priority
-          data-ai-hint={heroImage?.imageHint}
-        />
-        <div className="absolute inset-0 bg-black/40" />
-        
-        <div className="relative z-10 w-full max-w-5xl px-6 text-center md:text-left">
-          <div className="mb-10">
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 drop-shadow-lg">
-              Trouvez votre prochain séjour en Afrique
-            </h1>
-            <p className="text-xl text-white/90 drop-shadow-md">
-              Des offres incroyables sur les hôtels, riads et bien plus encore...
-            </p>
-          </div>
-
-          <div className="max-w-4xl mx-auto md:mx-0">
-            <AdvancedSearchBar />
-          </div>
+      <section className="bg-primary pt-12 pb-24 px-6 relative overflow-hidden">
+        <div className="max-w-5xl mx-auto relative z-10">
+          <h1 className="text-5xl font-black text-white mb-4 leading-tight">
+            Trouvez votre prochain séjour
+          </h1>
+          <p className="text-2xl text-white opacity-90 mb-12">
+            Des offres incroyables sur les hôtels, riads et bien plus encore...
+          </p>
+          <AdvancedSearchBar />
         </div>
       </section>
 
       {/* Content */}
-      <main className="max-w-7xl mx-auto px-6 py-16 flex-grow w-full">
-        {/* Categories Section */}
-        <section className="mb-20">
-          <h2 className="text-3xl font-bold mb-8 text-primary">Explorer par catégorie</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
-            {categories.map((cat) => (
-              <Link key={cat.id} href={`/search?type=${cat.id}`}>
-                <CardWrapper>
-                  <div className="relative h-56">
-                    <Image 
-                      src={cat.image.imageUrl} 
-                      alt={cat.name} 
-                      fill 
-                      className="object-cover group-hover:scale-110 transition-transform duration-700"
-                      data-ai-hint={cat.image.imageHint}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    <div className="absolute bottom-4 left-4 text-white">
-                       <cat.icon className="h-6 w-6 mb-2" />
-                       <h3 className="font-bold text-xl">{cat.name}</h3>
-                    </div>
-                  </div>
-                  <div className="p-4 bg-white">
-                    <p className="text-muted-foreground text-sm flex justify-between items-center">
-                      {cat.description}
-                      <ChevronRight className="h-4 w-4 text-primary" />
-                    </p>
-                  </div>
-                </CardWrapper>
+      <main className="max-w-7xl mx-auto px-6 -mt-10 pb-20 w-full z-20">
+        
+        {/* Promotion Banner */}
+        <section className="mb-16 bg-white rounded-lg shadow-lg overflow-hidden border border-slate-200 flex flex-col md:flex-row items-center p-8 gap-8">
+          <div className="flex-1">
+            <span className="text-sm font-bold text-slate-500 mb-2 block">Offres Début 2026</span>
+            <h2 className="text-3xl font-black mb-4">-15 % minimum</h2>
+            <p className="text-slate-600 mb-6">Offres Début 2026 : réservez maintenant et économisez sur votre prochain séjour avant le 1er avril 2026.</p>
+            <Button className="bg-[#006ce4] hover:bg-[#0057b8] text-white px-8 py-6 text-lg font-bold">
+              Découvrir les offres
+            </Button>
+          </div>
+          <div className="w-full md:w-64 h-48 relative rounded-lg overflow-hidden shrink-0 shadow-md">
+            <Image src="https://picsum.photos/seed/promo/600/400" alt="Promotion" fill className="object-cover" />
+          </div>
+        </section>
+
+        {/* Property Types */}
+        <section className="mb-16">
+          <h2 className="text-2xl font-black mb-6 text-slate-900">Rechercher par type d'hébergement</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {propertyTypes.map((type) => (
+              <Link key={type.name} href={`/search?type=${type.name.toLowerCase()}`} className="group">
+                <div className="relative aspect-[4/3] rounded-lg overflow-hidden mb-3 shadow-md">
+                  <Image src={type.image} alt={type.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                </div>
+                <h3 className="font-bold text-lg group-hover:text-primary transition-colors">{type.name}</h3>
+                <p className="text-sm text-slate-500">{type.count} {type.name.toLowerCase()}</p>
               </Link>
             ))}
           </div>
         </section>
 
-        {/* Featured Destinations */}
-        <section className="mb-20">
-          <div className="flex justify-between items-end mb-8">
-            <div>
-              <h2 className="text-3xl font-bold text-primary">Destinations prisées</h2>
-              <p className="text-muted-foreground">Les choix favoris des voyageurs en Algérie et Égypte</p>
-            </div>
-            <Button variant="link" className="text-primary font-bold">Voir tout</Button>
+        {/* Unique Stays */}
+        <section className="mb-16">
+          <div className="mb-8">
+            <h2 className="text-2xl font-black text-slate-900">Séjournez dans nos hébergements uniques les mieux notés</h2>
+            <p className="text-slate-500">Des châteaux aux villas, des bateaux aux igloos, nous avons tout ce qu'il vous faut</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { city: 'Alger', country: 'Algérie', count: '1,240', image: 'https://picsum.photos/seed/algiers/400/500' },
-              { city: 'Le Caire', country: 'Égypte', count: '3,510', image: 'https://picsum.photos/seed/cairo/400/500' },
-              { city: 'Oran', country: 'Algérie', count: '850', image: 'https://picsum.photos/seed/oran/400/500' },
-              { city: 'Louxor', country: 'Égypte', count: '920', image: 'https://picsum.photos/seed/luxor/400/500' },
-            ].map((dest, i) => (
-              <div key={i} className="relative rounded-xl overflow-hidden group cursor-pointer h-80 shadow-lg">
-                <Image src={dest.image} alt={dest.city} fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                <div className="absolute bottom-6 left-6 text-white">
-                  <h3 className="text-2xl font-bold">{dest.city}</h3>
-                  <p className="text-sm opacity-90">{dest.country}</p>
-                  <p className="text-xs mt-2 bg-secondary/90 text-primary px-2 py-1 rounded-md inline-block font-bold">
-                    {dest.count} établissements
-                  </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+            {uniqueStays.map((stay, i) => (
+              <div key={i} className="group cursor-pointer">
+                <div className="relative aspect-[4/5] rounded-xl overflow-hidden mb-4 shadow-lg">
+                  <Image src={stay.image} alt={stay.name} fill className="object-cover" />
+                </div>
+                <h3 className="font-black text-lg text-slate-900 truncate">{stay.name}</h3>
+                <p className="text-sm text-slate-500 mb-2">{stay.location}</p>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="bg-primary text-white text-xs font-bold px-1.5 py-1 rounded">
+                    {stay.rating}
+                  </div>
+                  <span className="text-sm font-bold text-slate-800">Exceptionnel</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs text-slate-500">Dès </span>
+                  <span className="font-black text-lg text-slate-900">{stay.price}</span>
                 </div>
               </div>
             ))}
           </div>
         </section>
+
       </main>
 
-      {/* Footer */}
       <footer className="bg-primary text-white py-16 px-6">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
-          <div className="col-span-1">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 text-sm">
+          <div>
             <Link href="/" className="text-3xl font-bold mb-6 block">
               StayFloow<span className="text-secondary">.com</span>
             </Link>
-            <p className="text-sm text-white/70 leading-relaxed">
-              Votre porte d'entrée vers l'hospitalité et l'aventure africaine authentique. Réservez en toute confiance.
-            </p>
           </div>
-          <div>
-            <h4 className="font-bold text-lg mb-6 border-b border-white/20 pb-2">Support</h4>
-            <ul className="space-y-4 text-sm text-white/70">
-              <li>Service Client</li>
-              <li>Aide aux partenaires</li>
-              <li>Politique de confidentialité</li>
-              <li>Conditions générales</li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-bold text-lg mb-6 border-b border-white/20 pb-2">Découvrir</h4>
-            <ul className="space-y-4 text-sm text-white/70">
-              <li>Application mobile</li>
-              <li>Programme de fidélité</li>
-              <li>Guides de voyage</li>
-              <li>Location de voitures</li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-bold text-lg mb-6 border-b border-white/20 pb-2">Partenaires</h4>
-            <ul className="space-y-4 text-sm text-white/70">
-              <li>Espace Extranet</li>
-              <li>Devenir partenaire</li>
-              <li>Programme Affilié</li>
-              <li>Promouvoir une annonce</li>
-            </ul>
-          </div>
-        </div>
-        <div className="max-w-7xl mx-auto mt-16 pt-8 border-t border-white/10 text-center text-xs text-white/50">
-          © 2025 StayFloow.com. Tous droits réservés.
+          {['Support', 'Découvrir', 'Partenaires'].map((col) => (
+            <div key={col}>
+              <h4 className="font-bold text-lg mb-6">{col}</h4>
+              <ul className="space-y-4 opacity-70">
+                {col === 'Partenaires' ? (
+                  <>
+                    <li><Link href="/partners/join">Devenir partenaire</Link></li>
+                    <li>Extranet</li>
+                  </>
+                ) : (
+                  <>
+                    <li>Aide</li>
+                    <li>Confidentialité</li>
+                    <li>Conditions</li>
+                  </>
+                )}
+              </ul>
+            </div>
+          ))}
         </div>
       </footer>
-    </div>
-  );
-}
-
-function CardWrapper({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="overflow-hidden rounded-xl hover:shadow-2xl transition-all duration-300 border border-muted group cursor-pointer shadow-md">
-      {children}
     </div>
   );
 }

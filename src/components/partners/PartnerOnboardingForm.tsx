@@ -1,280 +1,217 @@
+
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
-import { Building, Car, Compass, Upload, MapPin, CheckCircle2, ChevronRight, ChevronLeft, Loader2 } from 'lucide-react';
+import { Building, Car, Compass, Upload, MapPin, CheckCircle2, ChevronRight, ChevronLeft, Loader2, Wand2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { generatePartnerDescription } from '@/ai/flows/partner-description-generator';
 
 const steps = [
-  { id: 1, title: 'General Info' },
-  { id: 2, title: 'Listing Details' },
-  { id: 3, title: 'Availability' },
+  { id: 1, title: 'Infos générales' },
+  { id: 2, title: 'Détails & GPS' },
+  { id: 3, title: 'Tarifs & Options' },
   { id: 4, title: 'Photos' },
 ];
 
 export default function PartnerOnboardingForm() {
   const [currentStep, setCurrentStep] = useState(1);
   const [category, setCategory] = useState<'accommodation' | 'car_rental' | 'circuit'>('accommodation');
-  const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [formData, setFormData] = useState({
     listingName: '',
     description: '',
     location: '',
+    gpsCoordinates: '',
     email: '',
     phone: '',
     price: '',
+    amenities: [] as string[],
   });
 
   const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, steps.length));
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
 
   const handleAIEnhance = async () => {
-    if (!formData.listingName || !formData.location) {
-      alert("Please enter a name and location first!");
-      return;
-    }
-    setIsGeneratingDescription(true);
+    if (!formData.listingName || !formData.location) return;
+    setIsGenerating(true);
     try {
       const result = await generatePartnerDescription({
         listingType: category,
         listingName: formData.listingName,
         location: formData.location,
-        keyFeatures: ["Authentic", "Secure", "Comfortable"],
+        keyFeatures: formData.amenities.length > 0 ? formData.amenities : ["Haut de gamme", "Authentique"],
         existingDescription: formData.description
       });
       setFormData(prev => ({ ...prev, description: result.generatedDescription }));
     } catch (error) {
-      console.error("AI enhancement failed", error);
+      console.error(error);
     } finally {
-      setIsGeneratingDescription(false);
+      setIsGenerating(false);
     }
+  };
+
+  const commonAmenities = {
+    accommodation: ['WiFi', 'Climatisation', 'Petit-déjeuner', 'Piscine', 'Parking', 'Spa'],
+    car_rental: ['Kilométrage illimité', 'Assurance incluse', 'GPS intégré', 'Siège bébé', 'Plein fait'],
+    circuit: ['Guide certifié', 'Transport inclus', 'Repas inclus', 'Matériel fourni', 'Assurance voyage'],
   };
 
   return (
     <div className="space-y-8">
-      {/* Progress Bar */}
-      <div className="flex justify-between items-center max-w-md mx-auto relative px-2">
-        <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-muted -z-10 -translate-y-1/2" />
+      {/* Progress */}
+      <div className="flex justify-between items-center max-w-lg mx-auto relative px-4">
+        <div className="absolute top-1/2 left-0 right-0 h-1 bg-slate-200 -z-10 -translate-y-1/2 rounded-full" />
+        <div 
+          className="absolute top-1/2 left-0 h-1 bg-primary -z-10 -translate-y-1/2 transition-all duration-500 rounded-full" 
+          style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
+        />
         {steps.map((step) => (
           <div key={step.id} className="flex flex-col items-center gap-2">
-            <div
-              className={cn(
-                "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all border-2",
-                currentStep >= step.id 
-                  ? "bg-primary border-primary text-white" 
-                  : "bg-white border-muted text-muted-foreground"
-              )}
-            >
+            <div className={cn(
+              "w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border-4 transition-all",
+              currentStep >= step.id ? "bg-primary border-primary text-white" : "bg-white border-slate-200 text-slate-400"
+            )}>
               {currentStep > step.id ? <CheckCircle2 className="h-6 w-6" /> : step.id}
             </div>
-            <span className={cn(
-              "text-[10px] uppercase font-bold tracking-wider",
-              currentStep === step.id ? "text-primary" : "text-muted-foreground"
-            )}>
+            <span className={cn("text-[10px] font-black uppercase", currentStep === step.id ? "text-primary" : "text-slate-400")}>
               {step.title}
             </span>
           </div>
         ))}
       </div>
 
-      <Card className="border-none booking-card-shadow">
+      <Card className="border-2 border-slate-100 shadow-2xl rounded-2xl overflow-hidden bg-white">
         <CardContent className="p-8">
           {currentStep === 1 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <div>
-                <Label className="text-base mb-4 block">What are you listing?</Label>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {[
-                    { id: 'accommodation', label: 'Accommodation', icon: Building, desc: 'Hotels, Riads, Apartments' },
-                    { id: 'car_rental', label: 'Car Rental', icon: Car, desc: 'Urban, SUVs, 4x4s' },
-                    { id: 'circuit', label: 'Circuit/Tour', icon: Compass, desc: 'Safaris, City Tours' },
-                  ].map((cat) => (
-                    <div
-                      key={cat.id}
-                      onClick={() => setCategory(cat.id as any)}
-                      className={cn(
-                        "p-4 rounded-lg border-2 cursor-pointer transition-all flex flex-col items-center text-center gap-2 hover:border-primary/50",
-                        category === cat.id ? "border-primary bg-primary/5 shadow-sm" : "border-muted"
-                      )}
-                    >
-                      <cat.icon className={cn("h-8 w-8 mb-2", category === cat.id ? "text-primary" : "text-muted-foreground")} />
-                      <div className="font-bold">{cat.label}</div>
-                      <div className="text-xs text-muted-foreground">{cat.desc}</div>
-                    </div>
-                  ))}
-                </div>
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+              <div className="text-center mb-8">
+                <h3 className="text-2xl font-black text-slate-900">Que souhaitez-vous proposer ?</h3>
+                <p className="text-slate-500">Choisissez la catégorie qui correspond le mieux à votre activité.</p>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="listingName">Name of your {category.replace('_', ' ')}</Label>
-                  <Input 
-                    id="listingName" 
-                    placeholder="e.g. Royal Riad Algiers" 
-                    value={formData.listingName}
-                    onChange={(e) => setFormData({...formData, listingName: e.target.value})}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="location">Address / City</Label>
-                  <div className="relative">
-                    <Input 
-                      id="location" 
-                      placeholder="Enter city or full address" 
-                      className="pl-9"
-                      value={formData.location}
-                      onChange={(e) => setFormData({...formData, location: e.target.value})}
-                    />
-                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[
+                  { id: 'accommodation', label: 'Hébergement', icon: Building, desc: 'Hôtels, Riads, Villas' },
+                  { id: 'car_rental', label: 'Véhicules', icon: Car, desc: 'Location de voitures, SUV' },
+                  { id: 'circuit', label: 'Circuit / Tour', icon: Compass, desc: 'Excursions, Safaris' },
+                ].map((cat) => (
+                  <div
+                    key={cat.id}
+                    onClick={() => setCategory(cat.id as any)}
+                    className={cn(
+                      "p-6 rounded-xl border-2 cursor-pointer transition-all flex flex-col items-center text-center gap-3",
+                      category === cat.id ? "border-primary bg-primary/5 shadow-inner" : "border-slate-100 hover:border-primary/30"
+                    )}
+                  >
+                    <cat.icon className={cn("h-10 w-10", category === cat.id ? "text-primary" : "text-slate-300")} />
+                    <div className="font-black text-slate-900">{cat.label}</div>
+                    <div className="text-xs text-slate-500">{cat.desc}</div>
                   </div>
-                </div>
+                ))}
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid md:grid-cols-2 gap-6 mt-8">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Work Email</Label>
-                  <Input 
-                    id="email" 
-                    type="email" 
-                    placeholder="contact@example.com"
-                    value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  />
+                  <Label className="font-bold">Nom commercial</Label>
+                  <Input value={formData.listingName} onChange={e => setFormData({...formData, listingName: e.target.value})} placeholder="Ex: Grand Riad Atlas" className="h-12 border-slate-200" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number (WhatsApp preferred)</Label>
-                  <Input 
-                    id="phone" 
-                    placeholder="+213 123 456 789"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                  />
+                  <Label className="font-bold">Email professionnel</Label>
+                  <Input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} placeholder="contact@etablissement.com" className="h-12 border-slate-200" />
                 </div>
               </div>
             </div>
           )}
 
           {currentStep === 2 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <div className="space-y-4">
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+              <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <Label className="text-base">Tell us more about your listing</Label>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="text-primary hover:text-primary/80 h-auto p-0 flex items-center gap-1"
-                    onClick={handleAIEnhance}
-                    disabled={isGeneratingDescription}
-                  >
-                    {isGeneratingDescription ? <Loader2 className="h-3 w-3 animate-spin" /> : <Compass className="h-3 w-3" />}
-                    AI Enhance Description
+                  <Label className="font-bold">Description attractive</Label>
+                  <Button variant="ghost" size="sm" onClick={handleAIEnhance} disabled={isGenerating} className="text-[#006ce4] font-bold gap-2">
+                    {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
+                    Générer par IA
                   </Button>
                 </div>
                 <Textarea 
-                  placeholder="Describe your unique features, comfort, and service..." 
-                  className="min-h-[150px]"
-                  value={formData.description}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  value={formData.description} 
+                  onChange={e => setFormData({...formData, description: e.target.value})} 
+                  placeholder="Décrivez les atouts uniques de votre offre..." 
+                  className="min-h-[120px] border-slate-200" 
                 />
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                  <Label className="mb-4 block">Top Amenities</Label>
-                  <div className="grid grid-cols-2 gap-4">
-                    {['WiFi', 'AC', 'Parking', 'Pool', 'Breakfast', 'Secure'].map((item) => (
-                      <div key={item} className="flex items-center space-x-2">
-                        <Checkbox id={item} />
-                        <label htmlFor={item} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                          {item}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label className="font-bold">Adresse physique</Label>
+                  <Input value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} placeholder="Rue, Ville, Code Postal" className="h-12 border-slate-200" />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="price">Base Price per night (DZD/EGP)</Label>
-                  <Input 
-                    id="price" 
-                    type="number" 
-                    placeholder="e.g. 5000"
-                    value={formData.price}
-                    onChange={(e) => setFormData({...formData, price: e.target.value})}
-                  />
-                  <p className="text-[10px] text-muted-foreground">Average price for similar listings: 4,500 DZD</p>
+                  <Label className="font-bold">Coordonnées GPS (Optionnel)</Label>
+                  <div className="relative">
+                    <Input value={formData.gpsCoordinates} onChange={e => setFormData({...formData, gpsCoordinates: e.target.value})} placeholder="36.75, 3.05" className="h-12 pl-10 border-slate-200" />
+                    <MapPin className="absolute left-3 top-3.5 h-5 w-5 text-slate-400" />
+                  </div>
                 </div>
               </div>
             </div>
           )}
 
           {currentStep === 3 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300 text-center py-8">
-              <div className="mx-auto w-16 h-16 bg-accent rounded-full flex items-center justify-center mb-4">
-                <Compass className="h-8 w-8 text-primary" />
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
+              <div className="space-y-4">
+                <Label className="font-bold block text-lg">Options & Équipements</Label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 bg-slate-50 p-6 rounded-xl border border-slate-100">
+                  {commonAmenities[category].map((item) => (
+                    <div key={item} className="flex items-center space-x-3">
+                      <Checkbox 
+                        id={item} 
+                        checked={formData.amenities.includes(item)}
+                        onCheckedChange={(checked) => {
+                          if (checked) setFormData({...formData, amenities: [...formData.amenities, item]});
+                          else setFormData({...formData, amenities: formData.amenities.filter(i => i !== item)});
+                        }}
+                        className="h-5 w-5 border-slate-300" 
+                      />
+                      <label htmlFor={item} className="text-sm font-bold text-slate-700 cursor-pointer">{item}</label>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <h3 className="text-xl font-bold">Set your Availability</h3>
-              <p className="text-muted-foreground max-w-sm mx-auto">
-                Sync your calendar or manually block dates where you won't be taking bookings.
-              </p>
-              <div className="bg-muted h-64 rounded-lg flex items-center justify-center border-2 border-dashed border-muted-foreground/20">
-                <span className="text-muted-foreground italic">Interactive Calendar Interface Loading...</span>
+              <div className="space-y-2 max-w-xs">
+                <Label className="font-bold">Prix de base (DZD / nuit ou jour)</Label>
+                <Input type="number" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} placeholder="0.00" className="h-12 border-slate-200 font-bold" />
               </div>
             </div>
           )}
 
           {currentStep === 4 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <Label className="text-base block mb-2 text-center">Add high-quality photos (Min 5)</Label>
-              <div className="border-2 border-dashed border-muted-foreground/20 rounded-xl p-12 bg-muted/30 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-muted/50 transition-colors">
-                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
-                  <Upload className="h-6 w-6 text-primary" />
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 text-center">
+              <div className="border-4 border-dashed border-slate-100 rounded-2xl p-16 bg-slate-50 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-100 transition-colors">
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg mb-6">
+                  <Upload className="h-8 w-8 text-primary" />
                 </div>
-                <p className="font-bold text-lg mb-1">Drag and drop photos here</p>
-                <p className="text-muted-foreground text-sm">Or click to browse from your device</p>
+                <h4 className="text-xl font-black text-slate-900">Téléchargez vos photos</h4>
+                <p className="text-slate-500 mt-2">Glissez-déposez au moins 5 photos haute résolution</p>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="aspect-square bg-muted rounded-md border flex items-center justify-center">
-                    <span className="text-muted-foreground/30 text-xs">Photo {i} placeholder</span>
-                  </div>
-                ))}
-              </div>
+              <p className="text-xs text-slate-400">Format supportés: JPG, PNG. Max 5MB par fichier.</p>
             </div>
           )}
 
-          <div className="mt-12 flex items-center justify-between border-t pt-8">
-            <Button 
-              variant="outline" 
-              onClick={prevStep} 
-              disabled={currentStep === 1}
-              className="px-8"
-            >
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              Back
+          <div className="mt-12 flex items-center justify-between border-t border-slate-100 pt-8">
+            <Button variant="ghost" onClick={prevStep} disabled={currentStep === 1} className="font-bold text-slate-500">
+              <ChevronLeft className="mr-2 h-4 w-4" /> Retour
             </Button>
-            <Button 
-              onClick={nextStep} 
-              className="px-8 bg-primary hover:bg-primary/90"
-            >
-              {currentStep === steps.length ? 'Submit Listing' : 'Continue'}
+            <Button onClick={nextStep} className="bg-primary hover:bg-primary/90 px-10 h-12 rounded-xl font-black shadow-lg shadow-primary/20">
+              {currentStep === steps.length ? 'Terminer l\'inscription' : 'Continuer'}
               {currentStep !== steps.length && <ChevronRight className="ml-2 h-4 w-4" />}
             </Button>
           </div>
         </CardContent>
       </Card>
-
-      <div className="text-center">
-        <p className="text-sm text-muted-foreground">
-          By continuing, you agree to StayFloow's <Link href="#" className="text-primary underline">Partner Terms</Link>
-        </p>
-      </div>
     </div>
   );
 }

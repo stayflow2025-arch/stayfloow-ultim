@@ -1,10 +1,9 @@
 
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapPin, Calendar as CalendarIcon, Users, Search, Minus, Plus, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
@@ -21,61 +20,69 @@ export default function AdvancedSearchBar() {
   const [occupancy, setOccupancy] = useState({ adults: 2, children: 0, rooms: 1 });
   const [activeStep, setActiveStep] = useState<'destination' | 'dates' | 'occupancy' | null>(null);
 
-  // Auto-advance logic
+  // Auto-advance logic: Dates -> Occupancy only when BOTH dates are selected
   useEffect(() => {
-    if (dateRange?.from && dateRange?.to) {
-      setTimeout(() => setActiveStep('occupancy'), 300);
+    if (activeStep === 'dates' && dateRange?.from && dateRange?.to) {
+      const timer = setTimeout(() => {
+        setActiveStep('occupancy');
+      }, 400);
+      return () => clearTimeout(timer);
     }
-  }, [dateRange]);
+  }, [dateRange, activeStep]);
 
   const handleSearch = () => {
-    console.log("Searching for:", { destination, dateRange, occupancy });
-    window.location.href = `/search?dest=${destination}&from=${dateRange?.from?.toISOString()}&to=${dateRange?.to?.toISOString()}`;
+    const from = dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : '';
+    const to = dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : '';
+    window.location.href = `/search?dest=${encodeURIComponent(destination)}&from=${from}&to=${to}&adults=${occupancy.adults}&rooms=${occupancy.rooms}`;
   };
 
   return (
-    <div className="bg-orange-400 p-1 rounded-xl shadow-2xl">
-      <div className="bg-white rounded-lg flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x border-2 border-orange-400">
+    <div className="bg-[#febb02] p-1 rounded-lg shadow-xl w-full">
+      <div className="bg-white rounded flex flex-col md:flex-row items-stretch divide-y md:divide-y-0 md:divide-x-2 border-2 border-[#febb02]">
         
-        {/* Destination Section */}
-        <div className={cn(
-          "flex-1 p-4 flex items-center gap-3 transition-colors cursor-text relative",
-          activeStep === 'destination' && "bg-accent/50"
-        )} onClick={() => setActiveStep('destination')}>
-          <MapPin className="text-primary h-6 w-6 shrink-0" />
+        {/* 1. Destination */}
+        <div 
+          className={cn(
+            "flex-1 p-3 flex items-center gap-3 cursor-text hover:bg-slate-50 transition-colors",
+            activeStep === 'destination' && "ring-2 ring-primary inset-0 z-10"
+          )}
+          onClick={() => setActiveStep('destination')}
+        >
+          <MapPin className="text-muted-foreground h-5 w-5 shrink-0" />
           <div className="flex flex-col w-full">
-            <span className="text-[10px] font-bold text-primary uppercase tracking-wider">Destination</span>
             <input 
-              className="bg-transparent border-none focus:ring-0 p-0 text-base font-medium placeholder:text-muted-foreground w-full outline-none"
+              className="bg-transparent border-none focus:ring-0 p-0 text-sm font-bold placeholder:text-muted-foreground w-full outline-none text-slate-800"
               placeholder="Où allez-vous ?"
               value={destination}
               onChange={(e) => setDestination(e.target.value)}
-              autoFocus={activeStep === 'destination'}
+              onFocus={() => setActiveStep('destination')}
             />
           </div>
         </div>
 
-        {/* Calendar Section */}
-        <Popover open={activeStep === 'dates'} onOpenChange={(open) => setActiveStep(open ? 'dates' : null)}>
+        {/* 2. Dates (Stays open until range is complete) */}
+        <Popover 
+          open={activeStep === 'dates'} 
+          onOpenChange={(open) => setActiveStep(open ? 'dates' : null)}
+        >
           <PopoverTrigger asChild>
             <div className={cn(
-              "flex-1 p-4 flex items-center gap-3 transition-colors cursor-pointer",
-              activeStep === 'dates' && "bg-accent/50"
+              "flex-1 p-3 flex items-center gap-3 cursor-pointer hover:bg-slate-50 transition-colors",
+              activeStep === 'dates' && "ring-2 ring-primary inset-0 z-10"
             )}>
-              <CalendarIcon className="text-primary h-6 w-6 shrink-0" />
-              <div className="flex flex-col">
-                <span className="text-[10px] font-bold text-primary uppercase tracking-wider">Dates</span>
-                <span className="text-base font-medium whitespace-nowrap">
+              <CalendarIcon className="text-muted-foreground h-5 w-5 shrink-0" />
+              <div className="flex flex-col text-sm">
+                <span className="font-bold text-slate-800 whitespace-nowrap">
                   {dateRange?.from ? (
                     dateRange.to ? (
-                      `${format(dateRange.from, "dd MMM", { locale: fr })} — ${format(dateRange.to, "dd MMM", { locale: fr })}`
-                    ) : format(dateRange.from, "dd MMM", { locale: fr })
+                      `${format(dateRange.from, "EEE d MMM", { locale: fr })} — ${format(dateRange.to, "EEE d MMM", { locale: fr })}`
+                    ) : `${format(dateRange.from, "EEE d MMM", { locale: fr })} — ...`
                   ) : "Arrivée — Départ"}
                 </span>
               </div>
             </div>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 border-none shadow-2xl" align="start">
+          <PopoverContent className="w-auto p-0 border-none shadow-2xl" align="center" sideOffset={8}>
             <Calendar
               initialFocus
               mode="range"
@@ -84,28 +91,30 @@ export default function AdvancedSearchBar() {
               onSelect={setDateRange}
               numberOfMonths={2}
               locale={fr}
-              className="rounded-lg border-2 border-primary"
+              className="rounded-lg border shadow-xl bg-white"
             />
           </PopoverContent>
         </Popover>
 
-        {/* Occupancy Section */}
-        <Popover open={activeStep === 'occupancy'} onOpenChange={(open) => setActiveStep(open ? 'occupancy' : null)}>
+        {/* 3. Occupancy */}
+        <Popover 
+          open={activeStep === 'occupancy'} 
+          onOpenChange={(open) => setActiveStep(open ? 'occupancy' : null)}
+        >
           <PopoverTrigger asChild>
             <div className={cn(
-              "flex-1 p-4 flex items-center gap-3 transition-colors cursor-pointer",
-              activeStep === 'occupancy' && "bg-accent/50"
+              "flex-1 p-3 flex items-center gap-3 cursor-pointer hover:bg-slate-50 transition-colors",
+              activeStep === 'occupancy' && "ring-2 ring-primary inset-0 z-10"
             )}>
-              <Users className="text-primary h-6 w-6 shrink-0" />
-              <div className="flex flex-col">
-                <span className="text-[10px] font-bold text-primary uppercase tracking-wider">Occupants</span>
-                <span className="text-base font-medium whitespace-nowrap">
-                  {occupancy.adults} ad, {occupancy.children} enf · {occupancy.rooms} ch.
+              <Users className="text-muted-foreground h-5 w-5 shrink-0" />
+              <div className="flex flex-col text-sm">
+                <span className="font-bold text-slate-800 whitespace-nowrap">
+                  {occupancy.adults} adultes · {occupancy.children} enfants · {occupancy.rooms} chambre
                 </span>
               </div>
             </div>
           </PopoverTrigger>
-          <PopoverContent className="w-80 p-6" align="end">
+          <PopoverContent className="w-80 p-6 shadow-2xl bg-white border" align="end" sideOffset={8}>
             <div className="space-y-6">
               <OccupancyRow 
                 label="Adultes" 
@@ -125,14 +134,17 @@ export default function AdvancedSearchBar() {
                 onDec={() => setOccupancy({...occupancy, rooms: Math.max(1, occupancy.rooms - 1)})}
                 onInc={() => setOccupancy({...occupancy, rooms: occupancy.rooms + 1})}
               />
-              <Button className="w-full bg-primary" onClick={() => setActiveStep(null)}>Terminé</Button>
+              <Button className="w-full bg-primary font-bold" onClick={() => setActiveStep(null)}>Terminé</Button>
             </div>
           </PopoverContent>
         </Popover>
 
         {/* Search Button */}
-        <div className="p-2 md:w-32 flex items-center justify-center">
-          <Button className="w-full h-full bg-primary hover:bg-primary/90 text-lg rounded-md py-4 font-bold" onClick={handleSearch}>
+        <div className="p-1 md:w-40 flex items-center justify-center">
+          <Button 
+            className="w-full h-full bg-[#006ce4] hover:bg-[#0057b8] text-white text-lg rounded py-3 font-bold" 
+            onClick={handleSearch}
+          >
             Rechercher
           </Button>
         </div>
@@ -144,13 +156,23 @@ export default function AdvancedSearchBar() {
 function OccupancyRow({ label, value, onDec, onInc }: { label: string, value: number, onDec: () => void, onInc: () => void }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="font-bold text-primary">{label}</span>
+      <span className="font-bold text-slate-700">{label}</span>
       <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" className="h-8 w-8 rounded-full border-primary text-primary" onClick={onDec}>
+        <Button 
+          variant="outline" 
+          size="icon" 
+          className="h-10 w-10 rounded-sm border-[#006ce4] text-[#006ce4] hover:bg-[#f0f6ff]" 
+          onClick={onDec}
+        >
           <Minus className="h-4 w-4" />
         </Button>
-        <span className="w-4 text-center font-bold">{value}</span>
-        <Button variant="outline" size="icon" className="h-8 w-8 rounded-full border-primary text-primary" onClick={onInc}>
+        <span className="w-6 text-center font-bold text-lg">{value}</span>
+        <Button 
+          variant="outline" 
+          size="icon" 
+          className="h-10 w-10 rounded-sm border-[#006ce4] text-[#006ce4] hover:bg-[#f0f6ff]" 
+          onClick={onInc}
+        >
           <Plus className="h-4 w-4" />
         </Button>
       </div>
