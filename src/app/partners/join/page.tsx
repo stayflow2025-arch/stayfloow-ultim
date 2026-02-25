@@ -1,109 +1,149 @@
 
+'use client';
+
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Button } from '@/components/ui/button';
+import { Building, Car, Compass, ShieldCheck, TrendingUp, Users, Globe, ArrowRight } from 'lucide-react';
 import PartnerOnboardingForm from '@/components/partners/PartnerOnboardingForm';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { ShieldCheck, TrendingUp, Users, Globe } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export default function PartnerJoinPage() {
-  const partnerImage = PlaceHolderImages.find(img => img.id === 'partner-join');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const heroImage = "https://picsum.photos/seed/stayfloow-join/1920/1080";
 
   return (
-    <div className="min-h-screen bg-[#F9F9FA] flex flex-col">
+    <div className="min-h-screen bg-[#F5F7FA] flex flex-col font-body">
       {/* Header */}
-      <header className="bg-primary text-white py-6 px-8 shadow-md">
+      <header className="bg-primary text-white py-4 px-8 sticky top-0 z-50 shadow-lg">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <Link href="/" className="text-3xl font-bold tracking-tight italic">
-            StayFloow<span className="text-secondary">.com</span> Partner
+          <Link href="/" className="text-2xl font-black tracking-tighter">
+            StayFloow<span className="text-secondary">.com</span> <span className="font-light ml-2 opacity-80">Partner</span>
           </Link>
-          <div className="flex items-center gap-6">
-            <span className="text-sm opacity-90 hidden md:inline">Prêt à booster vos réservations ?</span>
-            <Button variant="outline" className="text-white border-white hover:bg-white/10" asChild>
-               <Link href="/login">Espace Extranet</Link>
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" className="text-white hover:bg-white/10 hidden md:flex">Aide</Button>
+            <Button variant="outline" className="border-white text-white hover:bg-white hover:text-primary font-bold">
+              Se connecter
             </Button>
           </div>
         </div>
       </header>
 
-      {/* Hero / Info Section */}
-      <section className="relative h-64 md:h-80 flex items-center">
-        <Image src={partnerImage?.imageUrl || ''} alt="Partner" fill className="object-cover" />
-        <div className="absolute inset-0 bg-primary/80" />
-        <div className="relative z-10 max-w-5xl mx-auto px-6 text-center text-white">
-          <h1 className="text-4xl md:text-5xl font-black mb-4">Devenir Partenaire StayFloow.com</h1>
-          <p className="text-xl opacity-90 max-w-2xl mx-auto">
-            Rejoignez le premier réseau de voyage en Afrique. Inscrivez votre établissement, voiture ou circuit et commencez à recevoir des réservations dès aujourd'hui sur StayFloow.com.
-          </p>
-        </div>
-      </section>
-
-      {/* Main Content */}
-      <main className="flex-grow py-16 px-6">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-12">
-          
-          {/* Benefits Column */}
-          <div className="lg:col-span-1 space-y-8">
-            <h2 className="text-3xl font-bold text-primary mb-8">Pourquoi StayFloow.com ?</h2>
-            <BenefitCard 
-              icon={<Users className="h-6 w-6" />}
-              title="Plus de visibilité"
-              desc="Accédez à des milliers de voyageurs cherchant activement des séjours en Algérie, Égypte et au-delà."
+      {/* Hero Section Style Booking */}
+      {!selectedCategory ? (
+        <>
+          <section className="relative h-[500px] flex items-center justify-center overflow-hidden">
+            <Image 
+              src={heroImage} 
+              alt="StayFloow Partner" 
+              fill 
+              className="object-cover"
+              priority
             />
-            <BenefitCard 
-              icon={<ShieldCheck className="h-6 w-6" />}
-              title="Sécurité garantie"
-              desc="Paiements sécurisés et vérification rigoureuse des profils clients pour votre tranquillité."
-            />
-            <BenefitCard 
-              icon={<TrendingUp className="h-6 w-6" />}
-              title="Boostez vos revenus"
-              desc="Nos outils marketing boostent votre taux d'occupation, surtout en basse saison."
-            />
-            <BenefitCard 
-              icon={<Globe className="h-6 w-6" />}
-              title="GPS Intégré"
-              desc="Vos clients vous trouvent facilement grâce à notre intégration GPS ultra-précise."
-            />
-          </div>
-
-          {/* Form Column */}
-          <div className="lg:col-span-2">
-            <div className="bg-white p-2 rounded-2xl shadow-xl border-2 border-primary/5">
-               <div className="bg-muted/30 p-8 rounded-xl">
-                  <h3 className="text-2xl font-bold text-primary mb-2 text-center">Formulaire d'inscription intelligent</h3>
-                  <p className="text-muted-foreground text-center mb-8">L'inscription est gratuite et ne prend que 5 minutes sur StayFloow.com.</p>
-                  <PartnerOnboardingForm />
-               </div>
+            <div className="absolute inset-0 bg-[#003580]/70" /> {/* Bleu foncé type Booking */}
+            <div className="relative z-10 max-w-4xl mx-auto px-6 text-center text-white">
+              <h1 className="text-4xl md:text-6xl font-black mb-6 leading-tight">
+                Inscrivez votre établissement sur StayFloow.com
+              </h1>
+              <p className="text-xl md:text-2xl opacity-90 mb-10 max-w-2xl mx-auto">
+                Rejoignez la plus grande communauté de voyageurs en Afrique et boostez vos réservations gratuitement.
+              </p>
+              <Button 
+                size="lg" 
+                className="bg-primary hover:bg-primary/90 text-white text-xl px-10 py-8 rounded-md font-black shadow-xl"
+                onClick={() => {
+                  const el = document.getElementById('categories');
+                  el?.scrollIntoView({ behavior: 'smooth' });
+                }}
+              >
+                Commencer gratuitement
+              </Button>
             </div>
-          </div>
-        </div>
-      </main>
+          </section>
 
-      <footer className="bg-white border-t border-border py-12 text-center text-sm text-muted-foreground">
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="flex justify-center gap-8 mb-6">
-             <Link href="#" className="hover:text-primary transition-colors">Aide</Link>
-             <Link href="#" className="hover:text-primary transition-colors">Confidentialité</Link>
-             <Link href="#" className="hover:text-primary transition-colors">Conditions</Link>
+          {/* Category Selection Grid */}
+          <section id="categories" className="max-w-7xl mx-auto px-6 -mt-20 relative z-20 pb-20">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <CategoryCard 
+                icon={<Building className="h-12 w-12" />}
+                title="Hébergement"
+                desc="Hôtels, riads, appartements, villas, maisons d'hôtes..."
+                onClick={() => setSelectedCategory('accommodation')}
+              />
+              <CategoryCard 
+                icon={<Car className="h-12 w-12" />}
+                title="Location de voiture"
+                desc="Berlines, SUV, 4x4, minibus, voitures de luxe..."
+                onClick={() => setSelectedCategory('car_rental')}
+              />
+              <CategoryCard 
+                icon={<Compass className="h-12 w-12" />}
+                title="Circuits & Excursions"
+                desc="Safaris, visites guidées, treks, croisières sur le Nil..."
+                onClick={() => setSelectedCategory('circuit')}
+              />
+            </div>
+
+            {/* Trust Badges */}
+            <div className="mt-24 grid grid-cols-1 md:grid-cols-4 gap-12">
+              <TrustItem icon={<Users />} title="Visibilité mondiale" desc="Touchez des clients du monde entier." />
+              <TrustItem icon={<ShieldCheck />} title="Paiements sécurisés" desc="Gérez vos revenus en toute sérénité." />
+              <TrustItem icon={<TrendingUp />} title="Gestion simplifiée" desc="Des outils pro pour votre activité." />
+              <TrustItem icon={<Globe />} title="GPS Précis" desc="Vos clients vous trouvent à coup sûr." />
+            </div>
+          </section>
+        </>
+      ) : (
+        /* Form Section */
+        <main className="flex-grow py-12 px-6">
+          <div className="max-w-5xl mx-auto">
+            <div className="mb-8 flex items-center justify-between">
+              <Button variant="ghost" onClick={() => setSelectedCategory(null)} className="text-primary font-bold">
+                ← Retour au choix
+              </Button>
+              <h2 className="text-2xl font-black text-slate-800">
+                Inscription : {
+                  selectedCategory === 'accommodation' ? 'Hébergement' :
+                  selectedCategory === 'car_rental' ? 'Location de voiture' : 'Circuit & Excursion'
+                }
+              </h2>
+            </div>
+            <PartnerOnboardingForm initialCategory={selectedCategory as any} />
           </div>
-          <p>© 2025 StayFloow.com Partner Program. Plateforme Sécurisée et Fiable.</p>
-        </div>
+        </main>
+      )}
+
+      <footer className="bg-white border-t border-slate-200 py-12 text-center text-sm text-slate-500">
+        <p>© 2025 StayFloow.com Partner Hub. Tous droits réservés.</p>
       </footer>
     </div>
   );
 }
 
-function BenefitCard({ icon, title, desc }: { icon: React.ReactNode, title: string, desc: string }) {
+function CategoryCard({ icon, title, desc, onClick }: { icon: any, title: string, desc: string, onClick: () => void }) {
   return (
-    <div className="flex gap-4 p-6 bg-white rounded-xl shadow-sm border border-primary/5 hover:border-primary/20 transition-all">
-      <div className="bg-primary/10 p-3 rounded-lg text-primary h-fit">
-        {icon}
+    <div 
+      onClick={onClick}
+      className="bg-white p-8 rounded-xl shadow-xl border-b-4 border-transparent hover:border-primary transition-all cursor-pointer group hover:-translate-y-2 flex flex-col items-center text-center gap-4"
+    >
+      <div className="text-primary group-hover:scale-110 transition-transform">{icon}</div>
+      <h3 className="text-2xl font-black text-slate-900">{title}</h3>
+      <p className="text-slate-500 leading-relaxed">{desc}</p>
+      <div className="mt-4 text-primary font-bold flex items-center gap-2">
+        Enregistrer mon bien <ArrowRight className="h-4 w-4" />
       </div>
-      <div>
-        <h4 className="font-bold text-lg text-primary mb-1">{title}</h4>
-        <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
-      </div>
+    </div>
+  );
+}
+
+function TrustItem({ icon, title, desc }: { icon: any, title: string, desc: string }) {
+  return (
+    <div className="flex flex-col items-center text-center gap-3">
+      <div className="bg-primary/10 p-4 rounded-full text-primary">{icon}</div>
+      <h4 className="font-black text-lg text-slate-900">{title}</h4>
+      <p className="text-sm text-slate-500">{desc}</p>
     </div>
   );
 }

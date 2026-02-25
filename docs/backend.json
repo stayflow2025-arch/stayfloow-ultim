@@ -1,0 +1,45 @@
+
+{
+  "entities": {
+    "Listing": {
+      "title": "Listing",
+      "description": "Une annonce de partenaire sur StayFloow.com (Hébergement, Voiture ou Circuit)",
+      "type": "object",
+      "properties": {
+        "category": { "type": "string", "enum": ["accommodation", "car_rental", "circuit"] },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected", "mod_requested"] },
+        "partnerInfo": {
+          "type": "object",
+          "properties": {
+            "firstName": { "type": "string" },
+            "lastName": { "type": "string" },
+            "email": { "type": "string", "format": "email" },
+            "phone": { "type": "string" }
+          }
+        },
+        "location": {
+          "type": "object",
+          "properties": {
+            "address": { "type": "string" },
+            "lat": { "type": "number" },
+            "lng": { "type": "number" }
+          }
+        },
+        "details": { "type": "object" },
+        "photos": { "type": "array", "items": { "type": "string" } },
+        "price": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["category", "status", "partnerInfo", "location"]
+    }
+  },
+  "auth": {
+    "providers": ["google", "password"]
+  },
+  "firestore": {
+    "/listings/{listingId}": {
+      "schema": "#/backend/entities/Listing",
+      "description": "Collection des annonces soumises par les partenaires"
+    }
+  }
+}
