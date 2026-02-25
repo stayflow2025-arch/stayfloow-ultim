@@ -7,7 +7,6 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Building, Car, Compass, ShieldCheck, TrendingUp, Users, Globe, ArrowRight } from 'lucide-react';
 import PartnerOnboardingForm from '@/components/partners/PartnerOnboardingForm';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { cn } from '@/lib/utils';
 
 export default function PartnerJoinPage() {
@@ -31,7 +30,7 @@ export default function PartnerJoinPage() {
         </div>
       </header>
 
-      {/* Hero Section Style Booking */}
+      {/* Hero Section Style Booking (mais en VERT StayFloow) */}
       {!selectedCategory ? (
         <>
           <section className="relative h-[500px] flex items-center justify-center overflow-hidden">
@@ -42,7 +41,7 @@ export default function PartnerJoinPage() {
               className="object-cover"
               priority
             />
-            <div className="absolute inset-0 bg-[#003580]/70" /> {/* Bleu foncé type Booking */}
+            <div className="absolute inset-0 bg-primary/85" /> {/* Vert StayFloow au lieu du bleu */}
             <div className="relative z-10 max-w-4xl mx-auto px-6 text-center text-white">
               <h1 className="text-4xl md:text-6xl font-black mb-6 leading-tight">
                 Inscrivez votre établissement sur StayFloow.com
@@ -52,7 +51,7 @@ export default function PartnerJoinPage() {
               </p>
               <Button 
                 size="lg" 
-                className="bg-primary hover:bg-primary/90 text-white text-xl px-10 py-8 rounded-md font-black shadow-xl"
+                className="bg-secondary hover:bg-secondary/90 text-primary text-xl px-10 py-8 rounded-md font-black shadow-xl"
                 onClick={() => {
                   const el = document.getElementById('categories');
                   el?.scrollIntoView({ behavior: 'smooth' });
