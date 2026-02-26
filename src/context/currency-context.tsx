@@ -10,12 +10,22 @@ interface CurrencyContextType {
   formatPrice: (price: number) => string;
   getCurrencySymbol: (c: Currency) => string;
   getCurrencyFlag: (c: Currency) => string;
+  convertFromDZD: (priceInDZD: number) => number;
 }
 
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
 export function CurrencyProvider({ children }: { children: ReactNode }) {
   const [currency, setCurrency] = useState<Currency>('DZD');
+
+  const rates: Record<Currency, number> = {
+    DZD: 1,
+    EUR: 0.0068,
+    USD: 0.0074,
+    GBP: 0.0058,
+    CHF: 0.0065,
+    EGP: 0.35
+  };
 
   const getCurrencySymbol = (c: Currency): string => {
     const symbols: Record<Currency, string> = {
@@ -41,18 +51,12 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     return flags[c];
   };
 
+  const convertFromDZD = (priceInDZD: number) => {
+    return priceInDZD * rates[currency];
+  };
+
   const formatPrice = (price: number) => {
-    // Simple conversion logic for demo (replace with real rates if needed)
-    const rates: Record<Currency, number> = {
-      DZD: 1,
-      EUR: 0.0068,
-      USD: 0.0074,
-      GBP: 0.0058,
-      CHF: 0.0065,
-      EGP: 0.35
-    };
-    
-    const convertedPrice = price * rates[currency];
+    const convertedPrice = price * (rates[currency] || 1);
 
     return new Intl.NumberFormat(currency === 'DZD' ? 'fr-DZ' : 'en-US', {
       style: 'currency',
@@ -62,7 +66,7 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <CurrencyContext.Provider value={{ currency, setCurrency, formatPrice, getCurrencySymbol, getCurrencyFlag }}>
+    <CurrencyContext.Provider value={{ currency, setCurrency, formatPrice, getCurrencySymbol, getCurrencyFlag, convertFromDZD }}>
       {children}
     </CurrencyContext.Provider>
   );

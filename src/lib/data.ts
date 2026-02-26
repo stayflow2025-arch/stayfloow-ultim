@@ -1,4 +1,3 @@
-
 /**
  * @fileOverview Données mockées pour les circuits et établissements de StayFloow.com
  */
@@ -86,6 +85,10 @@ export const cars = [
   { id: "car-2", brand: "Toyota", model: "Hilux", rating: 4.9 },
   { id: "car-3", brand: "Renault", model: "Symbol", rating: 4.5 }
 ];
+
+export const carTypes = ['Économique', 'SUV / 4x4', 'Van / Minibus', 'Luxe', 'Moto'];
+export const fuelTypes = ['Essence', 'Diesel', 'Électrique', 'Hybride'];
+export const carFeatures = ['Kilométrage illimité', 'Climatisation', 'Boîte Automatique', 'GPS intégré', 'Assurance incluse', 'Siège enfant'];
 
 export const circuits = [
   {
