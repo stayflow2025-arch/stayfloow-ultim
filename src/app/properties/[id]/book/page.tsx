@@ -38,7 +38,8 @@ import { CrossSellCard } from "@/components/cross-sell-card";
 const bookingSchema = z.object({
   fullName: z.string().min(2, "Le nom complet est requis"),
   email: z.string().email("Adresse email invalide"),
-  phone: z.string().min(10, "Numéro de téléphone invalide"),
+  phone: z.string().min(6, "Numéro trop court"),
+  dialCode: z.string().min(1, "Indicatif requis"),
   paymentMethod: z.enum(["card", "paypal"]),
 });
 
@@ -67,6 +68,7 @@ export default function PropertyBookingPage({ params }: { params: Promise<{ id: 
       fullName: "",
       email: "",
       phone: "",
+      dialCode: "+213",
       paymentMethod: "card",
     },
   });
@@ -93,7 +95,8 @@ export default function PropertyBookingPage({ params }: { params: Promise<{ id: 
           startDate: date.from.toISOString(),
           endDate: date.to.toISOString(),
           nights,
-          totalPrice
+          totalPrice,
+          customerPhone: `${values.dialCode} ${values.phone}`
         }
       });
 
@@ -200,19 +203,35 @@ export default function PropertyBookingPage({ params }: { params: Promise<{ id: 
                           </FormItem>
                         )}
                       />
-                      <FormField
-                        control={form.control}
-                        name="phone"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="font-bold">Téléphone</FormLabel>
-                            <FormControl>
-                              <Input placeholder="+213 550 00 00 00" className="h-14 rounded-xl border-slate-200" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <div className="space-y-2">
+                        <FormLabel className="font-bold">Téléphone</FormLabel>
+                        <div className="flex gap-2">
+                          <FormField
+                            control={form.control}
+                            name="dialCode"
+                            render={({ field }) => (
+                              <FormItem className="w-24">
+                                <FormControl>
+                                  <Input className="h-14 text-center font-bold bg-slate-50 border-slate-200 rounded-xl" placeholder="+213" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <FormField
+                            control={form.control}
+                            name="phone"
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <FormControl>
+                                  <Input placeholder="0550 00 00 00" className="h-14 rounded-xl border-slate-200" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
                     </div>
 
                     <div className="pt-8 border-t border-slate-100">

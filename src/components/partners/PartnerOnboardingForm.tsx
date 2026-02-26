@@ -50,6 +50,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
     lastName: '',
     email: '',
     phone: '',
+    dialCode: '+213',
     address: '',
     lat: 36.75,
     lng: 3.05,
@@ -185,7 +186,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
-          phone: formData.phone
+          phone: `${formData.dialCode} ${formData.phone}`
         },
         location: {
           address: formData.address,
@@ -246,7 +247,12 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
         <div className="space-y-2">
           <Label className="font-bold">{t('phone_whatsapp')} *</Label>
           <div className="flex gap-2">
-            <div className="bg-slate-100 flex items-center px-3 rounded-md text-sm font-bold border">🇩🇿 +213</div>
+            <Input 
+              value={formData.dialCode} 
+              onChange={e => setFormData({...formData, dialCode: e.target.value})} 
+              className="w-24 h-12 text-center font-bold bg-slate-50 border-slate-200" 
+              placeholder="+213"
+            />
             <Input value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder="0550 00 00 00" className="h-12 flex-1" />
           </div>
         </div>

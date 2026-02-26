@@ -30,7 +30,8 @@ import { CrossSellCard } from '@/components/cross-sell-card';
 const bookingSchema = z.object({
     fullName: z.string().min(2, "Le nom est requis"),
     email: z.string().email("Email invalide"),
-    phone: z.string().min(10, "Téléphone invalide"),
+    phone: z.string().min(6, "Numéro trop court"),
+    dialCode: z.string().min(1, "Indicatif requis"),
     adults: z.number().min(1, "Minimum 1 adulte"),
     children: z.number().min(0),
     infants: z.number().min(0),
@@ -69,6 +70,7 @@ function CircuitBookingForm() {
             fullName: "",
             email: "",
             phone: "",
+            dialCode: "+213",
             adults: Number(searchParams.get('adults')) || 1,
             children: Number(searchParams.get('children')) || 0,
             infants: Number(searchParams.get('infants')) || 0,
@@ -104,7 +106,8 @@ function CircuitBookingForm() {
                 bookingDetails: { 
                     startDate: dates?.from?.toISOString() || new Date().toISOString(), 
                     endDate: dates?.to?.toISOString(),
-                    participants: totalPaying 
+                    participants: totalPaying,
+                    customerPhone: `${values.dialCode} ${values.phone}`
                 }
             });
         } catch (e) { 
@@ -159,9 +162,23 @@ function CircuitBookingForm() {
                                         <FormField control={form.control} name="email" render={({ field }) => (
                                             <FormItem><FormLabel className="font-bold">Email</FormLabel><FormControl><Input className="h-12" type="email" {...field} /></FormControl><FormMessage /></FormItem>
                                         )}/>
-                                        <FormField control={form.control} name="phone" render={({ field }) => (
-                                            <FormItem><FormLabel className="font-bold">Téléphone (WhatsApp)</FormLabel><FormControl><Input className="h-12" type="tel" {...field} /></FormControl><FormMessage /></FormItem>
-                                        )}/>
+                                        <div className="space-y-2">
+                                            <FormLabel className="font-bold">Téléphone (WhatsApp)</FormLabel>
+                                            <div className="flex gap-2">
+                                                <FormField control={form.control} name="dialCode" render={({ field }) => (
+                                                    <FormItem className="w-24">
+                                                        <FormControl><Input className="h-12 text-center font-bold bg-slate-50 border-slate-200" placeholder="+213" {...field} /></FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}/>
+                                                <FormField control={form.control} name="phone" render={({ field }) => (
+                                                    <FormItem className="flex-1">
+                                                        <FormControl><Input className="h-12" placeholder="0550 00 00 00" {...field} /></FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}/>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div className="space-y-2">
                                         <Label className="font-bold">Dates souhaitées</Label>
