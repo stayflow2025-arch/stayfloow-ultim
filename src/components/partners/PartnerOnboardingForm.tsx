@@ -8,9 +8,10 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { 
   Building, Car, Compass, MapPin, Upload, CheckCircle2, 
-  ChevronRight, ChevronLeft, Loader2, Wand2, X, Plus, Minus, Info, TrendingUp, AlertCircle, Bed
+  ChevronRight, ChevronLeft, Loader2, Wand2, X, Plus, Minus, Info, TrendingUp, AlertCircle, Bed, Star
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { generatePartnerDescription } from '@/ai/flows/partner-description-generator';
@@ -56,6 +57,9 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
     description: '',
     price: '',
     type: [] as string[],
+    stars: 'N/A',
+    isManagementGroup: 'no',
+    freeCancellation48h: false,
     amenities: [] as string[],
     capacity: { min: 1, max: 10 },
     inventory: 1,
@@ -159,6 +163,9 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
           name: formData.listingName,
           description: formData.description,
           type: formData.type,
+          stars: formData.stars,
+          isManagementGroup: formData.isManagementGroup === 'yes',
+          freeCancellation48h: formData.freeCancellation48h,
           amenities: formData.amenities,
           capacity: formData.capacity,
           inventory: formData.inventory,
@@ -241,7 +248,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
     const options = {
       accommodation: {
         types: ['Hôtel ★★★', 'Hôtel ★★★★', 'Hôtel ★★★★★', 'Riad', 'Villa', 'Appartement', 'Studio', 'Glamping'],
-        amenities: ['WiFi gratuit', 'Piscine', 'Climatisation', 'Parking gratuit', 'Petit-déjeuner inclus', 'Vue mer', 'Cuisine équipée']
+        amenities: ['WiFi gratuit', 'Piscine', 'Climatisation', 'Parking gratuit', 'Cuisine', 'Salle de bain', 'Toilettes', 'Barbecue', 'Terrasse', 'Jardin', 'Vue mer']
       },
       car_rental: {
         types: ['Économique', 'SUV / 4x4', 'Van / Minibus', 'Luxe', 'Moto'],
@@ -256,7 +263,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
     const visibleBeds = showMoreBeds ? formData.beds : formData.beds.slice(0, 4);
 
     return (
-      <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4">
+      <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4">
         {/* Type d'hébergement */}
         <div className="space-y-6">
           <Label className="font-black text-xl text-slate-900">{t('listing_type_label')} *</Label>
@@ -278,7 +285,47 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
           </div>
         </div>
 
-        {/* Configuration des lits - STYLE BOOKING PHOTO */}
+        {/* ETOILES & GROUPE (Fidèle à l'image) */}
+        {initialCategory === 'accommodation' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 bg-white p-8 rounded-3xl border-2 border-slate-100 shadow-sm">
+            <div className="space-y-6">
+              <Label className="font-black text-lg text-slate-900">{t('stars_question')}</Label>
+              <RadioGroup value={formData.stars} onValueChange={(val) => setFormData({...formData, stars: val})} className="space-y-3">
+                {['N/A', '1', '2', '3', '4', '5'].map((s) => (
+                  <div key={s} className="flex items-center space-x-3 group cursor-pointer">
+                    <RadioGroupItem value={s} id={`star-${s}`} className="h-5 w-5" />
+                    <Label htmlFor={`star-${s}`} className="font-bold text-slate-600 cursor-pointer flex items-center gap-2">
+                      {s === 'N/A' ? 'N/A' : `${s} ${t(s === '1' ? 'star' : 'stars')}`}
+                      {s !== 'N/A' && (
+                        <div className="flex">
+                          {[...Array(parseInt(s))].map((_, i) => (
+                            <Star key={i} className="h-3 w-3 fill-amber-400 text-amber-400" />
+                          ))}
+                        </div>
+                      )}
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            </div>
+
+            <div className="space-y-6">
+              <Label className="font-black text-lg text-slate-900">{t('group_question')}</Label>
+              <RadioGroup value={formData.isManagementGroup} onValueChange={(val) => setFormData({...formData, isManagementGroup: val})} className="space-y-3">
+                <div className="flex items-center space-x-3 cursor-pointer">
+                  <RadioGroupItem value="yes" id="group-yes" className="h-5 w-5" />
+                  <Label htmlFor="group-yes" className="font-bold text-slate-600 cursor-pointer">{t('yes')}</Label>
+                </div>
+                <div className="flex items-center space-x-3 cursor-pointer">
+                  <RadioGroupItem value="no" id="group-no" className="h-5 w-5" />
+                  <Label htmlFor="group-no" className="font-bold text-slate-600 cursor-pointer">{t('no')}</Label>
+                </div>
+              </RadioGroup>
+            </div>
+          </div>
+        )}
+
+        {/* Configuration des lits */}
         {initialCategory === 'accommodation' && (
           <div className="space-y-6 bg-white p-8 rounded-3xl border-2 border-slate-100 shadow-sm">
             <h3 className="text-3xl font-black text-slate-900 mb-8">{t('room_setup_title')} 1</h3>
@@ -329,9 +376,11 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
           </div>
         )}
 
-        {/* Équipements */}
-        <div className="space-y-6">
-          <Label className="font-black text-xl text-slate-900">{t('amenities_label')} *</Label>
+        {/* Équipements & Annulation */}
+        <div className="space-y-8">
+          <div className="flex justify-between items-center">
+            <Label className="font-black text-xl text-slate-900">{t('amenities_label')} *</Label>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-50/50 p-8 rounded-3xl border-2 border-slate-100">
             {options.amenities.map(a => (
               <div key={a} className="flex items-center space-x-4 group">
@@ -339,11 +388,27 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
                   id={a} 
                   checked={formData.amenities.includes(a)}
                   onCheckedChange={(checked) => setFormData(prev => ({ ...prev, amenities: checked ? [...prev.amenities, a] : prev.amenities.filter(x => x !== a) }))}
-                  className="h-6 w-6 rounded-full border-slate-300 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
+                  className="h-6 w-6 rounded-md border-slate-300 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                 />
                 <label htmlFor={a} className="text-sm font-bold text-slate-600 group-hover:text-primary cursor-pointer transition-colors">{t(a)}</label>
               </div>
             ))}
+          </div>
+
+          {/* CANCELLATION POLICY */}
+          <div className="bg-primary/5 p-8 rounded-3xl border-2 border-primary/10 space-y-4">
+            <Label className="font-black text-lg text-primary flex items-center gap-2">
+              <Info className="h-5 w-5" /> {t('cancellation_policy')}
+            </Label>
+            <div className="flex items-center space-x-4">
+              <Checkbox 
+                id="cancellation" 
+                checked={formData.freeCancellation48h}
+                onCheckedChange={(checked) => setFormData({...formData, freeCancellation48h: checked as boolean})}
+                className="h-6 w-6 rounded-md border-primary/30"
+              />
+              <label htmlFor="cancellation" className="text-sm font-black text-slate-700 cursor-pointer">{t('free_cancellation_48h')}</label>
+            </div>
           </div>
         </div>
 
