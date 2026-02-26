@@ -24,17 +24,19 @@ const translations: Record<string, Record<Locale, string>> = {
     "dashboard": { fr: "Dashboard", en: "Dashboard", ar: "لوحة التحكم", es: "Panel de control" },
     "logout": { fr: "Se déconnecter", en: "Log Out", ar: "تسجيل الخروج", es: "Cerrar sesión" },
 
-    // Partner Page (Image Matching)
+    // Partner Page
     "partner_hero_title": { fr: "Inscrivez votre établissement sur StayFloow.com", en: "List your establishment on StayFloow.com", ar: "سجل منشأتك على StayFloow.com", es: "Registre su establecimiento en StayFloow.com" },
     "partner_hero_subtitle": { fr: "Rejoignez la plus grande communauté de voyageurs en Afrique et boostez vos réservations gratuitement.", en: "Join the largest travel community in Africa and boost your bookings for free.", ar: "انضم إلى أكبر مجتمع للمسافرين في إفريقيا وعزز حجوزاتك مجانًا.", es: "Únase a la comunidad de viajeros más grande de África y aumente sus reservas gratis." },
     "partner_hero_cta": { fr: "Commencer gratuitement", en: "Start for free", ar: "ابدأ مجاناً", es: "Empezar gratis" },
     "register_my_property": { fr: "ENREGISTRER MON BIEN", en: "REGISTER MY PROPERTY", ar: "تسجيل عقاري", es: "REGISTRAR MI PROPIEDAD" },
+    "registration": { fr: "Inscription", en: "Registration", ar: "تسجيل", es: "Registro" },
+    "back_to_choice": { fr: "Retour au choix", en: "Back to choice", ar: "العودة للخيارات", es: "Volver a elegir" },
     "partner_cat_acc_desc": { fr: "Hôtels, riads, appartements, villas, maisons d'hôtes...", en: "Hotels, riads, apartments, villas, guest houses...", ar: "فنادق، رياض، شقق، فيلات، بيوت ضيافة...", es: "Hoteles, riads, apartamentos, villas, casas de huéspedes..." },
     "partner_cat_car_desc": { fr: "Berlines, SUV, 4x4, minibus, voitures de luxe...", en: "Sedans, SUVs, 4x4s, minibuses, luxury cars...", ar: "سيدان، دفع رباعي، ميني باص، سيارات فاخرة...", es: "Sedanes, SUV, 4x4, minibuses, coches de lujo..." },
     "partner_cat_tour_desc": { fr: "Safaris, visites guidées, treks, croisières sur le Nil...", en: "Safaris, guided tours, treks, Nile cruises...", ar: "رحلات سفاري، جولات سياحية، رحلات نيلية...", es: "Safaris, visitas guiadas, treks, cruceros por el Nilo..." },
-    "trust_visibility_title": { fr: "Visibilité mondiale", en: "Global Visibility", ar: "ظهور عالمي", es: "Visibilidad mundial" },
+    "trust_visibility_title": { fr: "Visibilité mondiale", en: "Global Visibility", ar: "ظهور عالمي", es: "Visibilité mundial" },
     "trust_visibility_desc": { fr: "Touchez des clients du monde entier.", en: "Reach customers from all over the world.", ar: "صل إلى العملاء من جميع أنحاء العالم.", es: "Llegue a clientes de todo el mundo." },
-    "trust_payment_title": { fr: "Paiements sécurisés", en: "Secure Payments", ar: "مدفوعات آمنة", es: "Pagos seguros" },
+    "trust_payment_title": { fr: "Paiements sécurisés", en: "Secure Payments", ar: "مدفوعats آمنة", es: "Pagos seguros" },
     "trust_payment_desc": { fr: "Gérez vos revenus en toute sérénité.", en: "Manage your income with peace of mind.", ar: "إدارة دخلك براحة بال.", es: "Gestione sus ingresos con tranquilidad." },
     "trust_mgmt_title": { fr: "Gestion simplifiée", en: "Simplified Management", ar: "إدارة مبسطة", es: "Gestión simplificada" },
     "trust_mgmt_desc": { fr: "Des outils pro pour votre activité.", en: "Professional tools for your business.", ar: "أدوات احترافية لنشاطك.", es: "Herramientas pro para su negocio." },
@@ -57,23 +59,12 @@ const translations: Record<string, Record<Locale, string>> = {
     "popular": { fr: "Populaires", en: "Popular", ar: "الأكثر شعبية", es: "Populares" },
     "property_types": { fr: "Types de propriétés", en: "Property Types", ar: "أنواع العقارات", es: "Tipos de propiedad" },
     "budget_per_night": { fr: "Budget (par nuit)", en: "Budget (per night)", ar: "الميزانية (لكل ليلة)", es: "Presupuesto (por noche)" },
-    "show_results": { fr: "Afficher les résultats", en: "Show results", ar: "عرض النتائج", es: "Mostrar resultados" },
+    "show_results": { fr: "Afficher les résultats", en: "Show results", ar: "عرض النتائج", es: "Mostrar résultats" },
     "WiFi gratuit": { fr: "WiFi gratuit", en: "Free WiFi", ar: "واي فاي مجاني", es: "WiFi gratis" },
     "Piscine": { fr: "Piscine", en: "Pool", ar: "مسبح", es: "Piscina" },
     "Petit-déjeuner inclus": { fr: "Petit-déjeuner inclus", en: "Breakfast included", ar: "الإفطار مشمول", es: "Desayuno incluido" },
     "Parking gratuit": { fr: "Parking gratuit", en: "Free parking", ar: "موقف سيارات مجاني", es: "Parking gratis" },
     "Climatisation": { fr: "Climatisation", en: "Air conditioning", ar: "تكييف هواء", es: "Aire acondicionado" },
-
-    // Property Cards
-    "view_offer": { fr: "Voir l'offre", en: "View offer", ar: "عرض العرض", es: "Ver oferta" },
-    "per_night": { fr: "par nuit", en: "per night", ar: "لكل ليلة", es: "por noche" },
-    "taxes_included": { fr: "TTC", en: "tax included", ar: "شامل الضرائب", es: "impuestos incluidos" },
-    "high_demand": { fr: "TRÈS DEMANDÉ SUR STAYFLOOW", en: "HIGHLY DEMANDED ON STAYFLOOW", ar: "طلب مرتفع على ستاي فلو", es: "MUY DEMANDADO EN STAYFLOOW" },
-    "exceptionnel": { fr: "Exceptionnel", en: "Exceptional", ar: "استثنائي", es: "Excepcional" },
-    "superb": { fr: "Superbe", en: "Superb", ar: "رائع", es: "Superbio" },
-    "reviews": { fr: "avis", en: "reviews", ar: "تقييمات", es: "comentarios" },
-    "boosted": { fr: "BOOSTÉ", en: "BOOSTED", ar: "مدعوم", es: "IMPULSADO" },
-    "elite": { fr: "ÉLITE", en: "ELITE", ar: "نخبة", es: "ELITE" },
 
     // Footer
     "footer_tagline": { fr: "Votre compagnon de voyage privilégié en Afrique. Réservez hébergements, voitures et circuits en toute simplicité.", en: "Your preferred travel companion in Africa. Book accommodations, cars, and tours with ease.", ar: "رفيقك المفضل للسفر في إفريقيا. احجز السكن والسيارات والجولات بكل سهولة.", es: "Su compañero de viaje preferido en África. Reserve alojamientos, coches y tours con facilidad." },

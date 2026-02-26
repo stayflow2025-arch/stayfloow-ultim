@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "./ui/button";
-import { LogOut, User as UserIcon, LayoutDashboard, HelpCircle, ChevronDown, Building, Car, Compass } from "lucide-react";
+import { LogOut, User as UserIcon, LayoutDashboard, HelpCircle, ChevronDown } from "lucide-react";
 import { useLanguage } from "@/context/language-context";
 import { useCurrency } from "@/context/currency-context";
 import { useEffect, useState } from "react";
@@ -97,31 +97,12 @@ export function Header() {
               <HelpCircle className="h-5 w-5" />
             </button>
 
-            {/* MENU PARTENAIRE UNIFIÉ */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="text-sm font-bold hover:bg-white/10 px-3 py-2 rounded-md transition-colors flex items-center gap-1">
-                  {t("list_property")} <ChevronDown className="h-3 w-3 opacity-50" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56 p-2 rounded-xl mt-2">
-                <DropdownMenuItem asChild className="font-bold py-2.5 cursor-pointer">
-                  <Link href="/partners/join?category=accommodation" className="flex items-center gap-3">
-                    <Building className="h-4 w-4 text-primary" /> {t("accommodations")}
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="font-bold py-2.5 cursor-pointer">
-                  <Link href="/partners/join?category=car_rental" className="flex items-center gap-3">
-                    <Car className="h-4 w-4 text-primary" /> {t("car_rental")}
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="font-bold py-2.5 cursor-pointer">
-                  <Link href="/partners/join?category=circuit" className="flex items-center gap-3">
-                    <Compass className="h-4 w-4 text-primary" /> {t("tours")}
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {/* BOUTON PARTENAIRE DIRECT - Fidèle à Photo 2 */}
+            <Button variant="ghost" className="text-sm font-bold hover:bg-white/10 px-3 py-2 rounded-md transition-colors" asChild>
+              <Link href="/partners/join">
+                {t("list_property")}
+              </Link>
+            </Button>
           </div>
 
           <div className="flex items-center gap-3">
