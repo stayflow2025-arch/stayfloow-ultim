@@ -1,18 +1,18 @@
+
 "use client";
 
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { 
-  Filter, Star, MapPin, Heart, LayoutGrid, List, 
-  Wifi, ShieldCheck, Car, Coffee, Waves, ParkingCircle, Info, ChevronRight, Check, Map as MapIcon
+  Star, MapPin, Heart, LayoutGrid, List, 
+  Wifi, Car, Coffee, ParkingCircle, ChevronRight, Check, Map as MapIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
 import { Card } from '@/components/ui/card';
-import { Slider } from '@/components/ui/slider';
 import AdvancedSearchBar from '@/components/search/AdvancedSearchBar';
 import { cn } from '@/lib/utils';
 
@@ -78,7 +78,7 @@ export default function SearchPage() {
             <div className="flex gap-4">
                <Button variant="ghost" className="text-white font-bold">DZD</Button>
                <Button variant="outline" className="bg-transparent text-white border-white hover:bg-white hover:text-primary font-bold transition-all" asChild>
-                  <Link href="/login">Se connecter</Link>
+                  <Link href="/auth/login">Se connecter</Link>
                </Button>
             </div>
           </div>

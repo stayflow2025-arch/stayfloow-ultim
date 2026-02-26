@@ -1,8 +1,8 @@
+
 import Link from 'next/link';
 import Image from 'next/image';
-import { Building, Car, Compass, ChevronRight, Star } from 'lucide-react';
+import { Building, Car, Compass, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import AdvancedSearchBar from '@/components/search/AdvancedSearchBar';
 
 export default function Home() {
@@ -35,7 +35,9 @@ export default function Home() {
             <Button variant="outline" className="bg-transparent text-white border-white hover:bg-white hover:text-primary font-black transition-all" asChild>
               <Link href="/partners/join">Devenir partenaire</Link>
             </Button>
-            <Button variant="ghost" className="text-white hover:bg-white/10">Se connecter</Button>
+            <Button variant="ghost" className="text-white hover:bg-white/10" asChild>
+              <Link href="/auth/login">Se connecter</Link>
+            </Button>
           </div>
         </div>
       </header>
