@@ -227,17 +227,19 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
     }[initialCategory];
 
     return (
-      <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
-        <div className="space-y-4">
-          <Label className="font-black text-lg">{t('listing_type_label')} *</Label>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4">
+        <div className="space-y-6">
+          <Label className="font-black text-xl text-slate-900">{t('listing_type_label')} *</Label>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {options.types.map(opt => (
               <div 
                 key={opt}
-                onClick={() => setFormData(prev => ({ ...prev, type: prev.type.includes(opt) ? prev.type.filter(x => x !== opt) : [...prev.type, opt] }))}
+                onClick={() => setFormData(prev => ({ ...prev, type: [opt] }))}
                 className={cn(
-                  "p-3 rounded-lg border-2 text-center cursor-pointer text-sm font-bold transition-all",
-                  formData.type.includes(opt) ? "border-primary bg-primary/5 text-primary" : "border-slate-100 bg-white"
+                  "p-5 rounded-2xl border-2 text-center cursor-pointer text-sm font-bold transition-all shadow-sm hover:shadow-md",
+                  formData.type.includes(opt) 
+                    ? "border-primary bg-primary/5 text-primary ring-2 ring-primary/20" 
+                    : "border-slate-100 bg-white hover:border-slate-200"
                 )}
               >
                 {t(opt)}
@@ -246,26 +248,33 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
           </div>
         </div>
 
-        <div className="space-y-4">
-          <Label className="font-black text-lg">{t('amenities_label')} *</Label>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-6 rounded-xl border border-slate-200">
+        <div className="space-y-6">
+          <Label className="font-black text-xl text-slate-900">{t('amenities_label')} *</Label>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-50/50 p-8 rounded-3xl border-2 border-slate-100">
             {options.amenities.map(a => (
-              <div key={a} className="flex items-center space-x-3">
+              <div key={a} className="flex items-center space-x-4 group">
                 <Checkbox 
                   id={a} 
                   checked={formData.amenities.includes(a)}
                   onCheckedChange={(checked) => setFormData(prev => ({ ...prev, amenities: checked ? [...prev.amenities, a] : prev.amenities.filter(x => x !== a) }))}
+                  className="h-6 w-6 rounded-full border-slate-300 data-[state=checked]:bg-primary data-[state=checked]:border-primary"
                 />
-                <label htmlFor={a} className="text-sm font-bold text-slate-700 cursor-pointer">{t(a)}</label>
+                <label htmlFor={a} className="text-sm font-bold text-slate-600 group-hover:text-primary cursor-pointer transition-colors">{t(a)}</label>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <Label className="font-black text-lg">{t('description_label')}</Label>
-            <Button variant="outline" size="sm" onClick={handleAIEnhance} disabled={isGenerating} className="text-primary border-primary gap-2 hover:bg-primary hover:text-white">
+        <div className="space-y-6">
+          <div className="flex justify-between items-end">
+            <Label className="font-black text-xl text-slate-900">{t('description_label')}</Label>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleAIEnhance} 
+              disabled={isGenerating} 
+              className="text-primary border-primary gap-2 hover:bg-primary hover:text-white rounded-full font-black px-4"
+            >
               {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
               {t('ai_improve_btn')}
             </Button>
@@ -274,9 +283,9 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
             value={formData.description} 
             onChange={e => setFormData({...formData, description: e.target.value})} 
             placeholder={t('description_placeholder')}
-            className="min-h-[150px]"
+            className="min-h-[180px] rounded-2xl border-slate-200 focus:border-primary p-6 text-lg leading-relaxed shadow-inner"
           />
-          <div className="text-right text-xs text-slate-400">{formData.description.length} / 150 min</div>
+          <div className="text-right text-[10px] font-black text-slate-400 uppercase tracking-widest">{formData.description.length} / 150 MIN</div>
         </div>
       </div>
     );

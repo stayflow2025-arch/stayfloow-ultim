@@ -60,7 +60,7 @@ export const properties: Property[] = [
     description: "Villa luxueuse avec piscine privée et jardin luxuriant aux portes du désert.",
     images: ["https://picsum.photos/seed/villa1/800/600"],
     amenities: ["Piscine privée", "Jardin", "Parking gratuit", "WiFi"],
-    type: "Villa de Luxe",
+    type: "Villa",
     stars: 5,
     reviewsCount: 45
   },
@@ -86,7 +86,7 @@ export const properties: Property[] = [
     price: 18000,
     description: "Appartement de standing au coeur du centre d'affaires d'Alger.",
     images: ["https://picsum.photos/seed/tower1/800/600"],
-    amenities: ["Conciergerie", "Salle de sport", "WiFi haut débit"],
+    amenities: ["Conciergerie", "Salle de sport", "WiFi gratuit"],
     type: "Appartement",
     stars: 4,
     reviewsCount: 67
@@ -99,7 +99,7 @@ export const properties: Property[] = [
     price: 14000,
     description: "Un havre de paix absolu à quelques minutes de la place Jemaa el-Fna.",
     images: ["https://picsum.photos/seed/marrakech1/800/600"],
-    amenities: ["Spa", "Piscine", "Cuisine gastronomique"],
+    amenities: ["Spa", "Piscine", "Cuisine gastronomique", "WiFi gratuit"],
     type: "Riad",
     stars: 5,
     reviewsCount: 342,
@@ -113,8 +113,8 @@ export const properties: Property[] = [
     price: 9500,
     description: "Réveillez-vous avec le bruit des vagues de la Méditerranée.",
     images: ["https://picsum.photos/seed/alex1/800/600"],
-    amenities: ["Vue mer", "Balcon", "WiFi"],
-    type: "Hôtel",
+    amenities: ["Vue mer", "Balcon", "WiFi gratuit"],
+    type: "Hôtel ★★★★",
     stars: 4,
     reviewsCount: 156
   },
@@ -222,8 +222,8 @@ export const circuits = [
 
 export const pendingCircuits = [];
 
-export const popularFilters = ["WiFi gratuit", "Piscine", "Petit-déjeuner inclus", "Parking gratuit", "Climatisation"];
-export const propertyTypesList = ["Hôtel", "Appartement", "Riad", "Villa", "Bateau-Hôtel", "Hôtel Insolite"];
+export const popularFilters = ["WiFi gratuit", "Piscine", "Petit-déjeuner inclus", "Parking gratuit", "Climatisation", "Vue mer", "Cuisine équipée"];
+export const propertyTypesList = ["Hôtel ★★★", "Hôtel ★★★★", "Hôtel ★★★★★", "Riad", "Villa", "Appartement", "Studio", "Glamping"];
 export const circuitThemes = ["Désert", "Culturel", "Nature", "Aventure", "Gastronomie"];
 
 export const cityCoordinates: Record<string, { lat: number; lon: number }> = {
