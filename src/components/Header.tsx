@@ -1,16 +1,10 @@
-
 "use client";
 
 import Link from "next/link";
 import { Button } from "./ui/button";
-import { Menu, LogOut, User as UserIcon, Heart, LayoutDashboard, Globe, HelpCircle } from "lucide-react";
+import { LogOut, User as UserIcon, LayoutDashboard, HelpCircle, ChevronDown } from "lucide-react";
 import { useLanguage } from "@/context/language-context";
 import { useCurrency } from "@/context/currency-context";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import { useEffect, useState } from "react";
 import {
   DropdownMenu,
@@ -26,8 +20,8 @@ import { signOut } from "firebase/auth";
 import { useToast } from "@/hooks/use-toast";
 
 export function Header() {
-  const { t, locale, getLocaleDetails } = useLanguage();
-  const { currency } = useCurrency();
+  const { t, locale, setLocale, getLocaleDetails, availableLocales } = useLanguage();
+  const { currency, setCurrency, getCurrencyFlag } = useCurrency();
   const { user, loading: userLoading } = useUser();
   const auth = useAuth();
   const { toast } = useToast();
@@ -41,7 +35,7 @@ export function Header() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      toast({ title: "Déconnexion réussie" });
+      toast({ title: t("logout") });
     } catch (error) {
       toast({ variant: "destructive", title: "Erreur" });
     }
@@ -50,6 +44,8 @@ export function Header() {
   if (!isClient) {
     return <header className="sticky top-0 z-50 w-full bg-primary h-16" />;
   }
+
+  const currencies = ["DZD", "EUR", "USD", "GBP", "CHF", "EGP"];
 
   return (
     <header className="sticky top-0 z-50 w-full bg-primary text-white shadow-md">
@@ -62,19 +58,46 @@ export function Header() {
         </Link>
 
         {/* Actions Droite */}
-        <div className="flex items-center gap-2 md:gap-6">
-          <div className="hidden md:flex items-center gap-4">
-            <button className="text-sm font-bold hover:bg-white/10 px-3 py-2 rounded-md transition-colors">
-              {currency}
-            </button>
-            <button className="flex items-center gap-1 hover:bg-white/10 px-2 py-2 rounded-md transition-colors">
-              <span className="text-lg">{getLocaleDetails().flag}</span>
-            </button>
+        <div className="flex items-center gap-2 md:gap-4">
+          <div className="hidden md:flex items-center gap-2">
+            {/* DEVISE */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="text-sm font-bold hover:bg-white/10 px-3 py-2 rounded-md transition-colors flex items-center gap-2">
+                  <span>{getCurrencyFlag(currency)}</span>
+                  <span>{currency}</span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="rounded-xl">
+                {currencies.map((c) => (
+                  <DropdownMenuItem key={c} onSelect={() => setCurrency(c as any)} className="font-bold cursor-pointer">
+                    <span className="mr-2">{getCurrencyFlag(c as any)}</span> {c}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* LANGUE */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-1 hover:bg-white/10 px-2 py-2 rounded-md transition-colors">
+                  <span className="text-lg">{getLocaleDetails().flag}</span>
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="rounded-xl">
+                {availableLocales.map((loc) => (
+                  <DropdownMenuItem key={loc} onSelect={() => setLocale(loc as any)} className="font-bold cursor-pointer">
+                    <span className="mr-2">{getLocaleDetails(loc as any).flag}</span> {getLocaleDetails(loc as any).name}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             <button className="hover:bg-white/10 p-2 rounded-full transition-colors">
               <HelpCircle className="h-5 w-5" />
             </button>
             <Link href="/partners/join" className="text-sm font-bold hover:bg-white/10 px-3 py-2 rounded-md transition-colors">
-              Listez votre bien
+              {t("list_property")}
             </Link>
           </div>
 
@@ -101,24 +124,24 @@ export function Header() {
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild className="font-bold py-2.5 cursor-pointer">
-                      <Link href="/profile"><UserIcon className="h-4 w-4 mr-3" /> Mon Profil</Link>
+                      <Link href="/profile"><UserIcon className="h-4 w-4 mr-3" /> {t("profile")}</Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild className="font-bold py-2.5 cursor-pointer">
-                      <Link href="/partners/dashboard"><LayoutDashboard className="h-4 w-4 mr-3" /> Dashboard</Link>
+                      <Link href="/partners/dashboard"><LayoutDashboard className="h-4 w-4 mr-3" /> {t("dashboard")}</Link>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout} className="font-bold py-2.5 text-red-600 cursor-pointer">
-                      <LogOut className="h-4 w-4 mr-3" /> Se déconnecter
+                      <LogOut className="h-4 w-4 mr-3" /> {t("logout")}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
                 <div className="flex gap-2">
                   <Button variant="ghost" className="hidden sm:flex font-bold hover:bg-white/10" asChild>
-                    <Link href="/auth/register">S'inscrire</Link>
+                    <Link href="/auth/register">{t("register")}</Link>
                   </Button>
                   <Button className="bg-white text-primary hover:bg-slate-100 font-bold px-6 shadow-lg border-none" asChild>
-                    <Link href="/auth/login">Se connecter</Link>
+                    <Link href="/auth/login">{t("login")}</Link>
                   </Button>
                 </div>
               )
