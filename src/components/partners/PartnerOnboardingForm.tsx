@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { 
   Building, Car, Compass, MapPin, Upload, CheckCircle2, 
-  ChevronRight, ChevronLeft, Loader2, Wand2, X, Plus, Minus, Info, TrendingUp, AlertCircle, Bed, Star
+  ChevronRight, ChevronLeft, Loader2, Wand2, X, Plus, Minus, Info, TrendingUp, AlertCircle, Bed, Star, Users
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { generatePartnerDescription } from '@/ai/flows/partner-description-generator';
@@ -61,7 +61,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
     isManagementGroup: 'no',
     freeCancellation48h: false,
     amenities: [] as string[],
-    capacity: { min: 1, max: 10 },
+    capacity: { adults: 2, children: 0 },
     inventory: 1,
     rules: [] as string[],
     beds: [
@@ -91,6 +91,23 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
       beds: prev.beds.map(bed => 
         bed.id === id ? { ...bed, count: Math.max(0, bed.count + delta) } : bed
       )
+    }));
+  };
+
+  const updateCapacity = (key: 'adults' | 'children', delta: number) => {
+    setFormData(prev => ({
+      ...prev,
+      capacity: {
+        ...prev.capacity,
+        [key]: Math.max(0, prev.capacity[key] + delta)
+      }
+    }));
+  };
+
+  const updateInventory = (delta: number) => {
+    setFormData(prev => ({
+      ...prev,
+      inventory: Math.max(1, prev.inventory + delta)
     }));
   };
 
@@ -142,6 +159,10 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
       toast({ variant: 'destructive', title: 'Photos manquantes', description: 'Veuillez ajouter au moins 5 photos.' });
       return;
     }
+    if (formData.type.length === 0) {
+      toast({ variant: 'destructive', title: 'Type manquant', description: 'Veuillez sélectionner un type d\'hébergement.' });
+      return;
+    }
     setIsSubmitting(true);
     try {
       const listingId = `list_${Date.now()}`;
@@ -162,7 +183,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
         details: {
           name: formData.listingName,
           description: formData.description,
-          type: formData.type,
+          type: formData.type[0], // On enregistre seulement le premier (sélection unique)
           stars: formData.stars,
           isManagementGroup: formData.isManagementGroup === 'yes',
           freeCancellation48h: formData.freeCancellation48h,
@@ -264,7 +285,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
 
     return (
       <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4">
-        {/* Type d'hébergement */}
+        {/* Type d'hébergement - Sélection UNIQUE */}
         <div className="space-y-6">
           <Label className="font-black text-xl text-slate-900">{t('listing_type_label')} *</Label>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -285,7 +306,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
           </div>
         </div>
 
-        {/* ETOILES & GROUPE (Fidèle à l'image) */}
+        {/* ETOILES & GROUPE */}
         {initialCategory === 'accommodation' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 bg-white p-8 rounded-3xl border-2 border-slate-100 shadow-sm">
             <div className="space-y-6">
@@ -321,6 +342,44 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
                   <Label htmlFor="group-no" className="font-bold text-slate-600 cursor-pointer">{t('no')}</Label>
                 </div>
               </RadioGroup>
+            </div>
+          </div>
+        )}
+
+        {/* Capacité & Inventaire */}
+        {initialCategory === 'accommodation' && (
+          <div className="space-y-6 bg-white p-8 rounded-3xl border-2 border-slate-100 shadow-sm">
+            <h3 className="text-xl font-black text-slate-900 flex items-center gap-3">
+              <Users className="h-6 w-6 text-primary" /> {t('capacity_title')}
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {/* ADULTES */}
+              <div className="space-y-4">
+                <Label className="font-bold text-slate-600">{t('adults_max')}</Label>
+                <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-xl border border-slate-200">
+                  <button onClick={() => updateCapacity('adults', -1)} className="h-10 w-10 bg-white shadow-sm rounded-lg flex items-center justify-center text-primary"><Minus className="h-4 w-4"/></button>
+                  <span className="flex-1 text-center font-black text-lg">{formData.capacity.adults}</span>
+                  <button onClick={() => updateCapacity('adults', 1)} className="h-10 w-10 bg-white shadow-sm rounded-lg flex items-center justify-center text-primary"><Plus className="h-4 w-4"/></button>
+                </div>
+              </div>
+              {/* ENFANTS */}
+              <div className="space-y-4">
+                <Label className="font-bold text-slate-600">{t('children_max')}</Label>
+                <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-xl border border-slate-200">
+                  <button onClick={() => updateCapacity('children', -1)} className="h-10 w-10 bg-white shadow-sm rounded-lg flex items-center justify-center text-primary"><Minus className="h-4 w-4"/></button>
+                  <span className="flex-1 text-center font-black text-lg">{formData.capacity.children}</span>
+                  <button onClick={() => updateCapacity('children', 1)} className="h-10 w-10 bg-white shadow-sm rounded-lg flex items-center justify-center text-primary"><Plus className="h-4 w-4"/></button>
+                </div>
+              </div>
+              {/* INVENTAIRE */}
+              <div className="space-y-4">
+                <Label className="font-bold text-slate-600">{t('inventory_label')}</Label>
+                <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-xl border border-slate-200">
+                  <button onClick={() => updateInventory(-1)} className="h-10 w-10 bg-white shadow-sm rounded-lg flex items-center justify-center text-primary"><Minus className="h-4 w-4"/></button>
+                  <span className="flex-1 text-center font-black text-lg">{formData.inventory}</span>
+                  <button onClick={() => updateInventory(1)} className="h-10 w-10 bg-white shadow-sm rounded-lg flex items-center justify-center text-primary"><Plus className="h-4 w-4"/></button>
+                </div>
+              </div>
             </div>
           </div>
         )}

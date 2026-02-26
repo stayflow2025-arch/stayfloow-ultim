@@ -16,10 +16,10 @@ const translations: Record<string, Record<Locale, string>> = {
     "accommodations": { fr: "Hébergements", en: "Accommodations", ar: "أماكن الإقامة", es: "Alojamientos" },
     "car_rental": { fr: "Voitures", en: "Car Rental", ar: "تأجير السيارات", es: "Alquiler de Coches" },
     "tours": { fr: "Circuits", en: "Tours & Activities", ar: "الجولات والأنشطة", es: "Tours y Actividades" },
-    "list_property": { fr: "Listez votre bien", en: "List your property", ar: "أضf عقارك", es: "Publica tu propriété" },
+    "list_property": { fr: "Listez votre bien", en: "List your property", ar: "أضف عقارك", es: "Publica tu propiedad" },
     "login": { fr: "Se connecter", en: "Log In", ar: "تسجيل الدخول", es: "Iniciar sesión" },
     "register": { fr: "S'inscrire", en: "Sign Up", ar: "إنشاء حساب", es: "Registrarse" },
-    "profile": { fr: "Profil", en: "Profile", ar: "الملف الشخصي", es: "Perfil" },
+    "profile": { fr: "Profil", en: "Profile", ar: "الملف الشخصi", es: "Perfil" },
     "dashboard": { fr: "Tableau de bord", en: "Dashboard", ar: "لوحة التحكم", es: "Panel" },
     "logout": { fr: "Déconnexion", en: "Log Out", ar: "تسجيل الخروج", es: "Cerrar sesión" },
     "back": { fr: "Retour", en: "Back", ar: "رجوع", es: "Volver" },
@@ -46,6 +46,12 @@ const translations: Record<string, Record<Locale, string>> = {
     "futon_desc": { fr: "Dimensions variables", en: "Variable dimensions", ar: "أبعاد متغيرة", es: "Dimensiones variables" },
     "show_more_beds": { fr: "Plus de types de lits", en: "More bed types", ar: "المزيد من أنواع الأسرة", es: "Más tipos de camas" },
     "show_less_beds": { fr: "Moins de types de lits", en: "Less bed types", ar: "أنواع أسرة أقل", es: "Menos tipos de camas" },
+
+    // Capacity & Inventory
+    "capacity_title": { fr: "Capacité & Disponibilité", en: "Capacity & Availability", ar: "السعة والتوافر", es: "Capacidad y Disponibilidad" },
+    "adults_max": { fr: "Adultes max.", en: "Max Adults", ar: "أقصى عدد للبالغين", es: "Máx. Adultos" },
+    "children_max": { fr: "Enfants max.", en: "Max Children", ar: "أقصى عدد للأطفال", es: "Máx. Niños" },
+    "inventory_label": { fr: "Nombre de chambres de ce type", en: "Number of rooms of this type", ar: "عدد الغرف من هذا النوع", es: "Número de habitaciones de este tipo" },
 
     // New Questions (Step 3)
     "stars_question": { fr: "Combien d'étoiles possède votre hôtel ?", en: "How many stars does your hotel have?", ar: "كم عدد النجوم في فندقك؟", es: "¿Cuántas estrellas tiene su hotel?" },
