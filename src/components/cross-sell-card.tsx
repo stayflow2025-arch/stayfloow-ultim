@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -103,7 +104,7 @@ export function CrossSellCard({
           return (
             <Card
               key={suggestion.type}
-              className="overflow-hidden group text-left border-none shadow-xl rounded-3xl"
+              className="overflow-hidden group text-left border-none shadow-xl rounded-3xl bg-white"
             >
               <div className="relative h-56 w-full overflow-hidden">
                 <Image
@@ -170,7 +171,7 @@ export function CrossSellCard({
                             </Button>
                           </PopoverTrigger>
 
-                          <PopoverContent className="w-auto p-0 border-none shadow-2xl rounded-2xl" align="start">
+                          <PopoverContent className="w-auto p-0 border-none shadow-2xl rounded-2xl bg-white" align="start">
                             <Calendar
                               mode="range"
                               selected={circuitDates}

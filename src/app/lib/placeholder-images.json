@@ -1,0 +1,53 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "hero-home",
+      "description": "Luxurious Riad in Marrakech",
+      "imageUrl": "https://images.unsplash.com/photo-1761828122922-5a839ada5b76?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8cmlhZCUyMGx1eHVyeXxlbnwwfHx8fDE3NzIwNTU5NTF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "riad luxury"
+    },
+    {
+      "id": "algeria-cat",
+      "description": "Sahara Desert Excursion",
+      "imageUrl": "https://images.unsplash.com/photo-1674109739254-c0c425a1975d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxkZXNlcnQlMjBzYWhhcmF8ZW58MHx8fHwxNzcyMDU1OTUxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "desert sahara"
+    },
+    {
+      "id": "egypt-cat",
+      "description": "Nile River Cruise",
+      "imageUrl": "https://images.unsplash.com/photo-1519852476561-ec618b0183ba?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxuaWxlJTIwcml2ZXJ8ZW58MHx8fHwxNzcxOTcwNzc5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "nile river"
+    },
+    {
+      "id": "car-cat",
+      "description": "SUV Rental for Desert",
+      "imageUrl": "https://images.unsplash.com/photo-1761320296536-38a4e068b37d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxzdXYlMjByZW50YWx8ZW58MHx8fHwxNzcyMDU1OTUxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "suv rental"
+    },
+    {
+      "id": "partner-join",
+      "description": "Host welcoming guests",
+      "imageUrl": "https://images.unsplash.com/photo-1703003926123-7500564947a2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxob3NwaXRhbGl0eSUyMHdlbGNvbWV8ZW58MHx8fHwxNzcyMDU1OTUxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "hospitality welcome"
+    },
+    {
+      "id": "cross-sell-property",
+      "description": "Hotel room interior",
+      "imageUrl": "https://picsum.photos/seed/cross-sell-property/800/600",
+      "imageHint": "hotel room"
+    },
+    {
+      "id": "cross-sell-car",
+      "description": "Car on a scenic road",
+      "imageUrl": "https://picsum.photos/seed/cross-sell-car/800/600",
+      "imageHint": "car road"
+    },
+    {
+      "id": "cross-sell-tour",
+      "description": "Tour group in a landscape",
+      "imageUrl": "https://picsum.photos/seed/cross-sell-tour/800/600",
+      "imageHint": "tour adventure"
+    }
+  ]
+}
