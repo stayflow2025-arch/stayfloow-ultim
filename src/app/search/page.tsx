@@ -3,22 +3,19 @@
 
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import { 
-  Star, MapPin, Heart, LayoutGrid, List, 
-  Wifi, Coffee, ParkingCircle, ChevronRight, Check, Map as MapIcon,
-  Filter, Search as SearchIcon, Loader2
+  LayoutGrid, List, Map as MapIcon, 
+  Search as SearchIcon, Loader2, ChevronRight, Zap
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Separator } from '@/components/ui/separator';
-import { Card } from '@/components/ui/card';
 import AdvancedSearchBar from '@/components/search/AdvancedSearchBar';
 import { cn } from '@/lib/utils';
 import { useCurrency } from '@/context/currency-context';
-import { properties as initialProperties } from '@/lib/data';
+import { properties as initialProperties, type Property } from '@/lib/data';
+import { PropertyCard } from '@/components/property-card';
+import { FilterSidebar } from '@/components/filter-sidebar';
+import { PropertiesMap } from '@/components/properties-map';
 
 function SearchResultsContent() {
   const searchParams = useSearchParams();
@@ -26,12 +23,11 @@ function SearchResultsContent() {
   
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [showMap, setShowMap] = useState(false);
-  const [filteredResults, setFilteredResults] = useState<any[]>([]);
+  const [filteredResults, setFilteredResults] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Paramètres de recherche
   const locationParam = searchParams.get('dest') || searchParams.get('location') || '';
-  const typeParam = searchParams.get('type') || 'accommodations';
 
   useEffect(() => {
     const fetchResults = () => {
@@ -40,50 +36,34 @@ function SearchResultsContent() {
         // Simulation de la récupération des propriétés approuvées (localStorage + data.ts)
         const localApproved = JSON.parse(localStorage.getItem('approvedProperties') || '[]');
         
-        // On combine les données statiques et locales
-        // Note: Dans une app réelle, on interrogerait Firestore ici
         const combined = [...initialProperties, ...localApproved];
         
         // Déduplication par ID
         const propertyMap = new Map();
         combined.forEach(p => propertyMap.set(p.id, p));
-        const allProperties = Array.from(propertyMap.values());
+        const allProperties = Array.from(propertyMap.values()) as Property[];
 
-        // Filtrage par localisation et type
+        // Filtrage par localisation
         const results = allProperties
           .filter(p => {
             const matchesLocation = locationParam ? 
               (p.location?.toLowerCase().includes(locationParam.toLowerCase()) || 
                p.name?.toLowerCase().includes(locationParam.toLowerCase())) : true;
-            
-            // On s'adapte aux mock data qui n'ont pas forcément tous les champs
             return matchesLocation;
           })
           .sort((a, b) => (b.isBoosted ? 1 : 0) - (a.isBoosted ? 1 : 0));
 
-        // On enrichit les résultats avec des données de fallback pour l'UI si nécessaire
-        const enrichedResults = results.map(item => ({
-          ...item,
-          image: item.image || `https://picsum.photos/seed/${item.id}/600/400`,
-          ratingText: item.rating >= 9 ? 'Exceptionnel' : 'Superbe',
-          reviews: Math.floor(Math.random() * 2000) + 100,
-          price: item.price || 12500,
-          type: item.type || 'Hébergement StayFloow',
-          badge: item.isBoosted ? 'Coup de cœur' : 'Populaire',
-          amenities: item.amenities || ['Wifi gratuit', 'Climatisation'],
-          features: ['Annulation gratuite', 'Paiement sécurisé']
-        }));
-
-        setFilteredResults(enrichedResults);
+        setFilteredResults(results);
       } catch (error) {
         console.error("Erreur lors du filtrage des résultats:", error);
       } finally {
-        setLoading(false);
+        // Simulation délai de recherche
+        setTimeout(() => setLoading(false), 800);
       }
     };
 
     fetchResults();
-  }, [locationParam, typeParam]);
+  }, [locationParam]);
 
   return (
     <div className="min-h-screen bg-[#f5f5f5]">
@@ -109,52 +89,18 @@ function SearchResultsContent() {
         
         {/* Sidebar Filters */}
         <aside className="w-full lg:w-72 shrink-0 space-y-6">
-          <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xl">
-            <div className="p-6 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="font-black text-xs uppercase tracking-widest text-slate-800 flex items-center gap-2">
-                <Filter className="h-4 w-4 text-primary" /> Filtrer par :
-              </h3>
-              <Button variant="ghost" size="sm" className="text-[10px] font-black text-primary p-0 h-auto">EFFACER</Button>
-            </div>
-            
-            <div className="p-6 space-y-8">
-              {/* Budget */}
-              <FilterSection title="Budget par nuit">
-                <div className="space-y-3">
-                  <FilterItem label="0 - 5 000 DZD" count={12} />
-                  <FilterItem label="5 000 - 10 000 DZD" count={25} />
-                  <FilterItem label="10 000 - 20 000 DZD" count={42} />
-                  <FilterItem label="20 000 DZD +" count={18} />
-                </div>
-              </FilterSection>
-
-              <Separator />
-
-              {/* Stars */}
-              <FilterSection title="Étoiles">
-                <div className="space-y-3">
-                  {[5, 4, 3, 2].map(s => (
-                    <FilterItem 
-                      key={s} 
-                      label={`${s} étoiles`} 
-                      icon={<div className="flex ml-1">{Array(s).fill(0).map((_, i) => <Star key={i} className="h-2 w-2 fill-[#febb02] text-[#febb02]" />)}</div>} 
-                    />
-                  ))}
-                </div>
-              </FilterSection>
-            </div>
-          </div>
+          <FilterSidebar resultCount={filteredResults.length} />
 
           {/* Map Preview */}
           <div 
             className="relative h-48 rounded-3xl overflow-hidden cursor-pointer shadow-2xl group border-4 border-white"
             onClick={() => setShowMap(!showMap)}
           >
-            <Image src="https://picsum.photos/seed/map-search/400/300" alt="Map" fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
+            <PropertiesMap properties={filteredResults} />
             <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors flex flex-col items-center justify-center gap-2 p-4 text-center">
               <MapIcon className="h-8 w-8 text-white mb-2" />
               <div className="bg-primary text-white px-6 py-2 rounded-full font-black text-xs shadow-lg">
-                VOIR SUR LA CARTE
+                AGRANDIR LA CARTE
               </div>
             </div>
           </div>
@@ -162,20 +108,20 @@ function SearchResultsContent() {
 
         {/* Results */}
         <main className="flex-grow space-y-6">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-3xl border shadow-sm">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
             <div>
-              <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-                {locationParam ? `Résultats pour "${locationParam}"` : 'Toutes les offres'} : {filteredResults.length}
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                {locationParam ? `Hébergements à "${locationParam}"` : 'Toutes les offres'}
+                <span className="bg-primary/10 text-primary text-xs px-3 py-1 rounded-full">{filteredResults.length} résultats</span>
               </h2>
-              <p className="text-xs text-slate-500 font-medium">Prix moyens constatés : {formatPrice(14000)} / nuit</p>
+              <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">Meilleurs prix garantis sur StayFloow.com</p>
             </div>
             <div className="flex items-center gap-3">
-               <span className="text-xs font-bold text-slate-400">VUE :</span>
-               <div className="flex items-center gap-1 bg-slate-50 border p-1 rounded-xl">
+               <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 p-1.5 rounded-2xl">
                   <Button 
                     variant={viewMode === 'list' ? 'default' : 'ghost'} 
                     size="sm" 
-                    className={cn("h-9 px-3 rounded-lg", viewMode === 'list' ? "bg-primary shadow-md" : "hover:bg-slate-200")}
+                    className={cn("h-10 px-4 rounded-xl font-black", viewMode === 'list' ? "bg-primary text-white shadow-lg" : "text-slate-400 hover:text-primary")}
                     onClick={() => setViewMode('list')}
                   >
                     <List className="h-4 w-4 mr-2" /> Liste
@@ -183,7 +129,7 @@ function SearchResultsContent() {
                   <Button 
                     variant={viewMode === 'grid' ? 'default' : 'ghost'} 
                     size="sm" 
-                    className={cn("h-9 px-3 rounded-lg", viewMode === 'grid' ? "bg-primary shadow-md" : "hover:bg-slate-200")}
+                    className={cn("h-10 px-4 rounded-xl font-black", viewMode === 'grid' ? "bg-primary text-white shadow-lg" : "text-slate-400 hover:text-primary")}
                     onClick={() => setViewMode('grid')}
                   >
                     <LayoutGrid className="h-4 w-4 mr-2" /> Grille
@@ -193,26 +139,36 @@ function SearchResultsContent() {
           </div>
 
           {loading ? (
-            <div className="py-20 flex flex-col items-center justify-center text-primary">
+            <div className="py-20 flex flex-col items-center justify-center text-primary bg-white rounded-3xl border border-slate-200">
               <Loader2 className="h-12 w-12 animate-spin mb-4" />
-              <p className="font-bold animate-pulse">Recherche des meilleures offres...</p>
+              <p className="font-black animate-pulse tracking-widest text-xs">RECHERCHE DES MEILLEURES OFFRES...</p>
             </div>
           ) : (
-            <div className={cn(
-              "grid gap-6",
-              viewMode === 'grid' ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"
-            )}>
-              {filteredResults.map((item) => (
-                <ResultCard key={item.id} item={item} mode={viewMode} formatPrice={formatPrice} />
-              ))}
-            </div>
+            <>
+              {showMap && (
+                <div className="h-[500px] w-full animate-in zoom-in-95 duration-500">
+                  <PropertiesMap properties={filteredResults} />
+                </div>
+              )}
+              
+              <div className={cn(
+                "grid gap-8",
+                viewMode === 'grid' ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"
+              )}>
+                {filteredResults.map((property) => (
+                  <PropertyCard key={property.id} property={property} viewMode={viewMode} isGenius={Math.random() > 0.7} />
+                ))}
+              </div>
+            </>
           )}
 
           {!loading && filteredResults.length === 0 && (
-            <div className="py-20 text-center bg-white rounded-3xl border-2 border-dashed border-slate-200">
-               <SearchIcon className="h-16 w-16 text-slate-200 mx-auto mb-4" />
-               <h3 className="text-xl font-black text-slate-400">Aucun résultat trouvé</h3>
-               <p className="text-slate-500 max-w-xs mx-auto mt-2">Essayez de modifier vos dates ou d'élargir votre zone de recherche.</p>
+            <div className="py-24 text-center bg-white rounded-3xl border-2 border-dashed border-slate-200 shadow-inner">
+               <div className="bg-slate-50 h-20 w-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <SearchIcon className="h-10 w-10 text-slate-200" />
+               </div>
+               <h3 className="text-2xl font-black text-slate-400">Aucun résultat trouvé</h3>
+               <p className="text-slate-500 max-w-xs mx-auto mt-4 font-medium">Essayez de modifier votre recherche ou d'explorer nos <Link href="/" className="text-primary font-black underline">destinations populaires</Link>.</p>
             </div>
           )}
         </main>
@@ -221,106 +177,12 @@ function SearchResultsContent() {
   );
 }
 
-function FilterSection({ title, children }: { title: string, children: React.ReactNode }) {
-  return (
-    <div className="space-y-4">
-      <h4 className="text-[11px] font-black text-slate-900 uppercase tracking-widest">{title}</h4>
-      {children}
-    </div>
-  );
-}
-
-function FilterItem({ label, count, icon }: { label: string, count?: number, icon?: React.ReactNode }) {
-  return (
-    <div className="flex items-center justify-between group cursor-pointer">
-      <div className="flex items-center space-x-3">
-        <Checkbox id={label} className="h-5 w-5 rounded-md border-slate-300 data-[state=checked]:bg-primary" />
-        <label htmlFor={label} className="text-sm font-medium text-slate-600 leading-none flex items-center group-hover:text-primary transition-colors">
-          {label} {icon}
-        </label>
-      </div>
-      {count !== undefined && <span className="text-[10px] font-black text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full">{count}</span>}
-    </div>
-  );
-}
-
-function ResultCard({ item, mode, formatPrice }: { item: any, mode: 'list' | 'grid', formatPrice: any }) {
-  return (
-    <Card className={cn(
-      "overflow-hidden border border-slate-200 hover:border-primary/50 hover:shadow-2xl transition-all duration-500 bg-white group rounded-3xl",
-      mode === 'list' ? "flex flex-col md:flex-row md:h-72" : "flex flex-col h-full"
-    )}>
-      <div className={cn(
-        "relative shrink-0 overflow-hidden",
-        mode === 'list' ? "w-full md:w-80 h-64 md:h-full" : "w-full h-56"
-      )}>
-        <Image src={item.image} alt={item.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
-        <div className="absolute top-4 left-4">
-          <Badge className="bg-primary/90 text-white font-black border-none shadow-lg backdrop-blur-md">{item.badge}</Badge>
-        </div>
-        <Button variant="ghost" size="icon" className="absolute top-4 right-4 bg-white/90 rounded-full h-10 w-10 shadow-xl text-slate-700 hover:text-red-500 hover:bg-white">
-          <Heart className="h-5 w-5" />
-        </Button>
-      </div>
-      
-      <div className="flex-grow p-6 md:p-8 flex flex-col justify-between">
-        <div>
-          <div className="flex justify-between items-start gap-4">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-2">
-                <h3 className="text-2xl font-black text-slate-900 group-hover:text-primary transition-colors truncate tracking-tight">{item.name}</h3>
-                <div className="hidden sm:flex shrink-0">
-                  {[1, 2, 3, 4, 5].map(i => <Star key={i} className="h-3 w-3 fill-[#febb02] text-[#febb02]" />)}
-                </div>
-              </div>
-              <div className="flex items-center text-sm text-primary font-black underline mb-1 cursor-pointer">
-                <MapPin className="h-4 w-4 mr-1" /> {item.location}
-              </div>
-            </div>
-            <div className="flex flex-col items-end shrink-0">
-               <div className="bg-primary text-white font-black h-10 w-10 rounded-2xl flex items-center justify-center text-sm shadow-lg shadow-primary/20">
-                  {item.rating || 9.0}
-               </div>
-               <span className="text-[10px] font-black text-slate-400 uppercase mt-1">{item.ratingText}</span>
-            </div>
-          </div>
-          
-          <div className="mt-4 flex flex-wrap gap-4">
-            <div className="text-[11px] font-black text-slate-900 border-l-4 border-secondary pl-3 uppercase tracking-widest">
-              {item.type}
-            </div>
-            <div className="flex gap-2">
-              {item.features?.map((f: string) => (
-                <div key={f} className="text-[11px] font-bold text-green-600 flex items-center gap-1 bg-green-50 px-2 py-0.5 rounded-md">
-                  <Check className="h-3 w-3" /> {f}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="flex justify-between items-end border-t border-slate-50 pt-6 mt-6 md:mt-0">
-          <div className="space-y-1">
-             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Prix total</p>
-             <div className="text-3xl font-black text-slate-900 tracking-tighter">{formatPrice(item.price)}</div>
-          </div>
-          <Button className="bg-primary hover:bg-primary/90 h-14 px-8 font-black text-lg rounded-2xl text-white shadow-xl shadow-primary/10 active:scale-95 transition-all" asChild>
-            <Link href={`/properties/${item.id}`}>
-              Voir l'offre <ChevronRight className="ml-2 h-5 w-5" />
-            </Link>
-          </Button>
-        </div>
-      </div>
-    </Card>
-  );
-}
-
 export default function SearchPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
         <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-        <p className="font-bold text-slate-400">Chargement de la recherche...</p>
+        <p className="font-bold text-slate-400">Initialisation de la recherche...</p>
       </div>
     }>
       <SearchResultsContent />

@@ -15,12 +15,16 @@ export async function sendBookingConfirmationEmail(data: {
   bookingDetails: any;
 }) {
   console.log("SIMULATION EMAIL DE RÉSERVATION ENVOYÉ À:", data.customerEmail);
-  console.log("DÉTAILS:", data);
   return new Promise((resolve) => setTimeout(resolve, 800));
 }
 
 export async function sendPasswordResetEmail(data: { userEmail: string; userType: string }) {
   console.log("SIMULATION EMAIL RÉINITIALISATION ENVOYÉ À:", data.userEmail);
-  console.log("TYPE D'UTILISATEUR:", data.userType);
+  return new Promise((resolve) => setTimeout(resolve, 800));
+}
+
+export async function sendFavoriteReminderEmail(data: { customerName: string; customerEmail: string; property: any }) {
+  console.log("SIMULATION EMAIL FAVORIS ENVOYÉ À:", data.userEmail);
+  console.log("BIEN CONCERNÉ:", data.property.name);
   return new Promise((resolve) => setTimeout(resolve, 800));
 }
