@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState } from "react";
@@ -71,7 +70,7 @@ export default function SeoOptimizerPage() {
   return (
     <div className="container mx-auto py-10 space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-black tracking-tight text-slate-900">Optimiseur SEO StayFloow<span className="text-primary">.com</span></h1>
+        <h1 className="text-3xl font-black tracking-tight text-slate-900">Optimiseur SEO StayFloow<span className="text-secondary">.com</span></h1>
         <p className="text-muted-foreground font-medium">
           Générez des méta-données optimisées pour vos pages grâce à l'intelligence artificielle.
         </p>
