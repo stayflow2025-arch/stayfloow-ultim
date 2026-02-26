@@ -1,9 +1,9 @@
-
 import Link from 'next/link';
 import Image from 'next/image';
-import { Building, Car, Compass, Star } from 'lucide-react';
+import { Building, Car, Compass, Star, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AdvancedSearchBar from '@/components/search/AdvancedSearchBar';
+import { AiRecommender } from '@/components/ai-recommender';
 
 export default function Home() {
   const propertyTypes = [
@@ -58,20 +58,31 @@ export default function Home() {
       {/* Content */}
       <main className="max-w-7xl mx-auto px-6 -mt-10 pb-20 w-full z-20">
         
-        {/* Promotion Banner */}
-        <section className="mb-16 bg-white rounded-lg shadow-lg overflow-hidden border border-slate-200 flex flex-col md:flex-row items-center p-8 gap-8">
-          <div className="flex-1">
-            <span className="text-sm font-bold text-slate-500 mb-2 block">Offres Début 2026</span>
-            <h2 className="text-3xl font-black mb-4">-15 % minimum</h2>
-            <p className="text-slate-600 mb-6">Offres Début 2026 : réservez maintenant sur StayFloow.com et économisez sur votre prochain séjour avant le 1er avril 2026.</p>
-            <Button className="bg-primary hover:bg-primary/90 text-white px-8 py-6 text-lg font-bold">
-              Découvrir les offres
-            </Button>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
+          {/* AI Recommender - Section Vedette */}
+          <div className="lg:col-span-2">
+            <AiRecommender />
           </div>
-          <div className="w-full md:w-64 h-48 relative rounded-lg overflow-hidden shrink-0 shadow-md">
-            <Image src="https://picsum.photos/seed/promo/600/400" alt="Promotion" fill className="object-cover" />
+
+          {/* Promotion Banner */}
+          <div className="lg:col-span-1">
+            <section className="h-full bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200 p-8 flex flex-col justify-between">
+              <div>
+                <span className="text-xs font-black text-primary bg-primary/10 px-3 py-1 rounded-full mb-4 inline-block uppercase tracking-widest">Offres 2026</span>
+                <h2 className="text-3xl font-black mb-4">-15 % minimum</h2>
+                <p className="text-slate-500 font-medium leading-relaxed mb-6">Réservez dès maintenant votre aventure africaine sur StayFloow.com et profitez de réductions exceptionnelles.</p>
+              </div>
+              <div className="space-y-6">
+                <div className="w-full h-48 relative rounded-2xl overflow-hidden shadow-lg">
+                  <Image src="https://picsum.photos/seed/promo/600/400" alt="Promotion" fill className="object-cover" />
+                </div>
+                <Button className="w-full bg-primary hover:bg-primary/90 text-white h-14 text-lg font-black rounded-xl">
+                  Découvrir les offres
+                </Button>
+              </div>
+            </section>
           </div>
-        </section>
+        </div>
 
         {/* Property Types */}
         <section className="mb-16">
@@ -79,7 +90,7 @@ export default function Home() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {propertyTypes.map((type) => (
               <Link key={type.name} href={`/search?type=${type.name.toLowerCase()}`} className="group">
-                <div className="relative aspect-[4/3] rounded-lg overflow-hidden mb-3 shadow-md">
+                <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-3 shadow-md border-2 border-white">
                   <Image src={type.image} alt={type.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
                 </div>
                 <h3 className="font-bold text-lg group-hover:text-primary transition-colors">{type.name}</h3>
@@ -92,26 +103,29 @@ export default function Home() {
         {/* Unique Stays */}
         <section className="mb-16">
           <div className="mb-8">
-            <h2 className="text-2xl font-black text-slate-900">Séjournez dans nos hébergements uniques les mieux notés</h2>
-            <p className="text-slate-500">Des châteaux aux villas, des bateaux aux igloos, StayFloow.com a tout ce qu'il vous faut</p>
+            <h2 className="text-2xl font-black text-slate-900">Séjournez dans nos hébergements uniques</h2>
+            <p className="text-slate-500 font-medium">Une sélection rigoureuse des établissements les mieux notés sur StayFloow.com</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
             {uniqueStays.map((stay, i) => (
               <Link key={i} href={`/properties/${stay.id}`} className="group cursor-pointer">
-                <div className="relative aspect-[4/5] rounded-xl overflow-hidden mb-4 shadow-lg">
+                <div className="relative aspect-[4/5] rounded-3xl overflow-hidden mb-4 shadow-xl border-4 border-white">
                   <Image src={stay.image} alt={stay.name} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
-                </div>
-                <h3 className="font-black text-lg text-slate-900 truncate">{stay.name}</h3>
-                <p className="text-sm text-slate-500 mb-2">{stay.location}</p>
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="bg-primary text-white text-xs font-bold px-1.5 py-1 rounded">
-                    {stay.rating}
+                  <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-md px-2 py-1 rounded-lg">
+                    <div className="flex items-center gap-1">
+                      <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
+                      <span className="text-xs font-black text-slate-900">{stay.rating}</span>
+                    </div>
                   </div>
-                  <span className="text-sm font-bold text-slate-800">Exceptionnel</span>
                 </div>
-                <div className="text-right">
-                  <span className="text-xs text-slate-500">Dès </span>
-                  <span className="font-black text-lg text-slate-900">{stay.price}</span>
+                <h3 className="font-black text-lg text-slate-900 truncate group-hover:text-primary transition-colors">{stay.name}</h3>
+                <p className="text-sm text-slate-500 mb-2 font-medium">{stay.location}</p>
+                <div className="flex justify-between items-end">
+                  <span className="text-xs font-black text-primary bg-primary/5 px-2 py-1 rounded">ÉLITE</span>
+                  <div className="text-right">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase">Dès </span>
+                    <span className="font-black text-xl text-slate-900">{stay.price}</span>
+                  </div>
                 </div>
               </Link>
             ))}
@@ -123,15 +137,15 @@ export default function Home() {
       <footer className="bg-primary text-white py-16 px-6">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 text-sm">
           <div>
-            <Link href="/" className="text-3xl font-bold mb-6 block">
+            <Link href="/" className="text-3xl font-black mb-6 block tracking-tighter">
               StayFloow<span className="text-secondary">.com</span>
             </Link>
-            <p className="opacity-70">Le portail de voyage numéro 1 en Afrique.</p>
+            <p className="opacity-70 font-medium">Le portail de voyage numéro 1 en Afrique. Réservez hébergements, voitures et circuits.</p>
           </div>
           {['Support', 'Découvrir', 'Partenaires'].map((col) => (
             <div key={col}>
-              <h4 className="font-bold text-lg mb-6">{col}</h4>
-              <ul className="space-y-4 opacity-70">
+              <h4 className="font-black text-lg mb-6">{col}</h4>
+              <ul className="space-y-4 opacity-70 font-bold">
                 {col === 'Support' ? (
                   <>
                     <li><Link href="/contact" className="hover:text-secondary transition-colors">Contactez-nous</Link></li>
@@ -154,7 +168,7 @@ export default function Home() {
             </div>
           ))}
         </div>
-        <div className="max-w-7xl mx-auto mt-12 pt-8 border-t border-white/10 text-center opacity-50">
+        <div className="max-w-7xl mx-auto mt-12 pt-8 border-t border-white/10 text-center opacity-50 text-xs font-bold">
           <p>© 2025 StayFloow.com. Tous droits réservés.</p>
         </div>
       </footer>
