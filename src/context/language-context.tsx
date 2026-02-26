@@ -1,176 +1,114 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
 
-export type Locale = "fr" | "ar" | "en";
+export type Locale = 'fr' | 'en' | 'ar' | 'es';
 
-type Translations = {
-  [key in Locale]: {
-    [key: string]: string;
-  };
+const localeDetails: Record<Locale, { name: string; flag: string; dir: 'ltr' | 'rtl' }> = {
+    fr: { name: 'Français', flag: '🇫🇷', dir: 'ltr' },
+    en: { name: 'English', flag: '🇬🇧', dir: 'ltr' },
+    ar: { name: 'العربية', flag: '🇩🇿', dir: 'rtl' },
+    es: { name: 'Español', flag: '🇪🇸', dir: 'ltr' },
 };
 
-const translations: Translations = {
-  fr: {
-    'contact.title': 'Contactez-nous',
-    'contact.name': 'Nom complet',
-    'contact.namePlaceholder': 'Votre nom...',
-    'contact.email': 'Email professionnel',
-    'contact.emailPlaceholder': 'votre@email.com',
-    'contact.message': 'Votre message',
-    'contact.messagePlaceholder': 'Comment pouvons-nous vous aider ?',
-    'contact.send': 'Envoyer le message',
-    'contact.successTitle': 'Message envoyé !',
-    'contact.successMessage': 'Notre équipe vous répondra sous 24h.',
-    'partner_cta_title': 'Référencez votre établissement sur StayFloow.com',
-    'partner_cta_desc': 'Rejoignez des milliers de partenaires en Afrique et commencez à recevoir des réservations dès aujourd\'hui.',
-    'start': 'Commencer',
-    'add_property': 'Ajouter un hébergement',
-    'add_vehicle': 'Ajouter un véhicule',
-    'add_tour': 'Ajouter un circuit',
-    'footer_tagline': 'Votre compagnon de voyage privilégié en Afrique. Réservez hébergements, voitures et circuits en toute simplicité.',
-    'navigation': 'Navigation',
-    'accommodations': 'Hébergements',
-    'car_rental': 'Locations de voitures',
-    'tours': 'Circuits & Tours',
-    'company': 'Société',
-    'about': 'À propos',
-    'contact': 'Contact',
-    'legal': 'Légal',
-    'terms': 'Conditions d\'utilisation',
-    'privacy': 'Confidentialité',
-    'rights_reserved': 'Tous droits réservés.',
-    'become_partner': 'Devenir partenaire',
-    'login': 'Se connecter',
-    'signup': 'S\'inscrire',
-    'open_menu': 'Ouvrir le menu',
-    'recently_viewed': 'Consultés récemment',
-    'inspired_by_visit': 'Inspirés par votre visite',
-    'email_retargeting_title': 'Ne manquez aucune offre',
-    'email_retargeting_description': 'Inscrivez-vous pour recevoir des alertes de prix et des recommandations exclusives basées sur vos recherches.',
-    'email_retargeting_cta': 'M\'inscrire aux alertes',
-    'search': 'Rechercher...',
-  },
-  ar: {
-    'contact.title': 'اتصل بنا',
-    'contact.name': 'الاسم الكامل',
-    'contact.namePlaceholder': 'اسمك...',
-    'contact.email': 'البريد الإلكتروني المهني',
-    'contact.emailPlaceholder': 'votre@email.com',
-    'contact.message': 'رسالتك',
-    'contact.messagePlaceholder': 'كيف يمكننا مساعدتك؟',
-    'contact.send': 'إرسال الرسالة',
-    'contact.successTitle': 'تم إرسال الرسالة!',
-    'contact.successMessage': 'سيرد فريقنا عليك في غضون 24 ساعة.',
-    'partner_cta_title': 'قم بإدراج مؤسستك على StayFloow.com',
-    'partner_cta_desc': 'انضم إلى آلاف الشركاء في إفريقيا وابدأ في تلقي الحجوزات اليوم.',
-    'start': 'ابدأ الآن',
-    'add_property': 'إضافة سكن',
-    'add_vehicle': 'إضافة مركبة',
-    'add_tour': 'إضافة جولة',
-    'footer_tagline': 'رفيقك المفضل للسفر في إفريقيا. احجز السكن والسيارات والجولات بكل سهولة.',
-    'navigation': 'التنقل',
-    'accommodations': 'أماكن الإقامة',
-    'car_rental': 'تأجير السيارات',
-    'tours': 'الجولات والرحلات',
-    'company': 'الشركة',
-    'about': 'حول',
-    'contact': 'اتصل',
-    'legal': 'قانوني',
-    'terms': 'شروط الاستخدام',
-    'privacy': 'الخصوصية',
-    'rights_reserved': 'جميع الحقوق محفوظة.',
-    'become_partner': 'كن شريكاً',
-    'login': 'تسجيل الدخول',
-    'signup': 'إنشاء حساب',
-    'open_menu': 'افتح القائمة',
-    'recently_viewed': 'تمت مشاهدتها مؤخراً',
-    'inspired_by_visit': 'مستوحاة من زيارتك',
-    'email_retargeting_title': 'لا تفوت أي عرض',
-    'email_retargeting_description': 'اشترك لتلقي تنبيهات الأسعار والتوصيات الحصرية بناءً على عمليات البحث الخاصة بك.',
-    'email_retargeting_cta': 'سجل في التنبيهات',
-    'search': 'بحث...',
-  },
-  en: {
-    'contact.title': 'Contact Us',
-    'contact.name': 'Full Name',
-    'contact.namePlaceholder': 'Your name...',
-    'contact.email': 'Professional Email',
-    'contact.emailPlaceholder': 'votre@email.com',
-    'contact.message': 'Your message',
-    'contact.messagePlaceholder': 'How can we help you?',
-    'contact.send': 'Send Message',
-    'contact.successTitle': 'Message Sent!',
-    'contact.successMessage': 'Our team will respond within 24h.',
-    'partner_cta_title': 'List your property on StayFloow.com',
-    'partner_cta_desc': 'Join thousands of partners in Africa and start receiving bookings today.',
-    'start': 'Get Started',
-    'add_property': 'Add Accommodation',
-    'add_vehicle': 'Add a Vehicle',
-    'add_tour': 'Add a Tour',
-    'footer_tagline': 'Your preferred travel companion in Africa. Book accommodations, cars, and tours with ease.',
-    'navigation': 'Navigation',
-    'accommodations': 'Accommodations',
-    'car_rental': 'Car Rentals',
-    'tours': 'Circuits & Tours',
-    'company': 'Company',
-    'about': 'About',
-    'contact': 'Contact',
-    'legal': 'Legal',
-    'terms': 'Terms of Use',
-    'privacy': 'Privacy Policy',
-    'rights_reserved': 'All rights reserved.',
-    'become_partner': 'Become a partner',
-    'login': 'Log in',
-    'signup': 'Sign up',
-    'open_menu': 'Open menu',
-    'recently_viewed': 'Recently viewed',
-    'inspired_by_visit': 'Inspired by your visit',
-    'email_retargeting_title': 'Don\'t miss any deal',
-    'email_retargeting_description': 'Sign up to receive price alerts and exclusive recommendations based on your searches.',
-    'email_retargeting_cta': 'Sign up for alerts',
-    'search': 'Search...',
-  }
+const translations: Record<string, Record<Locale, string>> = {
+    // Header
+    "accommodations": { fr: "Hébergements", en: "Accommodations", ar: "أماكن الإقامة", es: "Alojamientos" },
+    "car_rental": { fr: "Locations de Voitures", en: "Car Rental", ar: "تأجير السيارات", es: "Alquiler de Coches" },
+    "tours": { fr: "Circuits & Tours", en: "Tours & Activities", ar: "الجولات والأنشطة", es: "Tours y Actividades" },
+    "become_partner": { fr: "Devenir Partenaire", en: "Become a Partner", ar: "كن شريكا", es: "Ser Socio" },
+    "login": { fr: "Se Connecter", en: "Log In", ar: "تسجيل الدخول", es: "Iniciar Sesión" },
+    "signup": { fr: "S'inscrire", en: "Sign Up", ar: "التسجيل", es: "Registrarse" },
+    "open_menu": { fr: "Ouvrir le menu", en: "Open menu", ar: "افتح القائمة", es: "Abrir menú" },
+
+    // Footer
+    "footer_tagline": { fr: "Votre compagnon de voyage privilégié en Afrique. Réservez hébergements, voitures et circuits en toute simplicité.", en: "Your preferred travel companion in Africa. Book accommodations, cars, and tours with ease.", ar: "رفيقك المفضل للسفر في إفريقيا. احجز السكن والسيارات والجولات بكل سهولة.", es: "Su compañero de viaje preferido en África. Reserve alojamientos, coches y tours con facilidad." },
+    "navigation": { fr: "Navigation", en: "Navigation", ar: "التنقل", es: "Navegación" },
+    "company": { fr: "Entreprise", en: "Company", ar: "الشركة", es: "Empresa" },
+    "about": { fr: "À propos", en: "About", ar: "معلومات عنا", es: "Sobre nosotros" },
+    "contact": { fr: "Contact", en: "Contact", ar: "اتصل", es: "Contacto" },
+    "legal": { fr: "Légal", en: "Legal", ar: "قانوني", es: "Legal" },
+    "terms": { fr: "Conditions d'utilisation", en: "Terms of use", ar: "شروط الاستخدام", es: "Condiciones de uso" },
+    "privacy": { fr: "Politique de confidentialité", en: "Privacy policy", ar: "سياسة الخصوصية", es: "Política de privacidad" },
+    "rights_reserved": { fr: "Tous droits réservés.", en: "All rights reserved.", ar: "كل الحقوق محفوظة.", es: "Todos los derechos reservados." },
+
+    // Partner CTA
+    "partner_cta_title": { fr: "Référencez votre établissement sur StayFloow.com", en: "Become a StayFloow Partner", ar: "كن شريكًا في StayFloow", es: "Conviértase en socio de StayFloow" },
+    "partner_cta_desc": { fr: "Rejoignez des milliers de partenaires en Afrique et commencez à recevoir des réservations dès aujourd'hui.", en: "Join thousands of partners in Africa and start receiving bookings today.", ar: "انضم إلى آلاف الشركاء في إفريقيا وابدأ في تلقي الحجوزات اليوم.", es: "Únase a miles de socios en África y comience a recibir reservas hoy." },
+    "start": { fr: "Commencer", en: "Get Started", ar: "ابدأ", es: "Empezar" },
+    "add_property": { fr: "Ajouter un hébergement", en: "Add Accommodation", ar: "إضافة سكن", es: "Añadir alojamiento" },
+    "add_vehicle": { fr: "Ajouter un véhicule", en: "Add a Vehicle", ar: "إضافة مركبة", es: "Añadir un vehículo" },
+    "add_tour": { fr: "Ajouter un circuit", en: "Add a Tour", ar: "إضافة جولة", es: "Añadir un tour" },
+
+    // Home page
+    "home_hero_title": { fr: "Votre Porte d'Entrée en Afrique", en: "Your Gateway to Africa", ar: "بوابتك إلى إفريقيا", es: "Su puerta de entrada a África" },
+    "home_hero_subtitle": { fr: "Découvrez des séjours uniques et authentiques à travers le continent.", en: "Discover unique and authentic stays across the continent.", ar: "اكتشف إقامات فريدة وأصيلة في جميع أنحاء القارة.", es: "Descubra estancias únicas y auténticas en todo el continente." },
+    "featured_stays": { fr: "Séjours Recommandés", en: "Featured Stays", ar: "إقامات مميزة", es: "Estancias destacadas" },
+    "recently_viewed": { fr: "Consultés récemment", en: "Recently viewed", ar: "تمت مشاهدتها مؤخراً", es: "Vistos recientemente" },
+    "inspired_by_visit": { fr: "Inspirés par votre visite", en: "Inspired by Your Last Visit", ar: "مستوحى من زيارتك الأخيرة", es: "Inspirado por su última visita" },
+
+    // Email Retargeting
+    "email_retargeting_title": { fr: "Ne manquez aucune offre", en: "Pick up where you left off", ar: "تابع من حيث توقفت", es: "Continúa donde lo dejaste" },
+    "email_retargeting_description": { fr: "Inscrivez-vous pour recevoir des alertes de prix et des recommandations exclusives basées sur vos recherches.", en: "Here are recommendations based on your last visit.", ar: "إليك بعض التوصيات بناءً على زيارتك الأخيرة.", es: "Aquí tienes recomendaciones basadas en tu última visita." },
+    "email_retargeting_cta": { fr: "M'inscrire aux alertes", en: "See suggestions", ar: "عرض الاقتراحات", es: "Ver sugerencias" },
+
+    // Search Form
+    "where_to": { fr: "Où allez-vous ?", en: "Where are you going?", ar: "أين تذهب؟", es: "¿A dónde vas?" },
+    "all_destinations": { fr: "Toutes les destinations", en: "All destinations", ar: "كل الوجهات", es: "Todos los destinos" },
+    "choose_dates": { fr: "Choisissez vos dates", en: "Choose your dates", ar: "اختر تواريخك", es: "Elige tus fechas" },
+    "travelers": { fr: "voyageurs", en: "travelers", ar: "مسافرون", es: "viajeros" },
+    "search": { fr: "Rechercher...", en: "Search...", ar: "بحث...", es: "Buscar..." },
+
+    // Contact page
+    "contact.title": { fr: "Contactez-nous", en: "Contact Us", ar: "اتصل بنا", es: "Contáctenos" },
+    "contact.name": { fr: "Nom complet", en: "Full Name", ar: "الاسم الكامل", es: "Nombre completo" },
+    "contact.namePlaceholder": { fr: "Votre nom...", en: "Your name...", ar: "اسمك...", es: "Tu nombre..." },
+    "contact.email": { fr: "Email professionnel", en: "Professional Email", ar: "البريد الإلكتروني المهني", es: "Correo profesional" },
+    "contact.emailPlaceholder": { fr: "votre@email.com", en: "your@email.com", ar: "بريدك الإلكتروني...", es: "tu@email.com" },
+    "contact.message": { fr: "Votre message", en: "Your message", ar: "رسالتك", es: "Tu mensaje" },
+    "contact.messagePlaceholder": { fr: "Comment pouvons-nous vous aider ?", en: "How can we help you?", ar: "كيف يمكننا مساعدتك؟", es: "¿Cómo podemos ayudarte?" },
+    "contact.send": { fr: "Envoyer le message", en: "Send Message", ar: "إرسال الرسالة", es: "Enviar mensaje" },
+    "contact.successTitle": { fr: "Message envoyé !", en: "Message Sent!", ar: "تم إرسال الرسالة!", es: "¡Mensaje enviado!" },
+    "contact.successMessage": { fr: "Notre équipe vous répondra sous 24h.", en: "Our team will respond within 24h.", ar: "سيرد فريقنا عليك في غضون 24 ساعة.", es: "Nuestro equipo responderá en 24 horas." },
 };
 
 interface LanguageContextType {
   locale: Locale;
-  setLocale: (lang: Locale) => void;
+  setLocale: (locale: Locale) => void;
   t: (key: string) => string;
+  getLocaleDetails: (loc?: Locale) => { name: string; flag: string; dir: 'ltr' | 'rtl' };
   availableLocales: Locale[];
-  getLocaleDetails: (loc?: Locale) => { name: string; flag: string };
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-export function LanguageProvider({ children }: { children: ReactNode }) {
+export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [locale, setLocale] = useState<Locale>('fr');
 
-  const availableLocales: Locale[] = ['fr', 'ar', 'en'];
+  useEffect(() => {
+    document.documentElement.lang = locale;
+    document.documentElement.dir = localeDetails[locale].dir;
+  }, [locale]);
 
-  const t = (key: string) => {
-    return translations[locale][key] || key;
-  };
+  const t = useCallback((key: string): string => {
+    return translations[key]?.[locale] || key;
+  }, [locale]);
 
   const getLocaleDetails = (loc?: Locale) => {
-    const l = loc || locale;
-    const details = {
-      fr: { name: "Français", flag: "🇫🇷" },
-      ar: { name: "العربية", flag: "🇩🇿" },
-      en: { name: "English", flag: "🇬🇧" }
-    };
-    return details[l];
+    return localeDetails[loc || locale];
   };
 
   return (
-    <LanguageContext.Provider value={{ locale, setLocale, t, availableLocales, getLocaleDetails }}>
-      {children}
+    <LanguageContext.Provider value={{ locale, setLocale, t, getLocaleDetails, availableLocales: Object.keys(localeDetails) as Locale[] }}>
+      <div dir={localeDetails[locale].dir} className="contents">
+        {children}
+      </div>
     </LanguageContext.Provider>
   );
-}
+};
 
-export function useLanguage() {
+export const useLanguage = () => {
   const context = useContext(LanguageContext);
   if (!context) throw new Error('useLanguage must be used within a LanguageProvider');
   return context;
-}
+};
