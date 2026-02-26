@@ -4,6 +4,7 @@ import './globals.css';
 import { FirebaseClientProvider } from '@/firebase';
 import { Toaster } from '@/components/ui/toaster';
 import { LanguageProvider } from '@/context/language-context';
+import { CurrencyProvider } from '@/context/currency-context';
 
 export const metadata: Metadata = {
   title: 'StayFloow.com | Réservez Hébergements, Voitures & Circuits en Afrique',
@@ -25,8 +26,10 @@ export default function RootLayout({
       <body className="font-body antialiased bg-background min-h-screen">
         <FirebaseClientProvider>
           <LanguageProvider>
-            {children}
-            <Toaster />
+            <CurrencyProvider>
+              {children}
+              <Toaster />
+            </CurrencyProvider>
           </LanguageProvider>
         </FirebaseClientProvider>
       </body>

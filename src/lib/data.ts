@@ -3,6 +3,19 @@
  * @fileOverview Données mockées pour les circuits et établissements de StayFloow.com
  */
 
+export const properties = [
+  { id: "prop-1", name: "Riad Dar Al-Andalus", rating: 9.8, location: "Fès, Maroc" },
+  { id: "prop-2", name: "Desert Cave Hotel", rating: 9.5, location: "Ghardaïa, Algérie" },
+  { id: "prop-3", name: "Villa Sahara Dream", rating: 8.8, location: "Ghardaïa, Algérie" },
+  { id: "prop-4", name: "Nile Floating Palace", rating: 9.6, location: "Louxor, Égypte" }
+];
+
+export const cars = [
+  { id: "car-1", brand: "Dacia", model: "Duster 4x4", rating: 4.8 },
+  { id: "car-2", brand: "Toyota", model: "Hilux", rating: 4.9 },
+  { id: "car-3", brand: "Renault", model: "Symbol", rating: 4.5 }
+];
+
 export const circuits = [
   {
     id: "circ-1",
