@@ -134,9 +134,55 @@ export const properties: Property[] = [
 ];
 
 export const cars = [
-  { id: "car-1", brand: "Dacia", model: "Duster 4x4", rating: 4.8 },
-  { id: "car-2", brand: "Toyota", model: "Hilux", rating: 4.9 },
-  { id: "car-3", brand: "Renault", model: "Symbol", rating: 4.5 }
+  { 
+    id: "car-1", 
+    brand: "Dacia", 
+    name: "Duster 4x4", 
+    rating: 4.8, 
+    image: "https://picsum.photos/seed/car1/400/300", 
+    pricePerDay: 7500, 
+    transmission: "Manuelle", 
+    fuel: "Diesel", 
+    seats: 5, 
+    category: "SUV",
+    isBoosted: true
+  },
+  { 
+    id: "car-2", 
+    brand: "Toyota", 
+    name: "Hilux Adventure", 
+    rating: 4.9, 
+    image: "https://picsum.photos/seed/car2/400/300", 
+    pricePerDay: 12000, 
+    transmission: "Manuelle", 
+    fuel: "Diesel", 
+    seats: 5, 
+    category: "4x4" 
+  },
+  { 
+    id: "car-3", 
+    brand: "Renault", 
+    name: "Symbol Elegance", 
+    rating: 4.5, 
+    image: "https://picsum.photos/seed/car3/400/300", 
+    pricePerDay: 4500, 
+    transmission: "Manuelle", 
+    fuel: "Essence", 
+    seats: 5, 
+    category: "Économique" 
+  },
+  { 
+    id: "car-4", 
+    brand: "Volkswagen", 
+    name: "Golf 8 GTI", 
+    rating: 4.7, 
+    image: "https://picsum.photos/seed/car4/400/300", 
+    pricePerDay: 9500, 
+    transmission: "Automatique", 
+    fuel: "Essence", 
+    seats: 5, 
+    category: "Berline" 
+  },
 ];
 
 export const carTypes = ['Économique', 'SUV / 4x4', 'Van / Minibus', 'Luxe', 'Moto'];

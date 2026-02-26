@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +9,6 @@ import { useCurrency } from "@/context/currency-context";
 import {
   CircleDollarSign,
   Eye,
-  Percent,
   Calendar,
   MessageSquare,
   Building,
@@ -29,7 +27,7 @@ const partnerListings = [
     ...c,
     id: c.id,
     itemType: "Véhicule",
-    name: `${c.brand} ${c.model}`,
+    name: `${c.brand} ${c.name}`,
     rating: c.rating
   }))
 ];
@@ -133,7 +131,7 @@ export default function PartnerDashboardPage() {
                       <TableCell className="text-right pr-6">
                         <div className="flex items-center justify-end gap-1.5 font-black text-slate-900">
                           <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
-                          <span>{listing.rating}</span>
+                          <span>{listing.rating ? listing.rating.toFixed(1) : "N/A"}</span>
                         </div>
                       </TableCell>
                     </TableRow>
