@@ -2,7 +2,7 @@
 "use client";
 
 import React, { Suspense, useState, useEffect } from 'react';
-import { notFound, useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { circuits as initialCircuits, pendingCircuits as initialPendingCircuits } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -56,17 +56,11 @@ function CircuitBookingForm() {
     });
 
     useEffect(() => {
-        const id = searchParams.get('id') || "circ-1"; // Fallback pour démo
-        
-        try {
-            const all = [...initialCircuits, ...initialPendingCircuits];
-            const found = all.find(p => String(p.id) === String(id));
-            
-            if (found) setCircuit(found);
-            else setCircuit(initialCircuits[0]); // Demo fallback
-        } catch (e) {
-            console.error("Erreur de chargement:", e);
-        }
+        const id = searchParams.get('id') || "circ-1";
+        const all = [...initialCircuits, ...initialPendingCircuits];
+        const found = all.find(p => String(p.id) === String(id));
+        if (found) setCircuit(found);
+        else setCircuit(initialCircuits[0]);
     }, [searchParams]);
 
     const form = useForm<BookingFormValues>({
@@ -202,7 +196,7 @@ function CircuitBookingForm() {
                                             <div>
                                                 <RadioGroupItem value="paypal" id="paypal" className="peer sr-only" />
                                                 <Label htmlFor="paypal" className="flex flex-col items-center p-6 border-2 rounded-xl cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 hover:bg-slate-50 transition-all">
-                                                    <div className="mb-2 h-6 w-16 bg-slate-200 rounded animate-pulse" /> {/* Placeholder for PayPal */}
+                                                    <div className="mb-2 h-6 w-16 bg-slate-200 rounded animate-pulse" /> 
                                                     <span className="font-bold">PayPal</span>
                                                 </Label>
                                             </div>
