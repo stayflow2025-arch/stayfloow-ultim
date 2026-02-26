@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -39,7 +40,7 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="bg-primary text-white pt-16 pb-32 px-6">
+      <section className="bg-primary text-white pt-16 pb-36 px-6">
         <div className="max-w-7xl mx-auto space-y-6">
           <h1 className="text-5xl md:text-6xl font-black tracking-tighter max-w-3xl leading-tight">
             {t("hero_title")}
@@ -56,7 +57,7 @@ export default function Home() {
       </section>
 
       {/* Container de la barre de recherche remonté sur la ligne verte */}
-      <div className="max-w-7xl mx-auto w-full px-6 -mt-12 z-30 mb-12">
+      <div className="max-w-7xl mx-auto w-full px-6 -mt-28 z-30 mb-12">
         <AdvancedSearchBar />
       </div>
 
