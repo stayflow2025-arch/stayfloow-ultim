@@ -49,6 +49,7 @@ const translations: Translations = {
     'email_retargeting_title': 'Ne manquez aucune offre',
     'email_retargeting_description': 'Inscrivez-vous pour recevoir des alertes de prix et des recommandations exclusives basées sur vos recherches.',
     'email_retargeting_cta': 'M\'inscrire aux alertes',
+    'search': 'Rechercher...',
   },
   ar: {
     'contact.title': 'اتصل بنا',
@@ -88,6 +89,7 @@ const translations: Translations = {
     'email_retargeting_title': 'لا تفوت أي عرض',
     'email_retargeting_description': 'اشترك لتلقي تنبيهات الأسعار والتوصيات الحصرية بناءً على عمليات البحث الخاصة بك.',
     'email_retargeting_cta': 'سجل في التنبيهات',
+    'search': 'بحث...',
   },
   en: {
     'contact.title': 'Contact Us',
@@ -127,6 +129,7 @@ const translations: Translations = {
     'email_retargeting_title': 'Don\'t miss any deal',
     'email_retargeting_description': 'Sign up to receive price alerts and exclusive recommendations based on your searches.',
     'email_retargeting_cta': 'Sign up for alerts',
+    'search': 'Search...',
   }
 };
 
