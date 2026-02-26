@@ -7,10 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   Building, Car, Compass, MapPin, Upload, CheckCircle2, 
-  ChevronRight, ChevronLeft, Loader2, Wand2, X, Plus, Info, TrendingUp, AlertCircle
+  ChevronRight, ChevronLeft, Loader2, Wand2, X, Plus, Minus, Info, TrendingUp, AlertCircle, Bed
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { generatePartnerDescription } from '@/ai/flows/partner-description-generator';
@@ -25,6 +25,13 @@ interface Props {
   initialCategory: 'accommodation' | 'car_rental' | 'circuit';
 }
 
+interface BedConfig {
+  id: string;
+  name: string;
+  desc: string;
+  count: number;
+}
+
 export default function PartnerOnboardingForm({ initialCategory }: Props) {
   const { toast } = useToast();
   const db = useFirestore();
@@ -35,6 +42,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [photos, setPhotos] = useState<string[]>([]);
   const [recommendation, setRecommendation] = useState<PriceRecommendationOutput | null>(null);
+  const [showMoreBeds, setShowMoreBeds] = useState(false);
   
   const [formData, setFormData] = useState({
     firstName: '',
@@ -52,6 +60,15 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
     capacity: { min: 1, max: 10 },
     inventory: 1,
     rules: [] as string[],
+    beds: [
+      { id: 'single', name: 'single_bed', desc: 'single_bed_desc', count: 0 },
+      { id: 'double', name: 'double_bed', desc: 'double_bed_desc', count: 0 },
+      { id: 'king', name: 'king_bed', desc: 'king_bed_desc', count: 0 },
+      { id: 'grand_king', name: 'grand_king_bed', desc: 'grand_king_bed_desc', count: 0 },
+      { id: 'bunk', name: 'bunk_bed', desc: 'bunk_bed_desc', count: 0 },
+      { id: 'sofa', name: 'sofa_bed', desc: 'sofa_bed_desc', count: 0 },
+      { id: 'futon', name: 'futon', desc: 'futon_desc', count: 0 },
+    ] as BedConfig[],
   });
 
   const steps = [
@@ -63,6 +80,15 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
 
   const handleNext = () => setCurrentStep(prev => Math.min(prev + 1, steps.length));
   const handlePrev = () => setCurrentStep(prev => Math.max(prev - 1, 1));
+
+  const updateBedCount = (id: string, delta: number) => {
+    setFormData(prev => ({
+      ...prev,
+      beds: prev.beds.map(bed => 
+        bed.id === id ? { ...bed, count: Math.max(0, bed.count + delta) } : bed
+      )
+    }));
+  };
 
   const handleAIEnhance = async () => {
     if (!formData.listingName || !formData.address) {
@@ -136,7 +162,8 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
           amenities: formData.amenities,
           capacity: formData.capacity,
           inventory: formData.inventory,
-          rules: formData.rules
+          rules: formData.rules,
+          beds: formData.beds.filter(b => b.count > 0)
         },
         price: parseFloat(formData.price),
         photos: photos,
@@ -226,8 +253,11 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
       }
     }[initialCategory];
 
+    const visibleBeds = showMoreBeds ? formData.beds : formData.beds.slice(0, 4);
+
     return (
       <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4">
+        {/* Type d'hébergement */}
         <div className="space-y-6">
           <Label className="font-black text-xl text-slate-900">{t('listing_type_label')} *</Label>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -248,6 +278,58 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
           </div>
         </div>
 
+        {/* Configuration des lits - STYLE BOOKING PHOTO */}
+        {initialCategory === 'accommodation' && (
+          <div className="space-y-6 bg-white p-8 rounded-3xl border-2 border-slate-100 shadow-sm">
+            <h3 className="text-3xl font-black text-slate-900 mb-8">{t('room_setup_title')} 1</h3>
+            <div className="space-y-8">
+              <p className="text-slate-600 font-medium">{t('bed_types_question')}</p>
+              
+              <div className="space-y-6">
+                {visibleBeds.map((bed) => (
+                  <div key={bed.id} className="flex items-center justify-between group">
+                    <div className="flex items-center gap-6">
+                      <div className="bg-slate-50 p-3 rounded-xl group-hover:bg-primary/5 transition-colors">
+                        <Bed className="h-8 w-8 text-slate-400 group-hover:text-primary transition-colors" />
+                      </div>
+                      <div>
+                        <p className="font-black text-slate-900">{t(bed.name)}</p>
+                        <p className="text-xs text-slate-400 font-medium">{t(bed.desc)}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-4 bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
+                      <button 
+                        onClick={() => updateBedCount(bed.id, -1)}
+                        disabled={bed.count === 0}
+                        className="h-10 w-10 flex items-center justify-center rounded-md hover:bg-slate-50 text-primary disabled:opacity-30 transition-colors"
+                      >
+                        <Minus className="h-5 w-5" />
+                      </button>
+                      <span className="w-8 text-center font-black text-lg text-slate-900">{bed.count}</span>
+                      <button 
+                        onClick={() => updateBedCount(bed.id, 1)}
+                        className="h-10 w-10 flex items-center justify-center rounded-md hover:bg-slate-50 text-primary transition-colors"
+                      >
+                        <Plus className="h-5 w-5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <button 
+                onClick={() => setShowMoreBeds(!showMoreBeds)}
+                className="text-primary font-bold flex items-center gap-2 hover:underline transition-all pt-4"
+              >
+                {showMoreBeds ? <ChevronLeft className="h-4 w-4 rotate-90" /> : <ChevronRight className="h-4 w-4 rotate-90" />}
+                {showMoreBeds ? t('show_less_beds') : t('show_more_beds')}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Équipements */}
         <div className="space-y-6">
           <Label className="font-black text-xl text-slate-900">{t('amenities_label')} *</Label>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-50/50 p-8 rounded-3xl border-2 border-slate-100">
@@ -265,6 +347,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
           </div>
         </div>
 
+        {/* Description */}
         <div className="space-y-6">
           <div className="flex justify-between items-end">
             <Label className="font-black text-xl text-slate-900">{t('description_label')}</Label>
