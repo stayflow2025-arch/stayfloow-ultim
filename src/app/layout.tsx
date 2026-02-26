@@ -2,11 +2,10 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { FirebaseClientProvider } from '@/firebase';
 import { Toaster } from '@/components/ui/toaster';
-import { LanguageProvider } from '@/context/language-context';
-import { CurrencyProvider } from '@/context/currency-context';
 import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { ChatLoader } from '@/components/chat-loader';
+import { Providers } from '@/components/providers';
 
 export const metadata: Metadata = {
   title: 'StayFloow.com | Réservez Hébergements, Voitures & Circuits en Afrique',
@@ -27,17 +26,15 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased bg-background min-h-screen flex flex-col">
         <FirebaseClientProvider>
-          <LanguageProvider>
-            <CurrencyProvider>
-              <Header />
-              <div className="flex-grow">
-                {children}
-              </div>
-              <Footer />
-              <ChatLoader />
-              <Toaster />
-            </CurrencyProvider>
-          </LanguageProvider>
+          <Providers>
+            <Header />
+            <div className="flex-grow">
+              {children}
+            </div>
+            <Footer />
+            <ChatLoader />
+            <Toaster />
+          </Providers>
         </FirebaseClientProvider>
       </body>
     </html>
