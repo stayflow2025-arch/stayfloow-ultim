@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Car, ShieldCheck, MapPin, Gauge, Fuel, Users } from 'lucide-react';
 import AdvancedSearchBar from '@/components/search/AdvancedSearchBar';
 
@@ -120,7 +121,9 @@ export default function CarsPage() {
                       <span className="text-xs text-slate-400">À partir de</span>
                       <p className="font-black text-primary">{car.price} <span className="text-[10px] text-slate-500">/jour</span></p>
                     </div>
-                    <Button size="sm" className="bg-primary hover:bg-primary/90 text-white font-bold h-8">Réserver</Button>
+                    <Button size="sm" className="bg-primary hover:bg-primary/90 text-white font-bold h-8" asChild>
+                      <Link href="/cars/book">Réserver</Link>
+                    </Button>
                   </div>
                 </div>
               </div>
