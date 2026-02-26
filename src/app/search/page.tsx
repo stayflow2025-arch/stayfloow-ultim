@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, Suspense } from 'react';
@@ -11,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import AdvancedSearchBar from '@/components/search/AdvancedSearchBar';
 import { cn } from '@/lib/utils';
 import { useCurrency } from '@/context/currency-context';
+import { useLanguage } from '@/context/language-context';
 import { properties as initialProperties, type Property } from '@/lib/data';
 import { PropertyCard } from '@/components/property-card';
 import { FilterSidebar } from '@/components/filter-sidebar';
@@ -20,6 +22,7 @@ import { EmailRetargetingCard } from '@/components/email-retargeting-card';
 function SearchResultsContent() {
   const searchParams = useSearchParams();
   const { formatPrice } = useCurrency();
+  const { t } = useLanguage();
   
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [showMap, setShowMap] = useState(false);
@@ -67,21 +70,10 @@ function SearchResultsContent() {
 
   return (
     <div className="min-h-screen bg-[#f5f5f5]">
-      {/* Search Header */}
-      <div className="bg-primary pt-6 pb-12 px-6 shadow-xl sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto flex flex-col gap-6">
-          <div className="flex justify-between items-center">
-            <Link href="/" className="text-3xl font-black text-white tracking-tighter italic hover:opacity-90 transition-opacity">StayFloow.com</Link>
-            <div className="flex gap-4">
-               <Button variant="ghost" className="text-white font-black">DZD</Button>
-               <Button variant="outline" className="bg-transparent text-white border-white hover:bg-white hover:text-primary font-black transition-all rounded-xl" asChild>
-                  <Link href="/auth/login">Se connecter</Link>
-               </Button>
-            </div>
-          </div>
-          <div className="max-w-5xl mx-auto w-full">
-            <AdvancedSearchBar />
-          </div>
+      {/* Search Header - Simplified to only show search bar */}
+      <div className="bg-primary pt-8 pb-12 px-6 shadow-xl">
+        <div className="max-w-5xl mx-auto w-full">
+          <AdvancedSearchBar />
         </div>
       </div>
 
@@ -100,7 +92,7 @@ function SearchResultsContent() {
             <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors flex flex-col items-center justify-center gap-2 p-4 text-center">
               <MapIcon className="h-8 w-8 text-white mb-2" />
               <div className="bg-primary text-white px-6 py-2 rounded-full font-black text-xs shadow-lg">
-                AGRANDIR LA CARTE
+                {t('expand_map') || 'AGRANDIR LA CARTE'}
               </div>
             </div>
           </div>
@@ -113,10 +105,10 @@ function SearchResultsContent() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
             <div>
               <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                {locationParam ? `Hébergements à "${locationParam}"` : 'Toutes les offres'}
-                <span className="bg-primary/10 text-primary text-xs px-3 py-1 rounded-full">{filteredResults.length} résultats</span>
+                {locationParam ? `${t('accommodations') || 'Hébergements'} à "${locationParam}"` : t('all_offers') || 'Toutes les offres'}
+                <span className="bg-primary/10 text-primary text-xs px-3 py-1 rounded-full">{filteredResults.length} {t('results') || 'résultats'}</span>
               </h2>
-              <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">Meilleurs prix garantis sur StayFloow.com</p>
+              <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">{t('best_price_guaranteed') || 'Meilleurs prix garantis sur StayFloow.com'}</p>
             </div>
             <div className="flex items-center gap-3">
                <div className="flex items-center gap-1 bg-slate-50 border border-slate-200 p-1.5 rounded-2xl">
@@ -126,7 +118,7 @@ function SearchResultsContent() {
                     className={cn("h-10 px-4 rounded-xl font-black", viewMode === 'list' ? "bg-primary text-white shadow-lg" : "text-slate-400 hover:text-primary")}
                     onClick={() => setViewMode('list')}
                   >
-                    <List className="h-4 w-4 mr-2" /> Liste
+                    <List className="h-4 w-4 mr-2" /> {t('list') || 'Liste'}
                   </Button>
                   <Button 
                     variant={viewMode === 'grid' ? 'default' : 'ghost'} 
@@ -134,7 +126,7 @@ function SearchResultsContent() {
                     className={cn("h-10 px-4 rounded-xl font-black", viewMode === 'grid' ? "bg-primary text-white shadow-lg" : "text-slate-400 hover:text-primary")}
                     onClick={() => setViewMode('grid')}
                   >
-                    <LayoutGrid className="h-4 w-4 mr-2" /> Grille
+                    <LayoutGrid className="h-4 w-4 mr-2" /> {t('grid') || 'Grille'}
                   </Button>
                </div>
             </div>
@@ -143,7 +135,7 @@ function SearchResultsContent() {
           {loading ? (
             <div className="py-20 flex flex-col items-center justify-center text-primary bg-white rounded-3xl border border-slate-200">
               <Loader2 className="h-12 w-12 animate-spin mb-4" />
-              <p className="font-black animate-pulse tracking-widest text-xs">RECHERCHE DES MEILLEURES OFFRES...</p>
+              <p className="font-black animate-pulse tracking-widest text-xs uppercase">{t('searching_deals') || 'RECHERCHE DES MEILLEURES OFFRES...'}</p>
             </div>
           ) : (
             <>
@@ -169,8 +161,8 @@ function SearchResultsContent() {
                <div className="bg-slate-50 h-20 w-20 rounded-full flex items-center justify-center mx-auto mb-6">
                   <SearchIcon className="h-10 w-10 text-slate-200" />
                </div>
-               <h3 className="text-2xl font-black text-slate-400">Aucun résultat trouvé</h3>
-               <p className="text-slate-500 max-w-xs mx-auto mt-4 font-medium">Essayez de modifier votre recherche ou d'explorer nos <Link href="/" className="text-primary font-black underline">destinations populaires</Link>.</p>
+               <h3 className="text-2xl font-black text-slate-400">{t('no_results') || 'Aucun résultat trouvé'}</h3>
+               <p className="text-slate-500 max-w-xs mx-auto mt-4 font-medium">{t('no_results_desc') || "Essayez de modifier votre recherche ou d'explorer nos destinations populaires."}</p>
             </div>
           )}
         </main>
@@ -184,7 +176,7 @@ export default function SearchPage() {
     <Suspense fallback={
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
         <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-        <p className="font-bold text-slate-400">Initialisation de la recherche...</p>
+        <p className="font-bold text-slate-400">Chargement...</p>
       </div>
     }>
       <SearchResultsContent />
