@@ -16,10 +16,10 @@ const translations: Record<string, Record<Locale, string>> = {
     "accommodations": { fr: "Hébergements", en: "Accommodations", ar: "أماكن الإقامة", es: "Alojamientos" },
     "car_rental": { fr: "Voitures", en: "Car Rental", ar: "تأجير السيارات", es: "Alquiler de Coches" },
     "tours": { fr: "Circuits", en: "Tours & Activities", ar: "الجولات والأنشطة", es: "Tours y Actividades" },
-    "list_property": { fr: "Listez votre bien", en: "List your property", ar: "أضف عقارك", es: "Publica tu propriété" },
+    "list_property": { fr: "Listez votre bien", en: "List your property", ar: "أضf عقارك", es: "Publica tu propriété" },
     "login": { fr: "Se connecter", en: "Log In", ar: "تسجيل الدخول", es: "Iniciar sesión" },
     "register": { fr: "S'inscrire", en: "Sign Up", ar: "إنشاء حساب", es: "Registrarse" },
-    "profile": { fr: "Profil", en: "Profile", ar: "الملف الشخصi", es: "Perfil" },
+    "profile": { fr: "Profil", en: "Profile", ar: "الملف الشخصي", es: "Perfil" },
     "dashboard": { fr: "Tableau de bord", en: "Dashboard", ar: "لوحة التحكم", es: "Panel" },
     "logout": { fr: "Déconnexion", en: "Log Out", ar: "تسجيل الخروج", es: "Cerrar sesión" },
     "back": { fr: "Retour", en: "Back", ar: "رجوع", es: "Volver" },
@@ -46,6 +46,13 @@ const translations: Record<string, Record<Locale, string>> = {
     "futon_desc": { fr: "Dimensions variables", en: "Variable dimensions", ar: "أبعاد متغيرة", es: "Dimensiones variables" },
     "show_more_beds": { fr: "Plus de types de lits", en: "More bed types", ar: "المزيد من أنواع الأسرة", es: "Más tipos de camas" },
     "show_less_beds": { fr: "Moins de types de lits", en: "Less bed types", ar: "أنواع أسرة أقل", es: "Menos types de camas" },
+
+    // Property Composition
+    "property_composition_title": { fr: "Composition du logement", en: "Property Composition", ar: "تكوين السكن", es: "Composición de la vivienda" },
+    "bedrooms_count": { fr: "Nombre de chambres", en: "Number of bedrooms", ar: "عدد الغرف", es: "Número de habitaciones" },
+    "bathrooms_count": { fr: "Nombre de salles de bain", en: "Number of bathrooms", ar: "عدد الحمامات", es: "Número de baños" },
+    "kitchens_count": { fr: "Nombre de cuisines", en: "Number of kitchens", ar: "عدد المطابخ", es: "Número de cocinas" },
+    "toilets_count": { fr: "Nombre de toilettes", en: "Number of toilets", ar: "عدد المراحيض", es: "Número de aseos" },
 
     // Room Types
     "room_type_label": { fr: "Type de chambre", en: "Room Type", ar: "نوع الغرفة", es: "Tipo de habitación" },
@@ -77,8 +84,8 @@ const translations: Record<string, Record<Locale, string>> = {
     "unique_stays_title": { fr: "Séjournez dans nos hébergements uniques", en: "Stay in our unique accommodations", ar: "أقم في أماكن إقامتنا الفريدة", es: "Quédate en nuestros alojamientos únicos" },
     "unique_stays_desc": { fr: "Une sélection rigoureuse des établissements les mieux notés sur StayFloow.com", en: "A careful selection of top-rated properties on StayFloow.com", ar: "مجموعة مختارة بعناية من أفضل العقارات تقييمًا على StayFloow.com", es: "Una cuidada selección de las propiedades mejor valoradas en StayFloow.com" },
     "from_price": { fr: "À partir de", en: "Starting from", ar: "ابتداءً من", es: "Desde" },
-    "per_night": { fr: "nuit", en: "night", ar: "ليلة", es: "noche" },
-    "recently_viewed": { fr: "Consultés récemment", en: "Recently viewed", ar: "تمت melanch مشاهدتها مؤخراً", es: "Vistos récemment" },
+    "per_night": { fr: "nuit", en: "night", ar: "ليلة", es: "نoche" },
+    "recently_viewed": { fr: "Consultés récemment", en: "Recently viewed", ar: "تمت مشاهدتها مؤخراً", es: "Vistos récemment" },
     "inspired_by_visit": { fr: "Inspirés par votre visite", en: "Inspired by your visit", ar: "مستوحى من زيارتك", es: "Inspirado por tu visita" },
 
     // Search Bar
@@ -124,10 +131,7 @@ const translations: Record<string, Record<Locale, string>> = {
     "back_home_btn": { fr: "Retour à l'accueil", en: "Back to Home", ar: "العودة للرئيسية", es: "Volver al inicio" },
 
     // Amenities & Types (Used in filters and cards)
-    "Hôtel ★★★": { fr: "Hôtel ★★★", en: "Hotel ★★★", ar: "فندق ★★★", es: "Hotel ★★★" },
-    "Hôtel ★★★★": { fr: "Hôtel ★★★★", en: "Hotel ★★★★", ar: "فندق ★★★★", es: "Hotel ★★★★" },
-    "Hôtel ★★★★★": { fr: "Hôtel ★★★★★", en: "Hotel ★★★★★", ar: "فندق ★★★★★", es: "Hotel ★★★★★" },
-    "Riad": { fr: "Riad", en: "Riad", ar: "رياض", es: "Riad" },
+    "Hôtel": { fr: "Hôtel", en: "Hotel", ar: "فندق", es: "Hotel" },
     "Villa": { fr: "Villa", en: "Villa", ar: "فيلا", es: "Villa" },
     "Appartement": { fr: "Appartement", en: "Apartment", ar: "شقة", es: "Apartamento" },
     "Studio": { fr: "Studio", en: "Studio", ar: "ستوديو", es: "Studio" },

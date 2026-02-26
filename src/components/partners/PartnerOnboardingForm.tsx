@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { 
   Building, Car, Compass, MapPin, Upload, CheckCircle2, 
-  ChevronRight, ChevronLeft, Loader2, Wand2, X, Plus, Minus, Info, TrendingUp, AlertCircle, Bed, Star, Users
+  ChevronRight, ChevronLeft, Loader2, Wand2, X, Plus, Minus, Info, TrendingUp, AlertCircle, Bed, Star, Users, Home
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { generatePartnerDescription } from '@/ai/flows/partner-description-generator';
@@ -57,12 +57,13 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
     description: '',
     price: '',
     type: [] as string[],
-    roomType: 'double_room', // Default choice for hotel room
+    roomType: 'double_room',
     stars: 'N/A',
     isManagementGroup: 'no',
     freeCancellation48h: false,
     amenities: [] as string[],
     capacity: { adults: 2, children: 0 },
+    composition: { bedrooms: 1, bathrooms: 1, kitchens: 1, toilets: 1 },
     inventory: 1,
     rules: [] as string[],
     beds: [
@@ -101,6 +102,16 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
       capacity: {
         ...prev.capacity,
         [key]: Math.max(0, prev.capacity[key] + delta)
+      }
+    }));
+  };
+
+  const updateComposition = (key: keyof typeof formData.composition, delta: number) => {
+    setFormData(prev => ({
+      ...prev,
+      composition: {
+        ...prev.composition,
+        [key]: Math.max(0, prev.composition[key] + delta)
       }
     }));
   };
@@ -191,6 +202,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
           freeCancellation48h: formData.freeCancellation48h,
           amenities: formData.amenities,
           capacity: formData.capacity,
+          composition: formData.composition,
           inventory: formData.inventory,
           rules: formData.rules,
           beds: formData.beds.filter(b => b.count > 0)
@@ -270,8 +282,8 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
   const renderStep3 = () => {
     const options = {
       accommodation: {
-        types: ['Hôtel ★★★', 'Hôtel ★★★★', 'Hôtel ★★★★★'],
-        amenities: ['WiFi gratuit', 'Piscine', 'Climatisation', 'Parking gratuit', 'Cuisine équipée', 'Salle de bain privée', 'Toilettes', 'Produits de toilette', 'Barbecue', 'Terrasse', 'Jardin', 'Vue mer']
+        types: ['Hôtel', 'Villa', 'Appartement', 'Studio'],
+        amenities: ['WiFi gratuit', 'Piscine', 'Climatisation', 'Parking gratuit', 'Cuisine équipée', 'Cuisine', 'Salle de bain privée', 'Salle de bain', 'Toilettes', 'Produits de toilette', 'Barbecue', 'Terrasse', 'Jardin', 'Vue mer']
       },
       car_rental: {
         types: ['Économique', 'SUV / 4x4', 'Van / Minibus', 'Luxe', 'Moto'],
@@ -287,29 +299,59 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
 
     return (
       <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4">
-        {/* Type d'hébergement - Sélection UNIQUE par icônes */}
+        {/* Type d'hébergement */}
         <div className="space-y-6">
           <Label className="font-black text-xl text-slate-900">{t('listing_type_label')} *</Label>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {options.types.map(opt => (
               <div 
                 key={opt}
                 onClick={() => setFormData(prev => ({ ...prev, type: [opt] }))}
                 className={cn(
-                  "p-8 rounded-2xl border-2 text-center cursor-pointer text-base font-black transition-all shadow-sm hover:shadow-xl",
+                  "p-6 rounded-2xl border-2 text-center cursor-pointer transition-all shadow-sm flex flex-col items-center gap-3",
                   formData.type.includes(opt) 
-                    ? "border-primary bg-primary/5 text-primary ring-4 ring-primary/10 scale-105" 
+                    ? "border-primary bg-primary/5 text-primary scale-105" 
                     : "border-slate-100 bg-white hover:border-slate-200"
                 )}
               >
-                {t(opt)}
+                {opt === 'Hôtel' && <Building className="h-8 w-8" />}
+                {opt === 'Villa' && <Home className="h-8 w-8" />}
+                {opt === 'Appartement' && <Building className="h-8 w-8" />}
+                {opt === 'Studio' && <Home className="h-8 w-8" />}
+                <span className="font-black text-sm">{t(opt)}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* ETOILES & GROUPE */}
+        {/* Composition du logement (Pour Villa/Appartement/Studio) */}
         {initialCategory === 'accommodation' && (
+          <div className="space-y-6 bg-white p-8 rounded-3xl border-2 border-slate-100 shadow-sm">
+            <h3 className="text-xl font-black text-slate-900 flex items-center gap-3">
+              <Home className="h-6 w-6 text-primary" /> {t('property_composition_title')}
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {[
+                { id: 'bedrooms', label: 'bedrooms_count' },
+                { id: 'bathrooms', label: 'bathrooms_count' },
+                { id: 'kitchens', label: 'kitchens_count' },
+                { id: 'toilets', label: 'toilets_count' }
+              ].map((comp) => (
+                <div key={comp.id} className="space-y-4">
+                  <Label className="font-bold text-slate-600">{t(comp.label)}</Label>
+                  <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-xl border border-slate-200">
+                    <button onClick={() => updateComposition(comp.id as any, -1)} className="h-10 w-10 bg-white shadow-sm rounded-lg flex items-center justify-center text-primary"><Minus className="h-4 w-4"/></button>
+                    <span className="flex-1 text-center font-black text-lg">{formData.composition[comp.id as keyof typeof formData.composition]}</span>
+                    <button onClick={() => updateComposition(comp.id as any, 1)} className="h-10 w-10 bg-white shadow-sm rounded-lg flex items-center justify-center text-primary"><Plus className="h-4 w-4"/></button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ETOILES & GROUPE (Optionnel pour Hôtels) */}
+        {initialCategory === 'accommodation' && formData.type.includes('Hôtel') && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 bg-white p-8 rounded-3xl border-2 border-slate-100 shadow-sm">
             <div className="space-y-6">
               <Label className="font-black text-lg text-slate-900">{t('stars_question')}</Label>
@@ -345,36 +387,6 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
                 </div>
               </RadioGroup>
             </div>
-          </div>
-        )}
-
-        {/* TYPE DE CHAMBRE (NOUVEAU) */}
-        {initialCategory === 'accommodation' && (
-          <div className="space-y-6 bg-white p-8 rounded-3xl border-2 border-slate-100 shadow-sm">
-            <Label className="font-black text-xl text-slate-900 flex items-center gap-3">
-              <Building className="h-6 w-6 text-primary" /> {t('room_type_label')} *
-            </Label>
-            <RadioGroup 
-              value={formData.roomType} 
-              onValueChange={(val) => setFormData({...formData, roomType: val})} 
-              className="grid grid-cols-1 md:grid-cols-3 gap-4"
-            >
-              {[
-                { id: 'single_room', label: 'single_room' },
-                { id: 'double_room', label: 'double_room' },
-                { id: 'suite_room', label: 'suite_room' }
-              ].map((rt) => (
-                <div key={rt.id}>
-                  <RadioGroupItem value={rt.id} id={rt.id} className="peer sr-only" />
-                  <Label 
-                    htmlFor={rt.id} 
-                    className="flex flex-col items-center p-6 border-2 rounded-xl cursor-pointer peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/5 hover:bg-slate-50 transition-all font-bold text-slate-700"
-                  >
-                    {t(rt.label)}
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
           </div>
         )}
 
@@ -464,7 +476,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
           </div>
         )}
 
-        {/* Équipements & Annulation (SYSTÈME DE COCHE) */}
+        {/* Équipements & Annulation */}
         <div className="space-y-8">
           <div className="flex justify-between items-center">
             <Label className="font-black text-xl text-slate-900">{t('amenities_label')} *</Label>
