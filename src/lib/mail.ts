@@ -1,6 +1,6 @@
 
 /**
- * @fileOverview Simulateur d'envoi d'emails pour les réservations StayFloow.com
+ * @fileOverview Simulateur d'envoi d'emails pour StayFloow.com
  */
 
 export async function sendBookingConfirmationEmail(data: {
@@ -14,8 +14,13 @@ export async function sendBookingConfirmationEmail(data: {
   hostPhone: string;
   bookingDetails: any;
 }) {
-  console.log("SIMULATION EMAIL ENVOYÉ À:", data.customerEmail);
-  console.log("DÉTAILS DE LA RÉSERVATION:", data);
-  // Simule un délai réseau
+  console.log("SIMULATION EMAIL DE RÉSERVATION ENVOYÉ À:", data.customerEmail);
+  console.log("DÉTAILS:", data);
+  return new Promise((resolve) => setTimeout(resolve, 800));
+}
+
+export async function sendPasswordResetEmail(data: { userEmail: string; userType: string }) {
+  console.log("SIMULATION EMAIL RÉINITIALISATION ENVOYÉ À:", data.userEmail);
+  console.log("TYPE D'UTILISATEUR:", data.userType);
   return new Promise((resolve) => setTimeout(resolve, 800));
 }
