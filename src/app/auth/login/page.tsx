@@ -1,10 +1,10 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
 import { useAuth } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
@@ -20,13 +20,26 @@ import {
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, LogIn } from "lucide-react";
+import { Loader2, LogIn, ArrowLeft } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
   const auth = useAuth();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
+
+  // Redirection automatique si déjà connecté
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        router.push("/");
+      } else {
+        setCheckingAuth(false);
+      }
+    });
+    return () => unsubscribe();
+  }, [auth, router]);
 
   const form = useForm({
     defaultValues: {
@@ -57,31 +70,44 @@ export default function LoginPage() {
     }
   };
 
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          <p className="text-slate-400 font-bold animate-pulse">Vérification de la session...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
-      <div className="max-w-md w-full bg-white p-8 border rounded-2xl shadow-xl">
-        <div className="text-center mb-8">
-          <Link href="/" className="text-3xl font-black text-primary mb-2 block">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
+      <div className="max-w-md w-full bg-white p-8 border border-slate-100 rounded-3xl shadow-2xl animate-in fade-in zoom-in-95 duration-500">
+        <div className="text-center mb-10">
+          <Link href="/" className="text-4xl font-black text-primary mb-4 block hover:opacity-80 transition-opacity tracking-tighter">
             StayFloow<span className="text-secondary">.com</span>
           </Link>
-          <h1 className="text-xl font-bold text-slate-700">Bon retour parmi nous</h1>
-          <p className="text-sm text-slate-500 mt-1">Connectez-vous pour gérer vos réservations</p>
+          <h1 className="text-2xl font-black text-slate-800 tracking-tight">Connectez-vous</h1>
+          <p className="text-sm text-slate-500 mt-2 font-medium px-4">
+            Accédez à votre espace pour gérer vos séjours, voitures et circuits.
+          </p>
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* EMAIL */}
             <FormField
               control={form.control}
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-bold">Email</FormLabel>
+                  <FormLabel className="font-bold text-slate-700 ml-1">Email</FormLabel>
                   <FormControl>
                     <Input
                       type="email"
                       placeholder="votre@email.com"
-                      className="h-12 border-slate-200 focus:border-primary"
+                      className="h-14 border-slate-200 focus:border-primary rounded-2xl px-5 text-lg"
                       {...field}
                     />
                   </FormControl>
@@ -96,8 +122,8 @@ export default function LoginPage() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <div className="flex justify-between items-center">
-                    <FormLabel className="font-bold">Mot de passe</FormLabel>
+                  <div className="flex justify-between items-center ml-1">
+                    <FormLabel className="font-bold text-slate-700">Mot de passe</FormLabel>
                     <Link 
                       href="/auth/forgot-password" 
                       className="text-xs font-bold text-primary hover:underline"
@@ -109,7 +135,7 @@ export default function LoginPage() {
                     <Input
                       type="password"
                       placeholder="••••••••"
-                      className="h-12 border-slate-200 focus:border-primary"
+                      className="h-14 border-slate-200 focus:border-primary rounded-2xl px-5 text-lg"
                       {...field}
                     />
                   </FormControl>
@@ -121,26 +147,30 @@ export default function LoginPage() {
             <Button 
               type="submit" 
               disabled={loading} 
-              className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-black text-lg shadow-lg transition-all"
+              className="w-full h-16 bg-primary hover:bg-primary/90 text-white font-black text-xl shadow-xl shadow-primary/20 rounded-2xl transition-all active:scale-95"
             >
               {loading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
+                <Loader2 className="h-6 w-6 animate-spin" />
               ) : (
-                <span className="flex items-center gap-2">
-                  <LogIn className="h-5 w-5" /> Se connecter
+                <span className="flex items-center gap-3">
+                  <LogIn className="h-6 w-6" /> Se connecter
                 </span>
               )}
             </Button>
           </form>
         </Form>
 
-        <div className="mt-8 pt-6 border-t border-slate-100 text-center">
-          <p className="text-sm text-slate-500">
-            Vous n'avez pas de compte ?{" "}
-            <Link href="/auth/register" className="text-primary font-bold hover:underline">
-              S'inscrire
+        <div className="mt-10 pt-8 border-t border-slate-100 text-center">
+          <p className="text-sm text-slate-500 font-medium">
+            Pas encore de compte ?{" "}
+            <Link href="/auth/register" className="text-primary font-black hover:underline">
+              S'inscrire gratuitement
             </Link>
           </p>
+          <Link href="/" className="inline-flex items-center gap-2 text-xs font-bold text-slate-400 mt-8 hover:text-primary transition-colors group">
+            <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" /> 
+            Retourner à l'accueil
+          </Link>
         </div>
       </div>
     </div>
