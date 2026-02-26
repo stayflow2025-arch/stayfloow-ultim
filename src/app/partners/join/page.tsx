@@ -1,36 +1,44 @@
-
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Building, Car, Compass, ShieldCheck, TrendingUp, Users, Globe, ArrowRight } from 'lucide-react';
 import PartnerOnboardingForm from '@/components/partners/PartnerOnboardingForm';
 import { cn } from '@/lib/utils';
 
-export default function PartnerJoinPage() {
+function PartnerJoinContent() {
+  const searchParams = useSearchParams();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const heroImage = "https://picsum.photos/seed/stayfloow-join/1920/1080";
 
+  // Auto-sélection de la catégorie si présente dans l'URL (via le menu Header/Footer)
+  useEffect(() => {
+    const cat = searchParams.get('category');
+    if (cat && ['accommodation', 'car_rental', 'circuit'].includes(cat)) {
+      setSelectedCategory(cat);
+    }
+  }, [searchParams]);
+
   return (
     <div className="min-h-screen bg-[#F5F7FA] flex flex-col font-body">
-      {/* Header */}
+      {/* Header Interne Partenaire */}
       <header className="bg-primary text-white py-4 px-8 sticky top-0 z-50 shadow-lg">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <Link href="/" className="text-2xl font-black tracking-tighter">
-            StayFloow<span className="text-secondary">.com</span> <span className="font-light ml-2 opacity-80">Partner</span>
+            StayFloow<span className="text-secondary">.com</span> <span className="font-light ml-2 opacity-80 text-lg uppercase tracking-widest">Partner</span>
           </Link>
           <div className="flex items-center gap-4">
-            <Button variant="ghost" className="text-white hover:bg-white/10 hidden md:flex">Aide</Button>
-            <Button variant="outline" className="border-white text-white hover:bg-white hover:text-primary font-bold">
+            <Button variant="ghost" className="text-white hover:bg-white/10 hidden md:flex font-bold">Besoin d'aide ?</Button>
+            <Button variant="outline" className="border-white text-white hover:bg-white hover:text-primary font-bold px-6">
               Se connecter
             </Button>
           </div>
         </div>
       </header>
 
-      {/* Hero Section Style Booking (mais en VERT StayFloow) */}
       {!selectedCategory ? (
         <>
           <section className="relative h-[500px] flex items-center justify-center overflow-hidden">
@@ -41,17 +49,17 @@ export default function PartnerJoinPage() {
               className="object-cover"
               priority
             />
-            <div className="absolute inset-0 bg-primary/85" /> {/* Vert StayFloow au lieu du bleu */}
+            <div className="absolute inset-0 bg-primary/85" />
             <div className="relative z-10 max-w-4xl mx-auto px-6 text-center text-white">
               <h1 className="text-4xl md:text-6xl font-black mb-6 leading-tight">
                 Inscrivez votre établissement sur StayFloow.com
               </h1>
-              <p className="text-xl md:text-2xl opacity-90 mb-10 max-w-2xl mx-auto">
+              <p className="text-xl md:text-2xl opacity-90 mb-10 max-w-2xl mx-auto font-medium">
                 Rejoignez la plus grande communauté de voyageurs en Afrique et boostez vos réservations gratuitement.
               </p>
               <Button 
                 size="lg" 
-                className="bg-secondary hover:bg-secondary/90 text-primary text-xl px-10 py-8 rounded-md font-black shadow-xl"
+                className="bg-secondary hover:bg-secondary/90 text-primary text-xl px-10 py-8 rounded-md font-black shadow-xl active:scale-95 transition-all"
                 onClick={() => {
                   const el = document.getElementById('categories');
                   el?.scrollIntoView({ behavior: 'smooth' });
@@ -62,7 +70,6 @@ export default function PartnerJoinPage() {
             </div>
           </section>
 
-          {/* Category Selection Grid */}
           <section id="categories" className="max-w-7xl mx-auto px-6 -mt-20 relative z-20 pb-20">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <CategoryCard 
@@ -85,7 +92,6 @@ export default function PartnerJoinPage() {
               />
             </div>
 
-            {/* Trust Badges */}
             <div className="mt-24 grid grid-cols-1 md:grid-cols-4 gap-12">
               <TrustItem icon={<Users />} title="Visibilité mondiale" desc="Touchez des clients du monde entier." />
               <TrustItem icon={<ShieldCheck />} title="Paiements sécurisés" desc="Gérez vos revenus en toute sérénité." />
@@ -95,11 +101,10 @@ export default function PartnerJoinPage() {
           </section>
         </>
       ) : (
-        /* Form Section */
         <main className="flex-grow py-12 px-6">
           <div className="max-w-5xl mx-auto">
             <div className="mb-8 flex items-center justify-between">
-              <Button variant="ghost" onClick={() => setSelectedCategory(null)} className="text-primary font-bold">
+              <Button variant="ghost" onClick={() => setSelectedCategory(null)} className="text-primary font-bold hover:bg-primary/5 px-4 h-12 rounded-xl">
                 ← Retour au choix
               </Button>
               <h2 className="text-2xl font-black text-slate-800">
@@ -121,16 +126,24 @@ export default function PartnerJoinPage() {
   );
 }
 
+export default function PartnerJoinPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="h-10 w-10 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>}>
+      <PartnerJoinContent />
+    </Suspense>
+  );
+}
+
 function CategoryCard({ icon, title, desc, onClick }: { icon: any, title: string, desc: string, onClick: () => void }) {
   return (
     <div 
       onClick={onClick}
-      className="bg-white p-8 rounded-xl shadow-xl border-b-4 border-transparent hover:border-primary transition-all cursor-pointer group hover:-translate-y-2 flex flex-col items-center text-center gap-4"
+      className="bg-white p-8 rounded-2xl shadow-xl border-b-4 border-transparent hover:border-primary transition-all cursor-pointer group hover:-translate-y-2 flex flex-col items-center text-center gap-4"
     >
-      <div className="text-primary group-hover:scale-110 transition-transform">{icon}</div>
+      <div className="text-primary group-hover:scale-110 transition-transform bg-primary/5 p-5 rounded-2xl">{icon}</div>
       <h3 className="text-2xl font-black text-slate-900">{title}</h3>
-      <p className="text-slate-500 leading-relaxed">{desc}</p>
-      <div className="mt-4 text-primary font-bold flex items-center gap-2">
+      <p className="text-slate-500 leading-relaxed font-medium">{desc}</p>
+      <div className="mt-4 text-primary font-black flex items-center gap-2 uppercase text-xs tracking-widest">
         Enregistrer mon bien <ArrowRight className="h-4 w-4" />
       </div>
     </div>
@@ -142,7 +155,7 @@ function TrustItem({ icon, title, desc }: { icon: any, title: string, desc: stri
     <div className="flex flex-col items-center text-center gap-3">
       <div className="bg-primary/10 p-4 rounded-full text-primary">{icon}</div>
       <h4 className="font-black text-lg text-slate-900">{title}</h4>
-      <p className="text-sm text-slate-500">{desc}</p>
+      <p className="text-sm text-slate-500 font-medium">{desc}</p>
     </div>
   );
 }

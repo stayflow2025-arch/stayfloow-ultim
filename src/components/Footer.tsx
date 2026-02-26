@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MountainSnow, Globe, ChevronDown } from "lucide-react";
+import { MountainSnow, Globe, ChevronDown, Building, Car, Compass } from "lucide-react";
 import { useCurrency } from "@/context/currency-context";
 import { useLanguage } from "@/context/language-context";
 import { Button } from "./ui/button";
@@ -72,23 +72,30 @@ export function Footer() {
               {t("partner_cta_desc")}
             </p>
 
+            {/* BOUTON COMMENCER UNIFIÉ AVEC LE HAUT */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button className="px-10 py-8 bg-secondary hover:bg-secondary/90 text-primary text-xl font-black rounded-xl shadow-2xl flex items-center gap-3">
+                <Button className="px-10 py-8 bg-secondary hover:bg-secondary/90 text-primary text-xl font-black rounded-xl shadow-2xl flex items-center gap-3 active:scale-95 transition-all">
                   {t("start")}
                   <ChevronDown className="h-6 w-6" />
                 </Button>
               </DropdownMenuTrigger>
 
-              <DropdownMenuContent className="w-64 p-2 rounded-xl">
-                <DropdownMenuItem asChild className="font-bold py-3 px-4 cursor-pointer">
-                  <Link href="/partners/onboarding?category=accommodation">{t("add_property")}</Link>
+              <DropdownMenuContent className="w-64 p-2 rounded-xl" align="center" side="top">
+                <DropdownMenuItem asChild className="font-bold py-3.5 px-4 cursor-pointer">
+                  <Link href="/partners/join?category=accommodation" className="flex items-center gap-3">
+                    <Building className="h-5 w-5 text-primary" /> {t("accommodations")}
+                  </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild className="font-bold py-3 px-4 cursor-pointer">
-                  <Link href="/partners/onboarding?category=car_rental">{t("add_vehicle")}</Link>
+                <DropdownMenuItem asChild className="font-bold py-3.5 px-4 cursor-pointer">
+                  <Link href="/partners/join?category=car_rental" className="flex items-center gap-3">
+                    <Car className="h-5 w-5 text-primary" /> {t("car_rental")}
+                  </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild className="font-bold py-3 px-4 cursor-pointer">
-                  <Link href="/partners/onboarding?category=circuit">{t("add_tour")}</Link>
+                <DropdownMenuItem asChild className="font-bold py-3.5 px-4 cursor-pointer">
+                  <Link href="/partners/join?category=circuit" className="flex items-center gap-3">
+                    <Compass className="h-5 w-5 text-primary" /> {t("tours")}
+                  </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -164,7 +171,7 @@ export function Footer() {
                 </Button>
               </DropdownMenuTrigger>
 
-              <DropdownMenuContent align="end" className="rounded-xl p-1">
+              <DropdownMenuContent align="end" className="rounded-xl p-1" side="top">
                 {availableLocales.map((loc) => {
                   const details = getLocaleDetails(loc);
                   return (
@@ -187,7 +194,7 @@ export function Footer() {
                 </Button>
               </DropdownMenuTrigger>
 
-              <DropdownMenuContent align="end" className="rounded-xl p-1">
+              <DropdownMenuContent align="end" className="rounded-xl p-1" side="top">
                 {currencies.map((c) => (
                   <DropdownMenuItem key={c} onSelect={() => handleCurrencyChange(c)} className="font-bold cursor-pointer rounded-lg">
                     <span className="mr-3 text-lg">{getCurrencyFlag(c)}</span>
