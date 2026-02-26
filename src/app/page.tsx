@@ -30,7 +30,7 @@ export default function Home() {
           </Link>
           <div className="hidden md:flex items-center space-x-6">
             <Link href="/search?type=accommodations" className="hover:bg-white/10 px-3 py-2 rounded-md transition-colors font-medium">Séjours</Link>
-            <Link href="/search?type=cars" className="hover:bg-white/10 px-3 py-2 rounded-md transition-colors font-medium">Voitures</Link>
+            <Link href="/cars" className="hover:bg-white/10 px-3 py-2 rounded-md transition-colors font-medium">Voitures</Link>
             <Link href="/search?type=circuits" className="hover:bg-white/10 px-3 py-2 rounded-md transition-colors font-medium">Circuits</Link>
             <Button variant="outline" className="bg-transparent text-white border-white hover:bg-white hover:text-primary font-black transition-all" asChild>
               <Link href="/partners/join">Devenir partenaire</Link>
