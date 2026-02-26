@@ -19,6 +19,7 @@ import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { OnboardingMap } from '@/components/onboarding-map';
+import { useLanguage } from '@/context/language-context';
 
 interface Props {
   initialCategory: 'accommodation' | 'car_rental' | 'circuit';
@@ -27,6 +28,7 @@ interface Props {
 export default function PartnerOnboardingForm({ initialCategory }: Props) {
   const { toast } = useToast();
   const db = useFirestore();
+  const { t } = useLanguage();
   const [currentStep, setCurrentStep] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -53,10 +55,10 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
   });
 
   const steps = [
-    { id: 1, title: 'Informations' },
-    { id: 2, title: 'Localisation' },
-    { id: 3, title: 'Détails Pro' },
-    { id: 4, title: 'Photos & Prix' },
+    { id: 1, title: t('step_info') },
+    { id: 2, title: t('step_loc') },
+    { id: 3, title: t('step_details') },
+    { id: 4, title: t('step_photos_price') },
   ];
 
   const handleNext = () => setCurrentStep(prev => Math.min(prev + 1, steps.length));
@@ -95,7 +97,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
         name: formData.listingName,
         location: formData.address,
         price: parseFloat(formData.price),
-        demandScore: Math.floor(Math.random() * 40) + 60, // Simulate dynamic market score
+        demandScore: Math.floor(Math.random() * 40) + 60,
       });
       setRecommendation(result);
     } catch (error) {
@@ -140,7 +142,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
         photos: photos,
         createdAt: serverTimestamp()
       });
-      setCurrentStep(5); // Success step
+      setCurrentStep(5);
     } catch (error) {
       console.error(error);
       toast({ variant: 'destructive', title: 'Erreur', description: 'Impossible de soumettre l\'annonce.' });
@@ -161,19 +163,19 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label className="font-bold">Prénom *</Label>
+          <Label className="font-bold">{t('first_name')} *</Label>
           <Input value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} placeholder="Jean" className="h-12" />
         </div>
         <div className="space-y-2">
-          <Label className="font-bold">Nom *</Label>
+          <Label className="font-bold">{t('last_name')} *</Label>
           <Input value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})} placeholder="Dupont" className="h-12" />
         </div>
         <div className="space-y-2">
-          <Label className="font-bold">Email professionnel *</Label>
+          <Label className="font-bold">{t('pro_email')} *</Label>
           <Input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} placeholder="contact@pro.com" className="h-12" />
         </div>
         <div className="space-y-2">
-          <Label className="font-bold">Numéro de téléphone (WhatsApp) *</Label>
+          <Label className="font-bold">{t('phone_whatsapp')} *</Label>
           <div className="flex gap-2">
             <div className="bg-slate-100 flex items-center px-3 rounded-md text-sm font-bold border">🇩🇿 +213</div>
             <Input value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} placeholder="0550 00 00 00" className="h-12 flex-1" />
@@ -181,7 +183,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
         </div>
       </div>
       <div className="space-y-2">
-        <Label className="font-bold">Nom commercial de l'annonce *</Label>
+        <Label className="font-bold">{t('commercial_name')} *</Label>
         <Input value={formData.listingName} onChange={e => setFormData({...formData, listingName: e.target.value})} placeholder="Ex: Riad Les Jardins d'Alger" className="h-12" />
       </div>
     </div>
@@ -190,7 +192,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
   const renderStep2 = () => (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
       <div className="space-y-2">
-        <Label className="font-bold">Adresse complète *</Label>
+        <Label className="font-bold">{t('full_address')} *</Label>
         <Input 
           value={formData.address} 
           onChange={e => setFormData({...formData, address: e.target.value})} 
@@ -199,10 +201,10 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
         />
       </div>
       <div className="space-y-2">
-        <Label className="font-bold">Aperçu de la localisation</Label>
+        <Label className="font-bold">{t('map_preview')}</Label>
         <OnboardingMap location={formData.address} />
         <p className="text-[10px] text-slate-400 font-medium italic mt-2">
-          * La carte s'ajuste automatiquement en fonction de la ville saisie dans l'adresse.
+          {t('map_hint')}
         </p>
       </div>
     </div>
@@ -212,7 +214,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
     const options = {
       accommodation: {
         types: ['Hôtel ★★★', 'Hôtel ★★★★', 'Hôtel ★★★★★', 'Riad', 'Villa', 'Appartement', 'Studio', 'Glamping'],
-        amenities: ['WiFi gratuit', 'Piscine', 'Climatisation', 'Parking gratuit', 'Petit-déjeuner', 'Vue mer', 'Cuisine équipée']
+        amenities: ['WiFi gratuit', 'Piscine', 'Climatisation', 'Parking gratuit', 'Petit-déjeuner inclus', 'Vue mer', 'Cuisine équipée']
       },
       car_rental: {
         types: ['Économique', 'SUV / 4x4', 'Van / Minibus', 'Luxe', 'Moto'],
@@ -227,25 +229,25 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
     return (
       <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
         <div className="space-y-4">
-          <Label className="font-black text-lg">Type d'offre *</Label>
+          <Label className="font-black text-lg">{t('listing_type_label')} *</Label>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            {options.types.map(t => (
+            {options.types.map(opt => (
               <div 
-                key={t}
-                onClick={() => setFormData(prev => ({ ...prev, type: prev.type.includes(t) ? prev.type.filter(x => x !== t) : [...prev.type, t] }))}
+                key={opt}
+                onClick={() => setFormData(prev => ({ ...prev, type: prev.type.includes(opt) ? prev.type.filter(x => x !== opt) : [...prev.type, opt] }))}
                 className={cn(
                   "p-3 rounded-lg border-2 text-center cursor-pointer text-sm font-bold transition-all",
-                  formData.type.includes(t) ? "border-primary bg-primary/5 text-primary" : "border-slate-100 bg-white"
+                  formData.type.includes(opt) ? "border-primary bg-primary/5 text-primary" : "border-slate-100 bg-white"
                 )}
               >
-                {t}
+                {t(opt)}
               </div>
             ))}
           </div>
         </div>
 
         <div className="space-y-4">
-          <Label className="font-black text-lg">Équipements & Inclusions *</Label>
+          <Label className="font-black text-lg">{t('amenities_label')} *</Label>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-6 rounded-xl border border-slate-200">
             {options.amenities.map(a => (
               <div key={a} className="flex items-center space-x-3">
@@ -254,7 +256,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
                   checked={formData.amenities.includes(a)}
                   onCheckedChange={(checked) => setFormData(prev => ({ ...prev, amenities: checked ? [...prev.amenities, a] : prev.amenities.filter(x => x !== a) }))}
                 />
-                <label htmlFor={a} className="text-sm font-bold text-slate-700 cursor-pointer">{a}</label>
+                <label htmlFor={a} className="text-sm font-bold text-slate-700 cursor-pointer">{t(a)}</label>
               </div>
             ))}
           </div>
@@ -262,19 +264,19 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
 
         <div className="space-y-4">
           <div className="flex justify-between items-center">
-            <Label className="font-black text-lg">Description attractive (Min 150 car.)</Label>
+            <Label className="font-black text-lg">{t('description_label')}</Label>
             <Button variant="outline" size="sm" onClick={handleAIEnhance} disabled={isGenerating} className="text-primary border-primary gap-2 hover:bg-primary hover:text-white">
               {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
-              Améliorer avec l'IA
+              {t('ai_improve_btn')}
             </Button>
           </div>
           <Textarea 
             value={formData.description} 
             onChange={e => setFormData({...formData, description: e.target.value})} 
-            placeholder="Détaillez votre offre, son charme, ses spécificités..." 
+            placeholder={t('description_placeholder')}
             className="min-h-[150px]"
           />
-          <div className="text-right text-xs text-slate-400">{formData.description.length} / 150 caractères min</div>
+          <div className="text-right text-xs text-slate-400">{formData.description.length} / 150 min</div>
         </div>
       </div>
     );
@@ -283,7 +285,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
   const renderStep4 = () => (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
       <div className="space-y-4">
-        <Label className="font-black text-lg">Photos de l'annonce (5 minimum)</Label>
+        <Label className="font-black text-lg">{t('photos_label')}</Label>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           {photos.map((p, i) => (
             <div key={i} className="relative aspect-square rounded-lg overflow-hidden group shadow-md border-2 border-white">
@@ -294,7 +296,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
               >
                 <X className="h-3 w-3" />
               </button>
-              {i === 0 && <span className="absolute bottom-0 left-0 right-0 bg-primary/90 text-[10px] text-white py-1 font-black text-center">PRINCIPALE</span>}
+              {i === 0 && <span className="absolute bottom-0 left-0 right-0 bg-primary/90 text-[10px] text-white py-1 font-black text-center uppercase">PRINCIPALE</span>}
             </div>
           ))}
           {photos.length < 30 && (
@@ -311,7 +313,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
         <div className="space-y-4 relative z-10">
           <Label className="font-black text-xl flex items-center gap-2">
             <Info className="h-5 w-5 text-secondary" />
-            Prix de base (DZD)
+            {t('base_price_label')} (DZD)
           </Label>
           <div className="relative">
              <Input 
@@ -331,7 +333,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
             className="text-secondary border-secondary hover:bg-secondary hover:text-primary mt-4 w-full md:w-auto"
           >
             {isAnalyzing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <TrendingUp className="h-4 w-4 mr-2" />}
-            Analyser mon prix avec l'IA StayFloow
+            {t('ai_analyze_price_btn')}
           </Button>
         </div>
         
@@ -339,12 +341,12 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
            {recommendation ? (
              <div className="space-y-3 animate-in fade-in zoom-in-95 duration-500">
                <div className="flex justify-between items-center text-secondary font-black text-lg">
-                 <span>Prix recommandé :</span>
+                 <span>{t('recommended_price')} :</span>
                  <span>{recommendation.recommendedPrice} DZD</span>
                </div>
                <div className="bg-white/5 p-3 rounded-lg text-[10px] space-y-2">
                  <p className="font-bold text-secondary flex items-center gap-1">
-                   <CheckCircle2 className="h-3 w-3" /> Confiance : {recommendation.confidence}%
+                   <CheckCircle2 className="h-3 w-3" /> {t('confidence_label')} : {recommendation.confidence}%
                  </p>
                  <ul className="list-disc pl-4 opacity-70">
                    {recommendation.reasoning.map((r, idx) => <li key={idx}>{r}</li>)}
@@ -364,8 +366,6 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
              </>
            )}
         </div>
-
-        {/* Decorative AI Sparkle */}
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-secondary/10 rounded-full blur-3xl pointer-events-none" />
       </div>
     </div>
@@ -376,13 +376,13 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
       <div className="bg-primary/10 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8">
         <CheckCircle2 className="h-16 w-16 text-primary" />
       </div>
-      <h3 className="text-4xl font-black text-slate-900 mb-4">Merci, {formData.firstName} !</h3>
+      <h3 className="text-4xl font-black text-slate-900 mb-4">{t('success_msg_title')} {formData.firstName} !</h3>
       <p className="text-xl text-slate-600 max-w-lg mx-auto leading-relaxed">
-        Votre annonce est en cours de validation par nos experts. Vous recevrez une notification par email sous 24 à 48 heures.
+        {t('success_msg_desc')}
       </p>
       <div className="mt-12">
         <Button size="lg" className="bg-primary hover:bg-primary/90 px-10 text-white font-black" asChild>
-          <a href="/">Retour à l'accueil de StayFloow.com</a>
+          <a href="/">{t('back_home_btn')}</a>
         </Button>
       </div>
     </div>
@@ -422,7 +422,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
             disabled={currentStep === 1}
             className="font-bold text-slate-500 hover:text-primary transition-colors"
           >
-            <ChevronLeft className="mr-2 h-4 w-4" /> Retour
+            <ChevronLeft className="mr-2 h-4 w-4" /> {t('back')}
           </Button>
           {currentStep === steps.length ? (
             <Button 
@@ -430,14 +430,14 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
               disabled={isSubmitting}
               className="bg-primary hover:bg-primary/90 text-white px-12 h-14 rounded-xl font-black text-lg shadow-xl shadow-primary/20"
             >
-              {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : 'Valider et envoyer pour examen'}
+              {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : t('submit_review_btn')}
             </Button>
           ) : (
             <Button 
               onClick={handleNext}
               className="bg-primary hover:bg-primary/90 text-white px-12 h-14 rounded-xl font-black text-lg shadow-xl shadow-primary/20"
             >
-              Continuer <ChevronRight className="ml-2 h-4 w-4" />
+              {t('continue')} <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
           )}
         </div>
