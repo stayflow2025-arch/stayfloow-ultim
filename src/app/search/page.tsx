@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, Suspense } from 'react';
@@ -16,6 +15,7 @@ import { properties as initialProperties, type Property } from '@/lib/data';
 import { PropertyCard } from '@/components/property-card';
 import { FilterSidebar } from '@/components/filter-sidebar';
 import { PropertiesMap } from '@/components/properties-map';
+import { EmailRetargetingCard } from '@/components/email-retargeting-card';
 
 function SearchResultsContent() {
   const searchParams = useSearchParams();
@@ -33,7 +33,7 @@ function SearchResultsContent() {
     const fetchResults = () => {
       setLoading(true);
       try {
-        // Simulation de la récupération des propriétés approuvées (localStorage + data.ts)
+        // Simulation de la récupération des propriétés approuvées
         const localApproved = JSON.parse(localStorage.getItem('approvedProperties') || '[]');
         
         const combined = [...initialProperties, ...localApproved];
@@ -104,6 +104,8 @@ function SearchResultsContent() {
               </div>
             </div>
           </div>
+
+          <EmailRetargetingCard />
         </aside>
 
         {/* Results */}

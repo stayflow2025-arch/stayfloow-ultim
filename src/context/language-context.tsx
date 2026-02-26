@@ -46,6 +46,9 @@ const translations: Translations = {
     'open_menu': 'Ouvrir le menu',
     'recently_viewed': 'Consultés récemment',
     'inspired_by_visit': 'Inspirés par votre visite',
+    'email_retargeting_title': 'Ne manquez aucune offre',
+    'email_retargeting_description': 'Inscrivez-vous pour recevoir des alertes de prix et des recommandations exclusives basées sur vos recherches.',
+    'email_retargeting_cta': 'M\'inscrire aux alertes',
   },
   ar: {
     'contact.title': 'اتصل بنا',
@@ -82,6 +85,9 @@ const translations: Translations = {
     'open_menu': 'افتح القائمة',
     'recently_viewed': 'تمت مشاهدتها مؤخراً',
     'inspired_by_visit': 'مستوحاة من زيارتك',
+    'email_retargeting_title': 'لا تفوت أي عرض',
+    'email_retargeting_description': 'اشترك لتلقي تنبيهات الأسعار والتوصيات الحصرية بناءً على عمليات البحث الخاصة بك.',
+    'email_retargeting_cta': 'سجل في التنبيهات',
   },
   en: {
     'contact.title': 'Contact Us',
@@ -118,6 +124,9 @@ const translations: Translations = {
     'open_menu': 'Open menu',
     'recently_viewed': 'Recently viewed',
     'inspired_by_visit': 'Inspired by your visit',
+    'email_retargeting_title': 'Don\'t miss any deal',
+    'email_retargeting_description': 'Sign up to receive price alerts and exclusive recommendations based on your searches.',
+    'email_retargeting_cta': 'Sign up for alerts',
   }
 };
 
