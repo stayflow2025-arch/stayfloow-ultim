@@ -31,7 +31,7 @@ export default function Home() {
           <div className="hidden md:flex items-center space-x-6">
             <Link href="/search?type=accommodations" className="hover:bg-white/10 px-3 py-2 rounded-md transition-colors font-medium">Séjours</Link>
             <Link href="/cars" className="hover:bg-white/10 px-3 py-2 rounded-md transition-colors font-medium">Voitures</Link>
-            <Link href="/search?type=circuits" className="hover:bg-white/10 px-3 py-2 rounded-md transition-colors font-medium">Circuits</Link>
+            <Link href="/circuits" className="hover:bg-white/10 px-3 py-2 rounded-md transition-colors font-medium">Circuits</Link>
             <Button variant="outline" className="bg-transparent text-white border-white hover:bg-white hover:text-primary font-black transition-all" asChild>
               <Link href="/partners/join">Devenir partenaire</Link>
             </Button>
@@ -132,15 +132,21 @@ export default function Home() {
             <div key={col}>
               <h4 className="font-bold text-lg mb-6">{col}</h4>
               <ul className="space-y-4 opacity-70">
-                {col === 'Partenaires' ? (
+                {col === 'Support' ? (
                   <>
-                    <li><Link href="/partners/join">Devenir partenaire</Link></li>
+                    <li><Link href="/contact" className="hover:text-secondary transition-colors">Contactez-nous</Link></li>
+                    <li>Aide</li>
+                    <li>Confidentialité</li>
+                  </>
+                ) : col === 'Partenaires' ? (
+                  <>
+                    <li><Link href="/partners/join" className="hover:text-secondary transition-colors">Devenir partenaire</Link></li>
                     <li>Extranet StayFloow.com</li>
                   </>
                 ) : (
                   <>
-                    <li>Aide</li>
-                    <li>Confidentialité</li>
+                    <li>Offres</li>
+                    <li>Destinations</li>
                     <li>Conditions</li>
                   </>
                 )}
