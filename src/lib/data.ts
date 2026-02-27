@@ -226,30 +226,10 @@ export interface Circuit {
     email: string;
     phone: string;
   };
+  amenities: string[];
 }
 
 export const circuits: Circuit[] = [
-  {
-    id: "circ-1",
-    title: "Expédition Grand Sahara - Djanet & Tassili",
-    location: "Djanet, Algérie",
-    pricePerPerson: 45000,
-    rating: 4.9,
-    reviewsCount: 337,
-    duration: "4 jours, 3 nuits",
-    description: "Une aventure inoubliable au cœur du Tassili n'Ajjer. Découvrez les gravures rupestres millénaires et les dunes géantes.",
-    longDescription: "Plongez dans le silence mystique du Sahara. Ce circuit vous emmène à travers les paysages lunaires de Djanet.",
-    images: ["https://images.unsplash.com/photo-1674109739254-c0c425a1975d?w=800", "https://images.unsplash.com/photo-1509114397022-ed747cca3f65?w=800"],
-    languages: ["Français", "Arabe", "Anglais"],
-    highlights: ["UNESCO Sites", "Sunset on dunes", "Tuareg tea"],
-    inclusions: ["4x4", "Halal Meals", "Guide"],
-    restrictions: ["No wheelchair access"],
-    ticketTypes: [
-      { id: "adult", name: "Adulte", price: 45000 },
-      { id: "child", name: "Enfant", price: 25000 }
-    ],
-    guide: { name: "Ahmed Sahara", email: "ahmed@stayfloow.com", phone: "+213 661 00 00 00" }
-  },
   {
     id: "circ-algeria-taghit",
     title: "Magie de Taghit - L'Enchanteresse du Désert",
@@ -259,13 +239,15 @@ export const circuits: Circuit[] = [
     reviewsCount: 184,
     duration: "3 jours, 2 nuits",
     description: "Explorez l'oasis de Taghit, surnommée l'enchanteresse. Ascension des plus hautes dunes d'Algérie et visite du vieux Ksar.",
+    longDescription: "Une immersion totale dans le Grand Erg Occidental. Vous découvrirez l'architecture ancestrale des ksours et profiterez de bivouacs magiques sous les étoiles.",
     images: ["https://images.unsplash.com/photo-1509114397022-ed747cca3f65?w=800", "https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=800"],
     languages: ["Français", "Arabe"],
     highlights: ["Vieille ville de Taghit", "Dîner sous les étoiles", "Balade à dos de chameau"],
-    inclusions: ["Transport 4x4", "Hébergement en maison d'hôte", "Pension complète"],
+    inclusions: ["Transport 4x4", "Hébergement en maison d'hôte", "Pension complète", "Guide inclus (local arabe/français)"],
     restrictions: ["Bonne condition physique requise"],
     ticketTypes: [{ id: "adult", name: "Adulte", price: 38000 }, { id: "child", name: "Enfant", price: 20000 }],
-    guide: { name: "Mustapha Taghit", email: "musta@stayfloow.com", phone: "+213 555 12 34 56" }
+    guide: { name: "Mustapha Taghit", email: "musta@stayfloow.com", phone: "+213 555 12 34 56" },
+    amenities: ["Guide inclus (local arabe/français)", "Transport 4x4 (désert)", "Repas inclus (halal)", "Thème désert/Sahara"]
   },
   {
     id: "circ-egypt-pyramids",
@@ -276,13 +258,15 @@ export const circuits: Circuit[] = [
     reviewsCount: 1250,
     duration: "1 jour",
     description: "Une journée complète pour explorer les merveilles du monde antique. Guide égyptologue certifié et déjeuner local inclus.",
+    longDescription: "Marchez sur les traces des pharaons. Cette visite exclusive vous emmène au pied des pyramides de Khéops, Khéphren et Mykérinos, suivie d'une rencontre avec le Grand Sphinx.",
     images: ["https://images.unsplash.com/photo-1503177119275-0aa32b3a9368?w=800", "https://images.unsplash.com/photo-1539650116574-8efeb43e2750?w=800"],
     languages: ["Français", "Anglais", "Arabe"],
     highlights: ["Grande Pyramide de Khéops", "Le Sphinx", "Musée du Caire"],
-    inclusions: ["Guide égyptologue", "Tickets d'entrée", "Repas de midi"],
+    inclusions: ["Guide égyptologue", "Tickets d'entrée", "Repas de midi", "Annulation gratuite"],
     restrictions: ["Accès limité pour PMR"],
     ticketTypes: [{ id: "adult", name: "Adulte", price: 12000 }, { id: "child", name: "Enfant", price: 6000 }],
-    guide: { name: "Dr. Khaled", email: "khaled@stayfloow.com", phone: "+20 100 123 4567" }
+    guide: { name: "Dr. Khaled", email: "khaled@stayfloow.com", phone: "+20 100 123 4567" },
+    amenities: ["Guide inclus (local arabe/français)", "Annulation gratuite", "Thème culturel/historique (pyramides, ruines)", "Repas inclus (halal)"]
   },
   {
     id: "circ-egypt-redsea",
@@ -293,13 +277,15 @@ export const circuits: Circuit[] = [
     reviewsCount: 442,
     duration: "1 jour",
     description: "Sortie en bateau privé pour découvrir les fonds marins exceptionnels. Snorkeling guidé et buffet de fruits de mer.",
+    longDescription: "Une journée de détente absolue sur les eaux turquoise. Explorez les récifs coralliens préservés, nagez avec les poissons tropicaux et savourez un buffet de fruits de mer frais.",
     images: ["https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800", "https://images.unsplash.com/photo-1582967788606-a171c1080cb0?w=800"],
     languages: ["Français", "Anglais", "Espagnol"],
     highlights: ["Récifs coralliens", "Île Giftun", "Dauphins en liberté"],
     inclusions: ["Équipement snorkeling", "Boissons à volonté", "Transfert hôtel"],
     restrictions: ["Savoir nager"],
     ticketTypes: [{ id: "adult", name: "Adulte", price: 18500 }],
-    guide: { name: "Captain Sam", email: "sam@stayfloow.com", phone: "+20 111 987 6543" }
+    guide: { name: "Captain Sam", email: "sam@stayfloow.com", phone: "+20 111 987 6543" },
+    amenities: ["Repas inclus (halal)", "Annulation gratuite", "Groupe petit (max 10 pers)"]
   }
 ];
 

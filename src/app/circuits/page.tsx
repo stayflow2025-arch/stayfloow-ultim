@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, Suspense, useMemo } from 'react';
@@ -15,6 +14,7 @@ import AdvancedSearchBar from '@/components/search/AdvancedSearchBar';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { CircuitResultCard } from '@/components/circuit-result-card';
 import { useLanguage } from '@/context/language-context';
+import { circuits as mockCircuits } from '@/lib/data';
 import {
   Sheet,
   SheetContent,
@@ -46,10 +46,13 @@ function CircuitsContent() {
           where('status', '==', 'approved')
         );
         const snapshot = await getDocs(q);
-        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setAllCircuits(data);
+        const dbData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        
+        // On combine les données réelles et les données de test (mock) pour que la page ne soit jamais vide au début
+        setAllCircuits([...dbData, ...mockCircuits]);
       } catch (e) {
         console.error("Error fetching circuits:", e);
+        setAllCircuits(mockCircuits); // Fallback total sur les mocks en cas d'erreur
       } finally {
         setTimeout(() => setLoading(false), 800);
       }
@@ -80,7 +83,9 @@ function CircuitsContent() {
       if (rating >= 7) s.ratings["7+"]++;
       if (rating >= 6) s.ratings["6+"]++;
 
-      c.details?.amenities?.forEach((opt: string) => {
+      // On vérifie soit dans details.amenities soit dans amenities directement
+      const ams = c.details?.amenities || c.amenities || [];
+      ams.forEach((opt: string) => {
         if (s.options[opt] !== undefined) s.options[opt]++;
       });
     });
@@ -90,10 +95,12 @@ function CircuitsContent() {
 
   const filteredResults = useMemo(() => {
     return allCircuits.filter(c => {
-      if (locationParam && !c.location?.address?.toLowerCase().includes(locationParam.toLowerCase())) return false;
+      const loc = (c.location?.address || c.location || '').toLowerCase();
+      if (locationParam && !loc.includes(locationParam.toLowerCase())) return false;
 
+      const ams = c.details?.amenities || c.amenities || [];
       if (selectedOptions.length > 0) {
-        const hasAll = selectedOptions.every(opt => c.details?.amenities?.includes(opt));
+        const hasAll = selectedOptions.every(opt => ams.includes(opt));
         if (!hasAll) return false;
       }
 
