@@ -97,7 +97,7 @@ export function Header() {
               <HelpCircle className="h-5 w-5" />
             </button>
 
-            {/* BOUTON PARTENAIRE DIRECT - Fidèle à Photo 2 */}
+            {/* BOUTON PARTENAIRE DIRECT */}
             <Button variant="ghost" className="text-sm font-bold hover:bg-white/10 px-3 py-2 rounded-md transition-colors" asChild>
               <Link href="/partners/join">
                 {t("list_property")}

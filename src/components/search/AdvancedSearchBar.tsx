@@ -30,11 +30,11 @@ export default function AdvancedSearchBar() {
   const [times, setTimes] = useState({ pickup: "10:00", return: "10:00" });
 
   useEffect(() => {
-    if (pathname.includes('/cars')) {
+    if (pathname === '/cars' || pathname.startsWith('/cars/')) {
       setActiveCategory('cars');
-    } else if (pathname.includes('/circuits')) {
+    } else if (pathname === '/circuits' || pathname.startsWith('/circuits/')) {
       setActiveCategory('circuits');
-    } else {
+    } else if (pathname === '/' || pathname.startsWith('/search') || pathname.startsWith('/properties')) {
       setActiveCategory('accommodations');
     }
   }, [pathname]);

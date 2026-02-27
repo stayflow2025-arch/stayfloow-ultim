@@ -71,7 +71,6 @@ export function Footer() {
               {t("partner_cta_desc")}
             </p>
 
-            {/* BOUTON COMMENCER DIRECT - Fidèle à Photo 2 */}
             <Button className="px-10 py-8 bg-secondary hover:bg-secondary/90 text-primary text-xl font-black rounded-xl shadow-2xl active:scale-95 transition-all" asChild>
               <Link href="/partners/join">
                 {t("start")}

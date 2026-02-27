@@ -11,7 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { 
   Building, Car, Compass, MapPin, Upload, CheckCircle2, 
-  ChevronRight, ChevronLeft, Loader2, Wand2, X, Plus, Minus, Info, TrendingUp, Star, Users, Home, Clock, Globe
+  ChevronRight, ChevronLeft, Loader2, Wand2, X, Plus, Minus, Info, TrendingUp, Star, Users, Home, Clock, Globe, Bed, Bath, Utensils
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { generatePartnerDescription } from '@/ai/flows/partner-description-generator';
@@ -35,7 +35,6 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [photos, setPhotos] = useState<string[]>([]);
-  const [recommendation, setRecommendation] = useState<PriceRecommendationOutput | null>(null);
   
   const [formData, setFormData] = useState({
     firstName: '',
@@ -46,20 +45,16 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
     address: '',
     listingName: '',
     description: '',
-    price: '', // Adulte par défaut
-    type: [] as string[],
-    duration: '1 jour',
-    languages: [] as string[],
-    amenities: [] as string[], // Options sélectionnées
-    capacity: { min: 1, max: 10 },
-    ticketTypes: [
-      { id: 'adult', name: 'Adulte', price: 0 },
-      { id: 'child', name: 'Enfant (6-15 ans)', price: 0 },
-      { id: 'infant', name: 'Jeune enfant (0-5 ans)', price: 0 }
-    ],
-    inclusions: [] as string[],
-    restrictions: [] as string[],
-    itinerary: '',
+    price: '',
+    propertyType: 'hotel',
+    roomType: 'double',
+    roomsCount: 1,
+    bathroomsCount: 1,
+    kitchensCount: 0,
+    toiletsCount: 1,
+    amenities: [] as string[],
+    languages: ['Français', 'Arabe'],
+    availableDates: [] as string[],
   });
 
   const steps = [
@@ -83,7 +78,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
         listingType: initialCategory,
         listingName: formData.listingName,
         location: formData.address,
-        keyFeatures: formData.amenities.length > 0 ? formData.amenities : ["Authentique", "Inoubliable"],
+        keyFeatures: formData.amenities.length > 0 ? formData.amenities : ["Confortable", "Moderne"],
         existingDescription: formData.description
       });
       setFormData(prev => ({ ...prev, description: result.generatedDescription }));
@@ -115,20 +110,17 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
         details: {
           name: formData.listingName,
           description: formData.description,
-          type: formData.type[0],
-          duration: formData.duration,
-          languages: formData.languages,
+          propertyType: formData.propertyType,
+          roomType: formData.roomType,
+          roomsCount: formData.roomsCount,
+          bathroomsCount: formData.bathroomsCount,
+          kitchensCount: formData.kitchensCount,
+          toiletsCount: formData.toiletsCount,
           amenities: formData.amenities,
-          capacity: formData.capacity,
-          ticketTypes: formData.ticketTypes,
-          inclusions: formData.inclusions,
-          restrictions: formData.restrictions,
-          itinerary: formData.itinerary,
         },
         price: parseFloat(formData.price) || 0,
         photos: photos,
-        rating: 8.5 + Math.random() * 1.5, // Mock initial rating
-        reviewsCount: 0,
+        rating: 8.0,
         createdAt: serverTimestamp()
       });
       setCurrentStep(5);
@@ -162,106 +154,98 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
           </div>
         </div>
       </div>
-      <div className="space-y-2"><Label className="font-bold">Nom de l'expérience / Circuit *</Label><Input value={formData.listingName} onChange={e => setFormData({...formData, listingName: e.target.value})} placeholder="Ex: Safari 4x4 au Tassili" className="h-12" /></div>
+      <div className="space-y-2"><Label className="font-bold">Nom commercial de l'annonce *</Label><Input value={formData.listingName} onChange={e => setFormData({...formData, listingName: e.target.value})} placeholder="Ex: Riad Alger Luxury" className="h-12" /></div>
     </div>
   );
 
   const renderStep2 = () => (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4">
-      <div className="space-y-2"><Label className="font-bold">Lieu de départ / Localisation principale *</Label><Input value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} placeholder="Ville, Région" className="h-12" /></div>
+      <div className="space-y-2"><Label className="font-bold">{t('full_address')} *</Label><Input value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} placeholder="Ville, Quartier, Rue..." className="h-12" /></div>
       <OnboardingMap location={formData.address} />
     </div>
   );
 
   const renderStep3 = () => {
-    const circuitOptions = [
-      'Guide inclus (local arabe/français)', 'Repas inclus (halal)', 'Transport 4x4 (désert)',
-      'Durée 1 jour', 'Durée multi-jours (2-7 jours)', 'Annulation gratuite',
-      'Langue arabe', 'Langue français', 'Thème désert/Sahara',
-      'Thème culturel/historique (pyramides, ruines)', 'Thème Nil/croisière',
-      'Groupe petit (max 10 pers)', 'Assurance incluse',
-      'Départ depuis aéroport (Alger/Caire)', 'Rating guide 8+'
-    ];
-
-    const langOptions = [
-      { name: 'Français', flag: '🇫🇷' },
-      { name: 'Arabe', flag: '🇩🇿' },
-      { name: 'Anglais', flag: '🇬🇧' },
-      { name: 'Espagnol', flag: '🇪🇸' },
+    const amenitiesList = [
+      "Wi-Fi gratuit", "Climatisation", "Parking gratuit", "Petit-déjeuner inclus",
+      "Piscine", "Restaurant sur place", "Réception 24h/24", "Animaux domestiques acceptés",
+      "Terrasse / balcon / vue", "Cuisine / coin cuisine", "Prises électriques près du lit",
+      "Salle de bain privée", "Lit bébé / lit supplémentaire", "Ascenseur", "Accessibilité PMR"
     ];
 
     return (
       <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4">
-        {/* Langues */}
+        {/* Type d'hébergement */}
         <div className="space-y-4">
-          <Label className="font-black text-lg">Langues du tour *</Label>
-          <div className="flex flex-wrap gap-3">
-            {langOptions.map(l => (
-              <button 
-                key={l.name}
-                onClick={() => setFormData(prev => ({ ...prev, languages: prev.languages.includes(l.name) ? prev.languages.filter(x => x !== l.name) : [...prev.languages, l.name] }))}
-                className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-xl border-2 transition-all font-bold",
-                  formData.languages.includes(l.name) ? "border-primary bg-primary/10 text-primary" : "border-slate-100 hover:border-slate-200"
-                )}
-              >
-                <span>{l.flag}</span> {l.name}
-              </button>
+          <Label className="font-black text-lg">Quel type de bien proposez-vous ? *</Label>
+          <RadioGroup 
+            value={formData.propertyType} 
+            onValueChange={val => setFormData({...formData, propertyType: val})}
+            className="grid grid-cols-2 md:grid-cols-4 gap-4"
+          >
+            {[
+              { id: 'hotel', label: 'Hôtel', icon: Building },
+              { id: 'villa', label: 'Villa', icon: Home },
+              { id: 'apartment', label: 'Appartement', icon: Home },
+              { id: 'studio', label: 'Studio', icon: Home }
+            ].map(type => (
+              <Label key={type.id} htmlFor={type.id} className={cn(
+                "flex flex-col items-center gap-3 p-6 border-2 rounded-2xl cursor-pointer transition-all",
+                formData.propertyType === type.id ? "border-primary bg-primary/5 text-primary" : "border-slate-100 hover:border-slate-200"
+              )}>
+                <RadioGroupItem value={type.id} id={type.id} className="sr-only" />
+                <type.icon className="h-8 w-8" />
+                <span className="font-bold">{type.label}</span>
+              </Label>
             ))}
-          </div>
+          </RadioGroup>
         </div>
 
-        {/* Options / Filtres populaires */}
+        {/* Composition du logement */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 bg-slate-50 p-8 rounded-[2rem] border border-slate-100">
+          <CounterField icon={<Bed/>} label="Chambres" value={formData.roomsCount} onChange={v => setFormData({...formData, roomsCount: v})} />
+          <CounterField icon={<Bath/>} label="Salles de bain" value={formData.bathroomsCount} onChange={v => setFormData({...formData, bathroomsCount: v})} />
+          <CounterField icon={<Utensils/>} label="Cuisines" value={formData.kitchensCount} onChange={v => setFormData({...formData, kitchensCount: v})} />
+          <CounterField icon={<Users/>} label="Toilettes" value={formData.toiletsCount} onChange={v => setFormData({...formData, toiletsCount: v})} />
+        </div>
+
+        {/* Équipements */}
         <div className="space-y-4">
-          <Label className="font-black text-lg">Options & Caractéristiques (pour les filtres clients) *</Label>
+          <Label className="font-black text-lg">Équipements & Services *</Label>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {circuitOptions.map(opt => (
-              <div key={opt} className="flex items-center space-x-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
+            {amenitiesList.map(amenity => (
+              <div key={amenity} className={cn(
+                "flex items-center space-x-3 p-4 rounded-xl border transition-all cursor-pointer group",
+                formData.amenities.includes(amenity) ? "border-primary bg-primary/5" : "border-slate-100 hover:border-slate-200"
+              )}>
                 <Checkbox 
-                  id={opt} 
-                  checked={formData.amenities.includes(opt)}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, amenities: checked ? [...prev.amenities, opt] : prev.amenities.filter(x => x !== opt) }))}
+                  id={amenity} 
+                  checked={formData.amenities.includes(amenity)}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, amenities: checked ? [...prev.amenities, amenity] : prev.amenities.filter(a => a !== amenity) }))}
                 />
-                <label htmlFor={opt} className="text-xs font-bold text-slate-600 cursor-pointer">{opt}</label>
+                <label htmlFor={amenity} className="text-sm font-bold text-slate-700 cursor-pointer flex-1">
+                  {amenity}
+                  {amenity === "Petit-déjeuner inclus" && <span className="ml-2 bg-green-600 text-white text-[8px] px-1.5 py-0.5 rounded-full uppercase">Highlight</span>}
+                </label>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Capacité du groupe */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 bg-white p-6 rounded-2xl border-2 border-slate-100">
-          <div className="space-y-4">
-            <Label className="font-bold">Capacité minimum du groupe</Label>
-            <div className="flex items-center gap-4">
-              <Button variant="outline" size="icon" onClick={() => setFormData({...formData, capacity: {...formData.capacity, min: Math.max(1, formData.capacity.min - 1)}})}><Minus className="h-4 w-4" /></Button>
-              <span className="font-black text-xl">{formData.capacity.min}</span>
-              <Button variant="outline" size="icon" onClick={() => setFormData({...formData, capacity: {...formData.capacity, min: formData.capacity.min + 1}})}><Plus className="h-4 w-4" /></Button>
-            </div>
-          </div>
-          <div className="space-y-4">
-            <Label className="font-bold">Capacité maximum du groupe</Label>
-            <div className="flex items-center gap-4">
-              <Button variant="outline" size="icon" onClick={() => setFormData({...formData, capacity: {...formData.capacity, max: Math.max(1, formData.capacity.max - 1)}})}><Minus className="h-4 w-4" /></Button>
-              <span className="font-black text-xl">{formData.capacity.max}</span>
-              <Button variant="outline" size="icon" onClick={() => setFormData({...formData, capacity: {...formData.capacity, max: formData.capacity.max + 1}})}><Plus className="h-4 w-4" /></Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Description & Itinéraire */}
-        <div className="space-y-6">
-          <div className="flex justify-between items-end">
-            <Label className="font-black text-lg">Présentation & Itinéraire détaillé</Label>
-            <Button variant="outline" size="sm" onClick={handleAIEnhance} disabled={isGenerating} className="text-primary border-primary rounded-full">
+        {/* Description IA */}
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <Label className="font-black text-lg">{t('description_label')}</Label>
+            <Button variant="outline" size="sm" onClick={handleAIEnhance} disabled={isGenerating} className="text-primary border-primary rounded-full font-bold">
               {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4 mr-2" />}
-              Optimiser avec l'IA
+              {t('ai_improve_btn')}
             </Button>
           </div>
           <Textarea 
             value={formData.description} 
             onChange={e => setFormData({...formData, description: e.target.value})} 
-            placeholder="Décrivez le déroulement du circuit, les lieux visités..."
-            className="min-h-[200px] rounded-2xl"
+            placeholder="Ex: Niché au calme, cet appartement offre une vue imprenable sur la baie..."
+            className="min-h-[150px] rounded-2xl"
           />
         </div>
       </div>
@@ -271,75 +255,62 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
   const renderStep4 = () => (
     <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4">
       <div className="space-y-4">
-        <Label className="font-black text-lg">Photos de l'excursion (Min. 5)</Label>
+        <Label className="font-black text-lg">{t('photos_label')}</Label>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           {photos.map((p, i) => (
-            <div key={i} className="relative aspect-square rounded-xl overflow-hidden shadow-sm">
-              <Image src={p} alt="Tour" fill className="object-cover" />
-              <button onClick={() => setPhotos(prev => prev.filter((_, idx) => idx !== i))} className="absolute top-1 right-1 bg-white rounded-full p-1"><X className="h-3 w-3"/></button>
+            <div key={i} className="relative aspect-square rounded-xl overflow-hidden shadow-md">
+              <Image src={p} alt="Listing" fill className="object-cover" />
+              <button onClick={() => setPhotos(prev => prev.filter((_, idx) => idx !== i))} className="absolute top-1 right-1 bg-white rounded-full p-1 shadow-md hover:bg-red-50"><X className="h-3 w-3 text-red-500"/></button>
             </div>
           ))}
-          <label className="aspect-square rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 flex flex-col items-center justify-center cursor-pointer">
-            <Upload className="h-6 w-6 text-primary mb-2" />
+          <label className="aspect-square rounded-xl border-2 border-dashed border-primary/30 bg-primary/5 flex flex-col items-center justify-center cursor-pointer hover:bg-primary/10 transition-colors">
+            <Upload className="h-8 w-8 text-primary mb-2" />
             <span className="text-[10px] font-black text-primary uppercase">Ajouter</span>
             <input type="file" multiple className="hidden" accept="image/*" onChange={handlePhotoUpload} />
           </label>
         </div>
       </div>
 
-      <Card className="bg-slate-900 text-white overflow-hidden border-none rounded-3xl">
-        <CardContent className="p-8 space-y-8">
-          <h3 className="text-xl font-black flex items-center gap-3"><TrendingUp className="text-secondary" /> Tarification du circuit</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {formData.ticketTypes.map((t, idx) => (
-              <div key={t.id} className="space-y-2">
-                <Label className="text-white/70 font-bold">{t.name}</Label>
-                <div className="relative">
-                  <Input 
-                    type="number" 
-                    value={t.price} 
-                    onChange={e => {
-                      const newTypes = [...formData.ticketTypes];
-                      newTypes[idx].price = parseFloat(e.target.value) || 0;
-                      setFormData({...formData, ticketTypes: newTypes, price: newTypes[0].price.toString()});
-                    }}
-                    className="bg-white/10 border-white/20 h-14 text-xl font-black pl-4"
-                  />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs opacity-50 font-black">DA</span>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="pt-6 border-t border-white/10 flex justify-between items-center">
-            <p className="text-sm opacity-70">Frais StayFloow.com inclus (15%)</p>
-            <div className="text-right">
-              <p className="text-xs font-bold uppercase text-secondary">Votre gain estimé (Adulte)</p>
-              <p className="text-3xl font-black">{(parseFloat(formData.price || '0') * 0.85).toFixed(0)} DA</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="space-y-4">
+        <Label className="font-black text-lg">{t('base_price_label')} *</Label>
+        <div className="relative max-w-xs">
+          <Input 
+            type="number" 
+            value={formData.price} 
+            onChange={e => setFormData({...formData, price: e.target.value})} 
+            placeholder="Ex: 12500" 
+            className="h-14 pl-12 text-xl font-black rounded-2xl"
+          />
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">DA</div>
+        </div>
+        <p className="text-xs text-slate-400 font-medium">Prix par nuit pour l'ensemble du logement ou par chambre selon le type.</p>
+      </div>
     </div>
   );
 
   if (currentStep === 5) return (
-    <div className="text-center py-20 bg-white rounded-3xl shadow-2xl">
+    <div className="text-center py-20 bg-white rounded-3xl shadow-2xl animate-in zoom-in-95">
       <div className="bg-primary/10 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8"><CheckCircle2 className="h-16 w-16 text-primary" /></div>
-      <h3 className="text-4xl font-black text-slate-900 mb-4">Bravo {formData.firstName} !</h3>
-      <p className="text-xl text-slate-600 max-w-lg mx-auto">Votre circuit est en cours de validation. Vous recevrez une notification dès sa mise en ligne.</p>
-      <Button size="lg" className="mt-12 bg-primary px-10 h-14 font-black text-lg" asChild><a href="/">Retour au site</a></Button>
+      <h3 className="text-4xl font-black text-slate-900 mb-4">{t('success_msg_title')}</h3>
+      <p className="text-xl text-slate-600 max-w-lg mx-auto">{t('success_msg_desc')}</p>
+      <Button size="lg" className="mt-12 bg-primary px-10 h-14 font-black text-lg rounded-xl" asChild><a href="/">{t('back_home_btn')}</a></Button>
     </div>
   );
 
   return (
-    <Card className="border-none shadow-2xl rounded-3xl overflow-hidden bg-white">
-      <div className="bg-slate-100 h-2 w-full"><div className="bg-primary h-full transition-all duration-700" style={{ width: `${(currentStep / steps.length) * 100}%` }} /></div>
+    <Card className="border-none shadow-2xl rounded-[2.5rem] overflow-hidden bg-white">
+      <div className="bg-slate-100 h-2 w-full"><div className="bg-primary h-full transition-all duration-1000" style={{ width: `${(currentStep / steps.length) * 100}%` }} /></div>
       <CardContent className="p-10">
-        <div className="flex justify-between mb-12">
+        <div className="flex justify-between mb-12 overflow-x-auto pb-4 no-scrollbar">
           {steps.map(s => (
-            <div key={s.id} className="flex flex-col items-center gap-2">
-              <div className={cn("w-10 h-10 rounded-full flex items-center justify-center font-black border-2", currentStep >= s.id ? "bg-primary border-primary text-white" : "bg-white border-slate-200 text-slate-300")}>{currentStep > s.id ? <CheckCircle2 className="h-5 w-5"/> : s.id}</div>
-              <span className={cn("text-[10px] font-black uppercase tracking-tighter", currentStep === s.id ? "text-primary" : "text-slate-300")}>{s.title}</span>
+            <div key={s.id} className="flex flex-col items-center gap-2 min-w-[80px]">
+              <div className={cn(
+                "w-10 h-10 rounded-full flex items-center justify-center font-black border-2 transition-all",
+                currentStep >= s.id ? "bg-primary border-primary text-white" : "bg-white border-slate-200 text-slate-300"
+              )}>
+                {currentStep > s.id ? <CheckCircle2 className="h-5 w-5"/> : s.id}
+              </div>
+              <span className={cn("text-[9px] font-black uppercase tracking-tighter", currentStep === s.id ? "text-primary" : "text-slate-300")}>{s.title}</span>
             </div>
           ))}
         </div>
@@ -350,16 +321,32 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
         {currentStep === 4 && renderStep4()}
 
         <div className="mt-12 pt-8 border-t flex justify-between">
-          <Button variant="ghost" onClick={handlePrev} disabled={currentStep === 1} className="font-bold">← Précédent</Button>
+          <Button variant="ghost" onClick={handlePrev} disabled={currentStep === 1} className="font-bold text-slate-400">← {t('back')}</Button>
           {currentStep === steps.length ? (
             <Button onClick={handleSubmit} disabled={isSubmitting} className="bg-primary hover:bg-primary/90 px-12 h-14 rounded-xl font-black text-lg shadow-xl shadow-primary/20">
-              {isSubmitting ? <Loader2 className="animate-spin mr-2"/> : "Soumettre le circuit"}
+              {isSubmitting ? <Loader2 className="animate-spin mr-2"/> : t('submit_review_btn')}
             </Button>
           ) : (
-            <Button onClick={handleNext} className="bg-primary hover:bg-primary/90 px-12 h-14 rounded-xl font-black text-lg shadow-xl shadow-primary/20">Continuer →</Button>
+            <Button onClick={handleNext} className="bg-primary hover:bg-primary/90 px-12 h-14 rounded-xl font-black text-lg shadow-xl shadow-primary/20">
+              {t('continue')} →
+            </Button>
           )}
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function CounterField({ icon, label, value, onChange }: { icon: any, label: string, value: number, onChange: (v: number) => void }) {
+  return (
+    <div className="flex flex-col items-center gap-3 bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+      <div className="bg-primary/5 p-3 rounded-xl text-primary">{icon}</div>
+      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</span>
+      <div className="flex items-center gap-4">
+        <button onClick={() => onChange(Math.max(0, value - 1))} className="h-8 w-8 rounded-full border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-colors"><Minus className="h-4 w-4 text-slate-400" /></button>
+        <span className="font-black text-lg w-4 text-center">{value}</span>
+        <button onClick={() => onChange(value + 1)} className="h-8 w-8 rounded-full border border-primary text-primary flex items-center justify-center hover:bg-primary/5 transition-colors"><Plus className="h-4 w-4" /></button>
+      </div>
+    </div>
   );
 }

@@ -150,7 +150,7 @@ function CircuitsContent() {
           <Alert className="bg-slate-50 border-slate-200">
             <Info className="h-4 w-4 text-slate-400" />
             <AlertDescription className="text-xs text-slate-600">
-              {filteredResults.length} circuits correspondent à votre recherche à {locationParam || 'votre destination'}.
+              {filteredResults.length} {t('tours')} correspondent à votre recherche à {locationParam || 'votre destination'}.
             </AlertDescription>
           </Alert>
 
