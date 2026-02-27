@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -29,11 +30,10 @@ export default function AdvancedSearchBar() {
   const [occupancy, setOccupancy] = useState({ adults: 2, children: 0, rooms: 1 });
   const [times, setTimes] = useState({ pickup: "10:00", return: "10:00" });
 
-  // Synchroniser l'onglet actif avec l'URL actuelle
   useEffect(() => {
-    if (pathname.startsWith('/cars')) {
+    if (pathname.includes('/cars')) {
       setActiveCategory('cars');
-    } else if (pathname.startsWith('/circuits')) {
+    } else if (pathname.includes('/circuits')) {
       setActiveCategory('circuits');
     } else {
       setActiveCategory('accommodations');
@@ -63,12 +63,14 @@ export default function AdvancedSearchBar() {
   const handleSearch = () => {
     const from = dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : '';
     const to = dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : '';
-    let url = `/search?type=${activeCategory}&dest=${encodeURIComponent(destination)}&from=${from}&to=${to}`;
     
-    if (activeCategory === 'accommodations') {
-      url += `&adults=${occupancy.adults}&rooms=${occupancy.rooms}`;
-    } else if (activeCategory === 'cars') {
-      url += `&pickup_time=${times.pickup}&return_time=${times.return}`;
+    let url = "";
+    if (activeCategory === 'cars') {
+      url = `/cars/results?dest=${encodeURIComponent(destination)}&from=${from}&to=${to}&pickup_time=${times.pickup}&return_time=${times.return}`;
+    } else if (activeCategory === 'circuits') {
+      url = `/circuits?dest=${encodeURIComponent(destination)}`;
+    } else {
+      url = `/search?dest=${encodeURIComponent(destination)}&from=${from}&to=${to}&adults=${occupancy.adults}&rooms=${occupancy.rooms}`;
     }
     
     router.push(url);
