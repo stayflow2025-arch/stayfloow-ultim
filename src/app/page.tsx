@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -62,10 +61,7 @@ export default function Home() {
       </div>
 
       <main className="max-w-7xl mx-auto px-6 pb-20 w-full">
-        <section className="mb-20">
-          <AiRecommender />
-        </section>
-
+        {/* Section 1 : Types d'hébergement */}
         <section className="mb-20">
           <h2 className="text-2xl font-black mb-6 text-slate-900 tracking-tight">{t("property_types_title")}</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -83,6 +79,7 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Section 2 : Hébergements uniques */}
         <section className="mb-20">
           <div className="mb-8">
             <h2 className="text-2xl font-black text-slate-900 tracking-tight">{t("unique_stays_title")}</h2>
@@ -111,7 +108,13 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Section 3 : Recommandations Personnalisées */}
         <PersonalizedRecommendations />
+
+        {/* Section 4 : Assistant Voyage IA (DÉPLACÉ EN BAS) */}
+        <section className="mb-20 mt-32">
+          <AiRecommender />
+        </section>
       </main>
     </div>
   );

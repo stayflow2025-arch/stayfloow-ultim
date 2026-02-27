@@ -1,27 +1,52 @@
 'use server';
 /**
- * @fileOverview A Genkit flow for tailoring user recommendations based on preferences and history.
+ * @fileOverview Un agent IA expert StayFloow qui recommande des services basés sur le catalogue réel du site.
  *
- * - tailorRecommendationsViaUI - A function that handles the personalized recommendation process.
+ * - tailorRecommendationsViaUI - Gère la logique de recommandation intelligente.
  */
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
 const RecommendationInputSchema = z.object({
-  userPreferences: z.string().describe('User selected preferences.'),
-  recommendationToolEnabled: z.boolean().describe('Whether the recommendation engine is active.'),
-  pastBookings: z.string().describe('History of past bookings.'),
-  travelerProfiles: z.string().describe('Type of traveler profile.'),
+  userPreferences: z.string().describe('Préférences sélectionnées par l\'utilisateur.'),
+  recommendationToolEnabled: z.boolean().describe('Si l\'analyse avancée est activée.'),
+  pastBookings: z.string().optional().describe('Historique des réservations passées.'),
+  travelerProfiles: z.string().optional().describe('Profil du voyageur.'),
+  siteContext: z.string().optional().describe('Données réelles extraites du site (hébergements, voitures, circuits).'),
 });
 
 export type RecommendationInput = z.infer<typeof RecommendationInputSchema>;
 
 const RecommendationOutputSchema = z.object({
-  accommodations: z.string().describe('The personalized suggestions generated.'),
+  response: z.string().describe('La réponse personnalisée et détaillée générée par l\'IA.'),
 });
 
 export type RecommendationOutput = z.infer<typeof RecommendationOutputSchema>;
+
+const recommendationPrompt = ai.definePrompt({
+  name: 'recommendationPrompt',
+  input: { schema: RecommendationInputSchema },
+  output: { schema: RecommendationOutputSchema },
+  prompt: `Tu es l'Expert Voyage de StayFloow.com. Ton rôle est d'aider les clients à trouver le séjour parfait en Algérie ou en Égypte.
+
+Voici les informations dont tu disposes :
+- Préférences client : {{{userPreferences}}}
+- Profil : {{{travelerProfiles}}}
+- Historique : {{{pastBookings}}}
+
+CONTEXTE DU SITE (Offres réelles) :
+{{{siteContext}}}
+
+INSTRUCTIONS :
+1. Analyse les préférences du client et compare-les avec les offres réelles du site fournies dans le contexte.
+2. Si le client demande des détails sur la "composition" (nombre de chambres, salles de bain, équipements), utilise les données du contexte pour répondre précisément.
+3. Sois chaleureux, professionnel et incite à la réservation sur StayFloow.com.
+4. Si aucune offre ne correspond parfaitement, suggère l'option la plus proche en expliquant pourquoi.
+5. Garde tes réponses structurées avec des points clés.
+
+Réponds directement au client.`,
+});
 
 export async function tailorRecommendationsViaUI(input: RecommendationInput): Promise<RecommendationOutput> {
   return tailorRecommendationsFlow(input);
@@ -34,32 +59,7 @@ const tailorRecommendationsFlow = ai.defineFlow(
     outputSchema: RecommendationOutputSchema,
   },
   async (input) => {
-    console.log("DEBUG: Running user-recommendation-flow for StayFloow.com");
-    
-    // Simule un délai pour imiter un traitement IA
-    await new Promise((resolve) => setTimeout(resolve, 1200));
-
-    if (!input.recommendationToolEnabled) {
-      return {
-        accommodations: "Les recommandations personnalisées sont désactivées. Activez-les pour obtenir des suggestions adaptées sur StayFloow.com.",
-      };
-    }
-
-    const generatedText = `
-Préférences détectées : ${input.userPreferences}
-
-Profil du voyageur : ${input.travelerProfiles}
-
-Historique : ${input.pastBookings}
-
-✨ Suggestions personnalisées StayFloow.com :
-- Appartement moderne avec vue panoramique
-- Hôtel familial proche des restaurants et activités
-- Bungalow calme avec terrasse privée
-    `;
-
-    return {
-      accommodations: generatedText.trim(),
-    };
+    const { output } = await recommendationPrompt(input);
+    return output!;
   }
 );
