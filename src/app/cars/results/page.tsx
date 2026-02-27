@@ -5,8 +5,7 @@ import React, { useState, useEffect, Suspense, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { 
   Search as SearchIcon, Loader2, Map as MapIcon, 
-  Grid, List as ListIcon, 
-  Info, ChevronRight
+  Info, SlidersHorizontal
 } from 'lucide-react';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
@@ -15,6 +14,13 @@ import { CarResultCard, type CarListing } from '@/components/car-result-card';
 import { CarSearchSidebar, type CarFilterStats } from '@/components/car-search-sidebar';
 import AdvancedSearchBar from '@/components/search/AdvancedSearchBar';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 function CarResultsContent() {
   const searchParams = useSearchParams();
@@ -22,7 +28,6 @@ function CarResultsContent() {
   
   const [allApproved, setAllApproved] = useState<CarListing[]>([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [selectedRatings, setSelectedRatings] = useState<string[]>([]);
@@ -86,7 +91,7 @@ function CarResultsContent() {
       "Annulation gratuite", "Payez sur place", "Voiture récente (moins de 5 ans)",
       "Fournisseur bien noté (rating 8+)"
     ];
-    optionsList.forEach(o => s.options[optionMapping[o] || o] = 0);
+    optionsList.forEach(o => s.options[o] = 0);
 
     allApproved.forEach(car => {
       if (car.rating >= 9) s.ratings["9+"]++;
@@ -134,18 +139,20 @@ function CarResultsContent() {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="bg-[#10B981] pt-6 pb-10 px-4">
+      <div className="bg-primary pt-6 pb-10 px-4">
         <div className="max-w-[1100px] mx-auto">
           <AdvancedSearchBar />
         </div>
       </div>
 
       <div className="max-w-[1100px] mx-auto px-4 py-6 flex flex-col lg:flex-row gap-6">
-        <aside className="w-full lg:w-[280px] shrink-0 space-y-4">
+        
+        {/* DESKTOP SIDEBAR */}
+        <aside className="hidden lg:block w-[280px] shrink-0 space-y-4">
           <div className="relative h-24 rounded-lg overflow-hidden border shadow-sm cursor-pointer group">
             <div className="absolute inset-0 bg-slate-200 animate-pulse" />
             <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
-              <Button size="sm" className="bg-[#10B981] hover:bg-[#059669] text-white font-bold h-8">
+              <Button size="sm" className="bg-primary hover:bg-[#059669] text-white font-bold h-8">
                 <MapIcon className="mr-2 h-4 w-4" /> Voir sur la carte
               </Button>
             </div>
@@ -161,22 +168,51 @@ function CarResultsContent() {
           />
         </aside>
 
+        {/* MOBILE FILTER BAR */}
+        <div className="lg:hidden flex gap-2 overflow-x-auto no-scrollbar pb-2">
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" className="rounded-full border-slate-200 font-bold text-slate-700 h-10 px-6 shrink-0">
+                <SlidersHorizontal className="mr-2 h-4 w-4 text-primary" /> Filtres
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[300px] p-0 overflow-y-auto">
+              <SheetHeader className="p-6 border-b">
+                <SheetTitle className="text-primary font-black text-xl">Filtres Véhicules</SheetTitle>
+              </SheetHeader>
+              <div className="p-4">
+                <CarSearchSidebar 
+                  resultCount={filteredResults.length} 
+                  stats={stats}
+                  selectedOptions={selectedOptions}
+                  selectedRatings={selectedRatings}
+                  onToggleOption={handleToggleOption}
+                  onToggleRating={handleToggleRating}
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
+          <Button variant="outline" className="rounded-full border-slate-200 font-bold text-slate-700 h-10 px-6 shrink-0">
+            <MapIcon className="mr-2 h-4 w-4 text-primary" /> Carte
+          </Button>
+        </div>
+
         <main className="flex-1 space-y-4">
-          <h1 className="text-2xl font-bold text-slate-900">
+          <h1 className="text-xl md:text-2xl font-black text-slate-900 leading-tight">
             {locationParam || 'Toutes les localisations'} : {filteredResults.length} véhicules disponibles
           </h1>
 
           <Alert className="bg-slate-50 border-slate-200">
-            <Info className="h-4 w-4 text-slate-400" />
-            <AlertDescription className="text-xs text-slate-600">
+            <Info className="h-4 w-4 text-slate-400 shrink-0" />
+            <AlertDescription className="text-[11px] md:text-xs text-slate-600">
               Réservez votre véhicule en toute confiance. Les prix affichés incluent les taxes locales obligatoires.
             </AlertDescription>
           </Alert>
 
           {loading ? (
             <div className="py-20 flex flex-col items-center justify-center space-y-4">
-              <Loader2 className="h-10 w-10 animate-spin text-[#10B981]" />
-              <p className="text-slate-400 font-bold uppercase tracking-widest text-xs">Recherche des meilleurs véhicules...</p>
+              <Loader2 className="h-10 w-10 animate-spin text-primary" />
+              <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Recherche des meilleurs véhicules...</p>
             </div>
           ) : filteredResults.length > 0 ? (
             <div className="flex flex-col gap-4">
@@ -185,12 +221,12 @@ function CarResultsContent() {
               ))}
             </div>
           ) : (
-            <div className="py-32 text-center bg-slate-50 rounded-xl border-2 border-dashed">
+            <div className="py-20 text-center bg-slate-50 rounded-xl border-2 border-dashed px-6">
               <div className="mx-auto w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
                 <SearchIcon className="h-8 w-8 text-slate-200" />
               </div>
-              <h3 className="text-xl font-bold text-slate-400">Aucun véhicule trouvé</h3>
-              <p className="text-slate-500 mt-2">Élargissez vos critères ou changez de dates.</p>
+              <h3 className="text-lg font-bold text-slate-400">Aucun véhicule trouvé</h3>
+              <p className="text-sm text-slate-500 mt-2">Élargissez vos critères ou changez de dates.</p>
             </div>
           )}
         </main>
@@ -199,18 +235,9 @@ function CarResultsContent() {
   );
 }
 
-const optionMapping: Record<string, string> = {
-  "Transmission automatique": "Boîte Automatique",
-  "Climatisation": "Climatisation",
-  "Kilométrage illimité": "Kilométrage illimité",
-  "Assurance tous risques incluse": "Assurance incluse",
-  "Voiture avec GPS intégré": "GPS intégré",
-  "Essence / Diesel / Électrique": "Diesel", // Simplifié pour le mock
-};
-
 export default function CarResultsPage() {
   return (
-    <Suspense fallback={<div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin text-[#10B981]" /></div>}>
+    <Suspense fallback={<div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin text-primary" /></div>}>
       <CarResultsContent />
     </Suspense>
   );

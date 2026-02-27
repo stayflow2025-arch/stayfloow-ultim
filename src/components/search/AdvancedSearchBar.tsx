@@ -1,7 +1,8 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { MapPin, Calendar as CalendarIcon, Users, Building, Car, Compass, Minus, Plus, Clock, X } from 'lucide-react';
+import { MapPin, Calendar as CalendarIcon, Users, Building, Car, Compass, Minus, Plus, Clock, X, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -82,8 +83,9 @@ export default function AdvancedSearchBar() {
   });
 
   return (
-    <div className="w-full space-y-1 overflow-hidden">
-      <div className="flex gap-2 mb-2 overflow-x-auto no-scrollbar py-1">
+    <div className="w-full space-y-2">
+      {/* TABS - Scrollable on mobile */}
+      <div className="flex gap-2 mb-1 overflow-x-auto no-scrollbar py-1 px-1">
         <CategoryTab 
           active={activeCategory === 'accommodations'} 
           onClick={() => handleTabClick('accommodations')}
@@ -104,11 +106,13 @@ export default function AdvancedSearchBar() {
         />
       </div>
 
-      <div className="bg-[#febb02] p-1 rounded-lg shadow-2xl flex flex-col md:flex-row items-stretch gap-1 overflow-hidden">
-        {/* LOCALISATION / PRISE EN CHARGE */}
-        <div className="flex-[1.5] bg-white rounded flex items-center px-4 py-3 gap-3 focus-within:ring-2 ring-primary transition-all relative">
+      {/* SEARCH BAR CONTAINER */}
+      <div className="bg-[#febb02] p-1.5 md:p-1 rounded-2xl md:rounded-lg shadow-2xl flex flex-col md:flex-row items-stretch gap-1.5 md:gap-1">
+        
+        {/* DESTINATION */}
+        <div className="flex-[1.5] bg-white rounded-xl md:rounded flex items-center px-4 py-3 gap-3 focus-within:ring-2 ring-primary transition-all relative">
           <div className="flex flex-col flex-1">
-            {activeCategory === 'cars' && <span className="text-[10px] font-bold text-slate-400 uppercase leading-none mb-1">{t('pickup_location')}</span>}
+            {activeCategory === 'cars' && <span className="text-[9px] font-black text-slate-400 uppercase leading-none mb-1">{t('pickup_location')}</span>}
             <div className="flex items-center gap-2">
               <MapPin className="text-slate-400 h-5 w-5 shrink-0" />
               <input 
@@ -129,9 +133,9 @@ export default function AdvancedSearchBar() {
         {/* DATES */}
         <Popover>
           <PopoverTrigger asChild>
-            <div className="flex-[1.5] bg-white rounded flex items-center px-4 py-3 gap-3 cursor-pointer hover:bg-slate-50 transition-all">
+            <div className="flex-[1.5] bg-white rounded-xl md:rounded flex items-center px-4 py-3 gap-3 cursor-pointer hover:bg-slate-50 transition-all">
               <div className="flex flex-col flex-1">
-                {activeCategory === 'cars' && <span className="text-[10px] font-bold text-slate-400 uppercase leading-none mb-1">{t('pickup_date')} — {t('return_date')}</span>}
+                {activeCategory === 'cars' && <span className="text-[9px] font-black text-slate-400 uppercase leading-none mb-1">{t('pickup_date')} — {t('return_date')}</span>}
                 <div className="flex items-center gap-2">
                   <CalendarIcon className="text-slate-400 h-5 w-5 shrink-0" />
                   <span className="text-sm font-bold text-slate-800 truncate">
@@ -144,7 +148,16 @@ export default function AdvancedSearchBar() {
               </div>
             </div>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 border-none shadow-2xl" align="center">
+          <PopoverContent className="w-[320px] md:w-auto p-0 border-none shadow-2xl" align="center">
+            <Calendar
+              mode="range"
+              selected={dateRange}
+              onSelect={setDateRange}
+              numberOfMonths={1}
+              locale={getDateLocale()}
+              disabled={{ before: new Date() }}
+              className="md:hidden" // Single month on mobile
+            />
             <Calendar
               mode="range"
               selected={dateRange}
@@ -152,13 +165,14 @@ export default function AdvancedSearchBar() {
               numberOfMonths={2}
               locale={getDateLocale()}
               disabled={{ before: new Date() }}
+              className="hidden md:block" // Double month on desktop
             />
           </PopoverContent>
         </Popover>
 
-        {/* TIME SELECTION OR OCCUPANCY */}
+        {/* TIME / OCCUPANCY */}
         {activeCategory === 'cars' ? (
-          <div className="flex-1 bg-white rounded flex items-center px-4 py-2 gap-4">
+          <div className="flex-1 bg-white rounded-xl md:rounded flex items-center px-4 py-3 gap-4">
             <div className="flex flex-col gap-1 flex-1">
               <span className="text-[9px] font-black text-slate-400 uppercase">{t('hour')}</span>
               <Select value={times.pickup} onValueChange={(val) => setTimes({...times, pickup: val})}>
@@ -186,7 +200,7 @@ export default function AdvancedSearchBar() {
             </div>
           </div>
         ) : activeCategory === 'circuits' ? (
-          <div className="flex-1 bg-white rounded flex items-center px-4 py-3 gap-3">
+          <div className="flex-1 bg-white rounded-xl md:rounded flex items-center px-4 py-3 gap-3">
             <Users className="text-slate-400 h-5 w-5 shrink-0" />
             <div className="flex flex-col">
               <span className="text-[9px] font-black text-slate-400 uppercase leading-none mb-1">Participants</span>
@@ -202,29 +216,32 @@ export default function AdvancedSearchBar() {
         ) : (
           <Popover>
             <PopoverTrigger asChild>
-              <div className="flex-1 bg-white rounded flex items-center px-4 py-3 gap-3 cursor-pointer hover:bg-slate-50 transition-all">
+              <div className="flex-1 bg-white rounded-xl md:rounded flex items-center px-4 py-3 gap-3 cursor-pointer hover:bg-slate-50 transition-all">
                 <Users className="text-slate-400 h-5 w-5 shrink-0" />
                 <span className="text-sm font-bold text-slate-800 truncate">
                   {occupancy.adults} {t('adult_short')} · {occupancy.children} {t('child_short')} · {occupancy.rooms} {t('room_short')}
                 </span>
               </div>
             </PopoverTrigger>
-            <PopoverContent className="w-80 p-6 shadow-2xl bg-white rounded-xl border border-slate-100">
+            <PopoverContent className="w-[300px] md:w-80 p-6 shadow-2xl bg-white rounded-2xl border border-slate-100">
               <div className="space-y-6">
                 <OccupancyRow label={t('adults')} value={occupancy.adults} onDec={() => setOccupancy({...occupancy, adults: Math.max(1, occupancy.adults - 1)})} onInc={() => setOccupancy({...occupancy, adults: occupancy.adults + 1})} />
                 <OccupancyRow label={t('children')} value={occupancy.children} onDec={() => setOccupancy({...occupancy, children: Math.max(0, occupancy.children - 1)})} onInc={() => setOccupancy({...occupancy, children: occupancy.children + 1})} />
                 <OccupancyRow label={t('rooms')} value={occupancy.rooms} onDec={() => setOccupancy({...occupancy, rooms: Math.max(1, occupancy.rooms - 1)})} onInc={() => setOccupancy({...occupancy, rooms: occupancy.rooms + 1})} />
-                <Button className="w-full bg-primary font-black text-white hover:bg-primary/90 mt-4 rounded-md h-12" onClick={() => {}}>{t('start')}</Button>
+                <Button className="w-full bg-primary font-black text-white hover:bg-primary/90 mt-4 rounded-xl h-12" onClick={() => {}}>{t('start')}</Button>
               </div>
             </PopoverContent>
           </Popover>
         )}
 
+        {/* SEARCH BUTTON */}
         <Button 
-          className="md:w-44 bg-primary hover:bg-primary/90 text-white h-14 md:h-auto font-black text-xl rounded shadow-lg transition-all active:scale-95 border-none" 
+          className="w-full md:w-44 bg-primary hover:bg-primary/90 text-white h-14 md:h-auto font-black text-xl rounded-xl md:rounded shadow-lg transition-all active:scale-95 border-none" 
           onClick={handleSearch}
         >
-          {t("search_btn")}
+          <span className="flex items-center gap-2">
+            <Search className="md:hidden h-5 w-5" /> {t("search_btn")}
+          </span>
         </Button>
       </div>
     </div>
@@ -253,9 +270,9 @@ function OccupancyRow({ label, value, onDec, onInc }: { label: string, value: nu
     <div className="flex items-center justify-between">
       <span className="font-bold text-slate-700 text-sm capitalize">{label}</span>
       <div className="flex items-center gap-4">
-        <button onClick={onDec} className="h-8 w-8 rounded border border-primary text-primary flex items-center justify-center hover:bg-primary/5 transition-colors disabled:opacity-30" disabled={value <= 0 && label !== t('adults') || (label === t('adults') && value <= 1)}><Minus className="h-4 w-4" /></button>
+        <button onClick={onDec} className="h-8 w-8 rounded-full border border-primary text-primary flex items-center justify-center hover:bg-primary/5 transition-colors disabled:opacity-30" disabled={value <= 0 && label !== t('adults') || (label === t('adults') && value <= 1)}><Minus className="h-4 w-4" /></button>
         <span className="w-4 text-center font-bold text-sm">{value}</span>
-        <button onClick={onInc} className="h-8 w-8 rounded border border-primary text-primary flex items-center justify-center hover:bg-primary/5 transition-colors"><Plus className="h-4 w-4" /></button>
+        <button onClick={onInc} className="h-8 w-8 rounded-full border border-primary text-primary flex items-center justify-center hover:bg-primary/5 transition-colors"><Plus className="h-4 w-4" /></button>
       </div>
     </div>
   );
