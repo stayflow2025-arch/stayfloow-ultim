@@ -11,6 +11,24 @@ import { useLanguage } from "@/context/language-context";
 export function FilterSidebar({ resultCount }: { resultCount: number }) {
   const { t } = useLanguage();
 
+  const equipments = [
+    { label: "Wi-Fi gratuit", count: 124, id: "eq-wifi" },
+    { label: "Climatisation", count: 89, id: "eq-ac" },
+    { label: "Parking gratuit", count: 67, id: "eq-parking" },
+    { label: "Petit-déjeuner inclus", count: 54, id: "eq-bf" },
+    { label: "Piscine", count: 32, id: "eq-pool" },
+    { label: "Restaurant sur place", count: 41, id: "eq-rest" },
+    { label: "Réception 24h/24", count: 76, id: "eq-rec" },
+    { label: "Animaux domestiques acceptés", count: 28, id: "eq-pets" },
+    { label: "Terrasse / balcon / vue", count: 45, id: "eq-view" },
+    { label: "Cuisine / coin cuisine", count: 38, id: "eq-kitchen" },
+    { label: "Prises électriques près du lit", count: 92, id: "eq-plugs" },
+    { label: "Salle de bain privée", count: 110, id: "eq-bath" },
+    { label: "Lit bébé / lit supplémentaire", count: 15, id: "eq-baby" },
+    { label: "Ascenseur", count: 48, id: "eq-elev" },
+    { label: "Accessibilité PMR", count: 12, id: "eq-handi" },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Title with Green Star */}
@@ -31,13 +49,13 @@ export function FilterSidebar({ resultCount }: { resultCount: number }) {
           />
           <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-slate-400" />
         </div>
-        <Button className="w-full bg-[#10B981] hover:bg-[#059669] text-white font-bold rounded-md h-10 shadow-sm">
+        <Button className="w-full bg-[#10B981] hover:bg-[#059669] text-white font-bold rounded-md h-10 shadow-sm mt-2">
           Trouver des hébergements
         </Button>
       </div>
 
       {/* Ratings Section */}
-      <div className="space-y-4 pt-4">
+      <div className="space-y-4 pt-4 border-t">
         <h3 className="text-[16px] font-bold text-slate-900">Note des commentaires</h3>
         <div className="space-y-3">
           <FilterRow label="Fabuleux : 9+" count={16} id="rate-9" />
@@ -47,14 +65,13 @@ export function FilterSidebar({ resultCount }: { resultCount: number }) {
         </div>
       </div>
 
-      {/* Popular Filters (Mocked) */}
-      <div className="space-y-4 pt-4">
-        <h3 className="text-[16px] font-bold text-slate-900">Filtres populaires</h3>
+      {/* NEW: Popular Equipments Section */}
+      <div className="space-y-4 pt-4 border-t">
+        <h3 className="text-[16px] font-bold text-[#10B981]">Équipements populaires</h3>
         <div className="space-y-3">
-          <FilterRow label="Petit-déjeuner compris" count={59} id="pop-1" />
-          <FilterRow label="Hôtel" count={64} id="pop-2" />
-          <FilterRow label="Connexion Wi-Fi gratuite" count={93} id="pop-3" />
-          <FilterRow label="Parking" count={68} id="pop-4" />
+          {equipments.map((eq) => (
+            <FilterRow key={eq.id} label={eq.label} count={eq.count} id={eq.id} />
+          ))}
         </div>
       </div>
     </div>
@@ -70,7 +87,7 @@ function FilterRow({ label, count, id }: { label: string, count: number, id: str
           {label}
         </Label>
       </div>
-      <span className="text-[12px] text-slate-400 font-medium">{count}</span>
+      <span className="text-[12px] text-slate-400 font-medium">({count})</span>
     </div>
   );
 }
