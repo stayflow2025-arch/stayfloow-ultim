@@ -27,6 +27,10 @@ export default function BookCarPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
+  // Form states
+  const [dialCode, setDialCode] = useState("+213");
+  const [phone, setPhone] = useState("");
+
   const carId = searchParams.get('id') || 'mock';
   const options = searchParams.get('options')?.split(',') || [];
 
@@ -108,8 +112,18 @@ export default function BookCarPage() {
                     <div className="space-y-3">
                       <Label className="font-black text-slate-700 flex items-center gap-2"><Phone className="h-4 w-4 text-primary" /> Téléphone *</Label>
                       <div className="flex gap-2">
-                        <Input value="+213" className="w-20 h-14 text-center font-bold bg-slate-100" readOnly />
-                        <Input placeholder="550 00 00 00" className="flex-1 h-14 rounded-xl bg-slate-50 border-slate-100" required />
+                        <Input 
+                          value={dialCode} 
+                          onChange={(e) => setDialCode(e.target.value)}
+                          className="w-24 h-14 text-center font-bold bg-slate-50 border-slate-100 rounded-xl" 
+                        />
+                        <Input 
+                          placeholder="550 00 00 00" 
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                          className="flex-1 h-14 rounded-xl bg-slate-50 border-slate-100" 
+                          required 
+                        />
                       </div>
                     </div>
                   </div>

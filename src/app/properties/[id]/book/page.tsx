@@ -182,7 +182,7 @@ export default function PropertyBookingPage({ params }: { params: Promise<{ id: 
                         <FormItem>
                           <FormLabel className="font-bold">Nom complet</FormLabel>
                           <FormControl>
-                            <Input placeholder="Ex: Sofiane Belkacem" className="h-14 rounded-xl border-slate-200" {...field} />
+                            <Input placeholder="Ex: Sofiane Belkacem" className="h-14 rounded-xl border-slate-100 bg-slate-50" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -197,7 +197,7 @@ export default function PropertyBookingPage({ params }: { params: Promise<{ id: 
                           <FormItem>
                             <FormLabel className="font-bold">Email</FormLabel>
                             <FormControl>
-                              <Input type="email" placeholder="votre@email.com" className="h-14 rounded-xl border-slate-200" {...field} />
+                              <Input type="email" placeholder="votre@email.com" className="h-14 rounded-xl border-slate-100 bg-slate-50" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -212,7 +212,7 @@ export default function PropertyBookingPage({ params }: { params: Promise<{ id: 
                             render={({ field }) => (
                               <FormItem className="w-24">
                                 <FormControl>
-                                  <Input className="h-14 text-center font-bold bg-slate-50 border-slate-200 rounded-xl" placeholder="+213" {...field} />
+                                  <Input className="h-14 text-center font-bold bg-slate-50 border-slate-100 rounded-xl" placeholder="+213" {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -224,7 +224,7 @@ export default function PropertyBookingPage({ params }: { params: Promise<{ id: 
                             render={({ field }) => (
                               <FormItem className="flex-1">
                                 <FormControl>
-                                  <Input placeholder="0550 00 00 00" className="h-14 rounded-xl border-slate-200" {...field} />
+                                  <Input placeholder="0550 00 00 00" className="h-14 rounded-xl border-slate-100 bg-slate-50" {...field} />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
