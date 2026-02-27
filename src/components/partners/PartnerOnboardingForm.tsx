@@ -298,11 +298,24 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
       },
       car_rental: {
         types: ['Économique', 'SUV / 4x4', 'Van / Minibus', 'Luxe', 'Moto'],
-        amenities: ['Boîte Automatique', 'Essence', 'Diesel', 'Kilométrage illimité', 'GPS intégré', 'Assurance incluse']
+        amenities: [
+          'Transmission automatique', 'Climatisation', 'Kilométrage illimité', 
+          'Assurance tous risques incluse', 'Voiture avec GPS intégré', 'Siège bébé / rehausseur',
+          '4x4 / SUV', 'Essence / Diesel / Électrique', 'Âge minimum du conducteur',
+          'Boîte manuelle', 'Nombre de places (5+ ou 7+)', 'Annulation gratuite',
+          'Payez sur place', 'Voiture récente (moins de 5 ans)', 'Fournisseur bien noté (rating 8+)'
+        ]
       },
       circuit: {
         types: ['Demi-journée', 'Multi-jours', 'Circuit Désert', 'Randonnée', 'Visite Culturelle'],
-        amenities: ['Transport inclus', 'Guide Pro', 'Repas inclus', 'Entrées sites', 'Hébergement inclus', 'Assurance voyage']
+        amenities: [
+          'Guide inclus (local arabe/français)', 'Repas inclus (halal)', 'Transport 4x4 (désert)',
+          'Durée 1 jour', 'Durée multi-jours (2-7 jours)', 'Annulation gratuite',
+          'Langue arabe', 'Langue français', 'Thème désert/Sahara',
+          'Thème culturel/historique (pyramides, ruines)', 'Thème Nil/croisière',
+          'Groupe petit (max 10 pers)', 'Assurance incluse',
+          'Départ depuis aéroport (Alger/Caire)', 'Rating guide 8+'
+        ]
       }
     }[initialCategory];
 
@@ -325,10 +338,16 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
                     : "border-slate-100 bg-white hover:border-slate-200"
                 )}
               >
-                {opt === 'Hôtel' && <Building className="h-8 w-8" />}
-                {opt === 'Villa' && <Home className="h-8 w-8" />}
-                {opt === 'Appartement' && <Building className="h-8 w-8" />}
-                {opt === 'Studio' && <Home className="h-8 w-8" />}
+                {initialCategory === 'accommodation' && (
+                  <>
+                    {opt === 'Hôtel' && <Building className="h-8 w-8" />}
+                    {opt === 'Villa' && <Home className="h-8 w-8" />}
+                    {opt === 'Appartement' && <Building className="h-8 w-8" />}
+                    {opt === 'Studio' && <Home className="h-8 w-8" />}
+                  </>
+                )}
+                {initialCategory === 'car_rental' && <Car className="h-8 w-8" />}
+                {initialCategory === 'circuit' && <Compass className="h-8 w-8" />}
                 <span className="font-black text-sm">{t(opt)}</span>
               </div>
             ))}
@@ -490,7 +509,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
         {/* Équipements & Annulation */}
         <div className="space-y-8">
           <Label className="font-black text-xl text-slate-900">{t('amenities_label')} *</Label>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-50/50 p-8 rounded-3xl border-2 border-slate-100">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 bg-slate-50/50 p-8 rounded-3xl border-2 border-slate-100">
             {options.amenities.map(a => (
               <div key={a} className="flex items-center space-x-4 group">
                 <Checkbox 
@@ -499,7 +518,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
                   onCheckedChange={(checked) => setFormData(prev => ({ ...prev, amenities: checked ? [...prev.amenities, a] : prev.amenities.filter(x => x !== a) }))}
                   className="h-6 w-6 rounded-md border-slate-300 data-[state=checked]:bg-primary data-[state=checked]:border-primary shadow-sm"
                 />
-                <label htmlFor={a} className="text-sm font-bold text-slate-600 group-hover:text-primary cursor-pointer transition-colors">{t(a)}</label>
+                <label htmlFor={a} className="text-xs font-bold text-slate-600 group-hover:text-primary cursor-pointer transition-colors leading-tight">{t(a)}</label>
               </div>
             ))}
           </div>

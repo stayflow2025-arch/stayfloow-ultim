@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -68,7 +67,7 @@ export default function AdvancedSearchBar() {
     if (activeCategory === 'cars') {
       url = `/cars/results?dest=${encodeURIComponent(destination)}&from=${from}&to=${to}&pickup_time=${times.pickup}&return_time=${times.return}`;
     } else if (activeCategory === 'circuits') {
-      url = `/circuits?dest=${encodeURIComponent(destination)}`;
+      url = `/circuits/results?dest=${encodeURIComponent(destination)}`;
     } else {
       url = `/search?dest=${encodeURIComponent(destination)}&from=${from}&to=${to}&adults=${occupancy.adults}&rooms=${occupancy.rooms}`;
     }
@@ -114,7 +113,7 @@ export default function AdvancedSearchBar() {
               <MapPin className="text-slate-400 h-5 w-5 shrink-0" />
               <input 
                 className="w-full bg-transparent border-none focus:ring-0 p-0 text-sm font-bold text-slate-800 placeholder:text-slate-500 outline-none"
-                placeholder={activeCategory === 'cars' ? t('pickup_location') : t("where_to")}
+                placeholder={activeCategory === 'cars' ? t('pickup_location') : activeCategory === 'circuits' ? 'Où souhaitez-vous aller ?' : t("where_to")}
                 value={destination}
                 onChange={(e) => setDestination(e.target.value)}
               />
@@ -157,7 +156,7 @@ export default function AdvancedSearchBar() {
           </PopoverContent>
         </Popover>
 
-        {/* TIME SELECTION (IF CARS) OR OCCUPANCY (IF ACCOMMODATION) */}
+        {/* TIME SELECTION OR OCCUPANCY */}
         {activeCategory === 'cars' ? (
           <div className="flex-1 bg-white rounded flex items-center px-4 py-2 gap-4">
             <div className="flex flex-col gap-1 flex-1">
@@ -184,6 +183,20 @@ export default function AdvancedSearchBar() {
                   {hours.map(h => <SelectItem key={`r-${h}`} value={h}>{h}</SelectItem>)}
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+        ) : activeCategory === 'circuits' ? (
+          <div className="flex-1 bg-white rounded flex items-center px-4 py-3 gap-3">
+            <Users className="text-slate-400 h-5 w-5 shrink-0" />
+            <div className="flex flex-col">
+              <span className="text-[9px] font-black text-slate-400 uppercase leading-none mb-1">Participants</span>
+              <input 
+                type="number"
+                min="1"
+                className="w-full bg-transparent border-none focus:ring-0 p-0 text-sm font-bold text-slate-800 outline-none"
+                value={occupancy.adults}
+                onChange={(e) => setOccupancy({...occupancy, adults: parseInt(e.target.value) || 1})}
+              />
             </div>
           </div>
         ) : (

@@ -27,6 +27,23 @@ const translations: Record<string, Record<Locale, string>> = {
     "start": { fr: "Commencer", en: "Start", ar: "ابدأ", es: "Empezar" },
     "help": { fr: "Aide", en: "Help", ar: "مساعدة", es: "Ayuda" },
 
+    // Circuit Specific Filters
+    "Guide inclus (local arabe/français)": { fr: "Guide inclus (local arabe/français)", en: "Guide included (local Arabic/French)", ar: "دليل سياحي (عربي/فرنسي)", es: "Guía incluido (local árabe/francés)" },
+    "Repas inclus (halal)": { fr: "Repas inclus (halal)", en: "Meals included (halal)", ar: "وجبات متوفرة (حلال)", es: "Comidas incluidas (halal)" },
+    "Transport 4x4 (désert)": { fr: "Transport 4x4 (désert)", en: "4x4 Transport (desert)", ar: "نقل رباعي الدفع (صحراء)", es: "Transporte 4x4 (desierto)" },
+    "Durée 1 jour": { fr: "Durée 1 jour", en: "Duration 1 day", ar: "لمدة يوم واحد", es: "Duración 1 día" },
+    "Durée multi-jours (2-7 jours)": { fr: "Durée multi-jours (2-7 jours)", en: "Multi-day (2-7 days)", ar: "عدة أيام (2-7 أيام)", es: "Varios días (2-7 días)" },
+    "Annulation gratuite": { fr: "Annulation gratuite", en: "Free cancellation", ar: "إلغاء مجاني", es: "Cancelación gratuita" },
+    "Langue arabe": { fr: "Langue arabe", en: "Arabic language", ar: "اللغة العربية", es: "Idioma árabe" },
+    "Langue français": { fr: "Langue français", en: "French language", ar: "اللغة الفرنسية", es: "Idioma francés" },
+    "Thème désert/Sahara": { fr: "Thème désert/Sahara", en: "Desert/Sahara theme", ar: "موضوع الصحراء", es: "Tema desierto/Sahara" },
+    "Thème culturel/historique (pyramides, ruines)": { fr: "Thème culturel/historique (pyramides, ruines)", en: "Cultural/Historical (pyramids, ruins)", ar: "ثقافي/تاريخي (أهرامات، آثار)", es: "Cultural/Histórico (pirámides, ruinas)" },
+    "Thème Nil/croisière": { fr: "Thème Nil/croisière", en: "Nile/Cruise theme", ar: "موضوع النيل/كروازيير", es: "Tema Nilo/crucero" },
+    "Groupe petit (max 10 pers)": { fr: "Groupe petit (max 10 pers)", en: "Small group (max 10 people)", ar: "مجموعة صغيرة (10 أشخاص كحد أقصى)", es: "Grupo pequeño (máx. 10 pers)" },
+    "Assurance incluse": { fr: "Assurance incluse", en: "Insurance included", ar: "تأمين شامل", es: "Seguro incluido" },
+    "Départ depuis aéroport (Alger/Caire)": { fr: "Départ depuis aéroport (Alger/Caire)", en: "Airport pickup (Algiers/Cairo)", ar: "انطلاق من المطار (الجزائر/القاهرة)", es: "Salida desde el aeropuerto (Argel/Cairo)" },
+    "Rating guide 8+": { fr: "Rating guide 8+", en: "Guide rating 8+", ar: "تقييم المرشد 8+", es: "Valoración del guía 8+" },
+
     // Car Specific
     "car_hero_title": { fr: "Location de voitures pour tous les types de voyages", en: "Car rentals for every kind of trip", ar: "تأجير سيارات لجميع أنواع الرحلات", es: "Alquiler de coches para todo tipo de viajes" },
     "car_hero_subtitle": { fr: "De super voitures à des tarifs avantageux, proposées par les plus grandes sociétés de location de voitures.", en: "Great cars at great prices, from the biggest car rental companies.", ar: "سيارات رائعة بأسعار رائعة، من أكبر شركات تأجير السيارات.", es: "Grandes coches a grandes precios, de las mayores empresas de alquiler de coches." },
@@ -144,7 +161,7 @@ const translations: Record<string, Record<Locale, string>> = {
     "pro_email": { fr: "Email professionnel", en: "Professional Email", ar: "البريد الإلكتروني المهني", es: "Email profesional" },
     "phone_whatsapp": { fr: "Numéro de téléphone (WhatsApp)", en: "Phone Number (WhatsApp)", ar: "رقم الهاتف (واتساب)", es: "Número de téléphone (WhatsApp)" },
     "commercial_name": { fr: "Nom commercial de l'annonce", en: "Listing Commercial Name", ar: "الاسم التجاري للإعلان", es: "Nombre comercial del anuncio" },
-    "full_address": { fr: "Adresse complète", en: "Full Address", ar: "العنوان الكامل", es: "Dirección completa" },
+    "full_address": { fr: "Adresse complète", en: "Full Address", ar: "العنوان الكامل", es: "Dirección complète" },
     "map_preview": { fr: "Aperçu de la localisation", en: "Location Preview", ar: "معاينة الموقع", es: "Vista previa del mapa" },
     "map_hint": { fr: "* La carte s'ajuste automatiquement en fonction de la ville saisie.", en: "* Map adjusts automatically based on the city entered.", ar: "* الخريطة تتعدل تلقائياً حسب المدينة المدخلة.", es: "* El mapa se ajusta automáticamente según la ciudad introducida." },
     "listing_type_label": { fr: "Type d'offre", en: "Offer Type", ar: "نوع العرض", es: "Tipo de oferta" },
