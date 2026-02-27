@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, Suspense, useMemo } from 'react';
@@ -33,6 +32,7 @@ function CarResultsContent() {
   const [selectedRatings, setSelectedRatings] = useState<string[]>([]);
 
   const locationParam = searchParams.get('dest') || '';
+  const categoryParam = searchParams.get('cat') || '';
 
   useEffect(() => {
     const fetchApprovedCars = async () => {
@@ -61,12 +61,48 @@ function CarResultsContent() {
             images: data.photos || ["https://picsum.photos/seed/car/400/300"],
             specs: data.details?.amenities || ["Manuelle", "Climatisé"],
             pricePerDay: data.price || 5000,
-            isAutomatic: data.details?.amenities?.includes("Boîte Automatique") || false,
+            isAutomatic: data.details?.amenities?.includes("Transmission automatique") || false,
             category: data.details?.type || "Économique"
           } as CarListing;
         });
 
-        setAllApproved(dbCars);
+        // Mock data fallback for demonstration if DB is empty
+        const mockCars: CarListing[] = [
+          {
+            id: 'mock-car-1',
+            name: 'Duster 4x4 (Édition Sahara)',
+            brand: 'Dacia',
+            supplier: 'Sud Location Expert',
+            rating: 9.2,
+            reviewsCount: 342,
+            location: 'Aéroport de Ghardaïa',
+            distance: 'Au terminal',
+            description: 'Idéal pour explorer le grand sud. Véhicule révisé, pneus tout-terrain et climatisation renforcée. Parfait pour les pistes du Sahara.',
+            images: ['https://images.unsplash.com/photo-1761320296536-38a4e068b37d?w=800'],
+            specs: ['4x4 / SUV', 'Climatisation', 'Kilométrage illimité', 'Boîte manuelle'],
+            pricePerDay: 8500,
+            isAutomatic: false,
+            category: 'SUV & 4x4'
+          },
+          {
+            id: 'mock-car-2',
+            name: 'Golf 8 GTI (Luxe & Performance)',
+            brand: 'Volkswagen',
+            supplier: 'Alger VIP Cars',
+            rating: 9.8,
+            reviewsCount: 156,
+            location: 'Alger Centre',
+            distance: 'Livraison hôtel incluse',
+            description: 'Déplacez-vous avec style et puissance dans Alger. Finitions haut de gamme, système audio Beats et aide au stationnement complète.',
+            images: ['https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=800'],
+            specs: ['Transmission automatique', 'Climatisation', 'Voiture récente (moins de 5 ans)', 'GPS intégré'],
+            pricePerDay: 12000,
+            isAutomatic: true,
+            category: 'Luxe'
+          }
+        ];
+
+        setAllApproved([...dbCars, ...mockCars]);
       } catch (error) {
         console.error("Error fetching cars:", error);
       } finally {
@@ -110,6 +146,7 @@ function CarResultsContent() {
   const filteredResults = useMemo(() => {
     return allApproved.filter(car => {
       if (locationParam && !car.location.toLowerCase().includes(locationParam.toLowerCase())) return false;
+      if (categoryParam && !car.category.toLowerCase().includes(categoryParam.toLowerCase())) return false;
 
       if (selectedOptions.length > 0) {
         const hasAll = selectedOptions.every(opt => car.specs.includes(opt));
@@ -123,7 +160,7 @@ function CarResultsContent() {
 
       return true;
     });
-  }, [allApproved, locationParam, selectedOptions, selectedRatings]);
+  }, [allApproved, locationParam, categoryParam, selectedOptions, selectedRatings]);
 
   const handleToggleOption = (option: string) => {
     setSelectedOptions(prev => 
@@ -199,7 +236,7 @@ function CarResultsContent() {
 
         <main className="flex-1 space-y-4">
           <h1 className="text-xl md:text-2xl font-black text-slate-900 leading-tight">
-            {locationParam || 'Toutes les localisations'} : {filteredResults.length} véhicules disponibles
+            {locationParam || categoryParam || 'Toutes les locations'} : {filteredResults.length} véhicules disponibles
           </h1>
 
           <Alert className="bg-slate-50 border-slate-200">

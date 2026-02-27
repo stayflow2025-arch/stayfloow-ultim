@@ -17,7 +17,7 @@ export default function CarsPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#f5f5f5]">
-      {/* Hero Section - Adaptée du style Booking (Bleu Profond / Vert Marque) */}
+      {/* Hero Section - Adaptée du style Booking */}
       <section className="bg-primary pt-16 pb-32 px-6 relative overflow-hidden">
         <div className="max-w-5xl mx-auto relative z-10 text-center md:text-left space-y-6">
           <h1 className="text-4xl md:text-6xl font-black text-white leading-tight tracking-tight">
@@ -67,7 +67,7 @@ export default function CarsPage() {
           <h2 className="text-3xl font-black mb-8 text-slate-900 tracking-tight">Parcourir par catégorie</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {carCategories.map((cat) => (
-              <Link key={cat.name} href={`/search?type=cars&cat=${cat.name.toLowerCase()}`} className="group">
+              <Link key={cat.name} href={`/cars/results?cat=${cat.name.toLowerCase()}`} className="group">
                 <div className="relative aspect-[4/3] rounded-[2rem] overflow-hidden mb-4 shadow-xl border-4 border-white transition-all group-hover:shadow-2xl group-hover:-translate-y-2">
                   <Image src={cat.image} alt={cat.name} fill className="object-cover group-hover:scale-110 transition-transform duration-700" />
                 </div>
@@ -86,7 +86,7 @@ export default function CarsPage() {
               <p className="text-slate-500 font-medium">Réservez les meilleures offres du moment</p>
             </div>
             <Button variant="ghost" className="text-primary font-black uppercase text-xs tracking-widest hover:bg-primary/5" asChild>
-              <Link href="/search?type=cars">Tout voir →</Link>
+              <Link href="/cars/results">Tout voir →</Link>
             </Button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">

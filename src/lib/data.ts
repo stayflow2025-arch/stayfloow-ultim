@@ -1,4 +1,3 @@
-
 /**
  * @fileOverview Données mockées pour les circuits et établissements de StayFloow.com
  */
@@ -138,27 +137,27 @@ export const cars = [
   { 
     id: "car-1", 
     brand: "Dacia", 
-    name: "Duster 4x4", 
+    name: "Duster 4x4 Sahara", 
     rating: 4.8, 
-    image: "https://picsum.photos/seed/car1/400/300", 
+    image: "https://images.unsplash.com/photo-1761320296536-38a4e068b37d?w=800", 
     pricePerDay: 7500, 
     transmission: "Manuelle", 
     fuel: "Diesel", 
     seats: 5, 
-    category: "SUV",
+    category: "SUV & 4x4",
     isBoosted: true
   },
   { 
     id: "car-2", 
-    brand: "Toyota", 
-    name: "Hilux Adventure", 
+    brand: "Volkswagen", 
+    name: "Golf 8 GTI Performance", 
     rating: 4.9, 
-    image: "https://picsum.photos/seed/car2/400/300", 
+    image: "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=800", 
     pricePerDay: 12000, 
-    transmission: "Manuelle", 
-    fuel: "Diesel", 
+    transmission: "Automatique", 
+    fuel: "Essence", 
     seats: 5, 
-    category: "4x4" 
+    category: "Luxe" 
   },
   { 
     id: "car-3", 
@@ -174,21 +173,21 @@ export const cars = [
   },
   { 
     id: "car-4", 
-    brand: "Volkswagen", 
-    name: "Golf 8 GTI", 
+    brand: "Toyota", 
+    name: "Hilux Adventure", 
     rating: 4.7, 
-    image: "https://picsum.photos/seed/car4/400/300", 
-    pricePerDay: 9500, 
-    transmission: "Automatique", 
-    fuel: "Essence", 
+    image: "https://picsum.photos/seed/car2/400/300", 
+    pricePerDay: 11500, 
+    transmission: "Manuelle", 
+    fuel: "Diesel", 
     seats: 5, 
-    category: "Berline" 
+    category: "SUV & 4x4" 
   },
 ];
 
-export const carTypes = ['Économique', 'SUV / 4x4', 'Van / Minibus', 'Luxe', 'Moto'];
+export const carTypes = ['Économique', 'SUV & 4x4', 'Berline', 'Luxe', 'Moto'];
 export const fuelTypes = ['Essence', 'Diesel', 'Électrique', 'Hybride'];
-export const carFeatures = ['Kilométrage illimité', 'Climatisation', 'Boîte Automatique', 'GPS intégré', 'Assurance incluse', 'Siège enfant'];
+export const carFeatures = ['Kilométrage illimité', 'Climatisation', 'Transmission automatique', 'GPS intégré', 'Assurance incluse', 'Siège enfant'];
 
 export interface TicketType {
   id: string;
