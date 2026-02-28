@@ -21,7 +21,7 @@ const translations: Record<string, Record<Locale, string>> = {
     "logout": { fr: "Déconnexion", en: "Log Out", ar: "تسجيل الخروج", es: "Cerrar sesión" },
     "profile": { fr: "Mon Profil", en: "My Profile", ar: "ملفي الشخصي", es: "Mi Perfil" },
     "dashboard": { fr: "Tableau de bord", en: "Dashboard", ar: "لوحة التحكم", es: "Panel de control" },
-    "list_property": { fr: "Inscrire mon bien", en: "List your property", ar: "أضف عقارك", es: "Inscribe ton bien" },
+    "list_property": { fr: "Inscrire mon bien", en: "List your property", ar: "أضف عقارك", es: "Inscribe tu bien" },
     "help": { fr: "Aide", en: "Help", ar: "مساعدة", es: "Ayuda" },
     "about": { fr: "À propos", en: "About Us", ar: "حولنا", es: "Sobre nosotros" },
     "contact": { fr: "Contact", en: "Contact", ar: "اتصل بنا", es: "Contacto" },
@@ -109,8 +109,8 @@ const translations: Record<string, Record<Locale, string>> = {
     // Contact Page
     "contact.title": { fr: "Nous sommes là pour vous aider", en: "We're here to help", ar: "نحن هنا لمساعدتك", es: "Estamos aquí para ayudarte" },
     "contact.name": { fr: "Nom complet", en: "Full Name", ar: "الاسم الكامل", es: "Nombre completo" },
-    "contact.email": { fr: "Email professionnel", en: "Business Email", ar: "البريد الإلكترoni", es: "Correo profesional" },
-    "contact.message": { fr: "Votre message", en: "Your message", ar: "رسالتك", es: "Tu mensaje" },
+    "contact.email": { fr: "Email professionnel", en: "Business Email", ar: "البريد الإلكتروني", es: "Correo profesional" },
+    "contact.message": { fr: "Votre message", en: "Your message", ar: "رسالتك", es: "Tu message" },
     "contact.send": { fr: "Envoyer le message", en: "Send message", ar: "إرسال الرسالة", es: "Enviar mensaje" },
     "contact.successTitle": { fr: "Message envoyé !", en: "Message sent!", ar: "تم إرسال الرسالة!", es: "¡Mensaje enviado!" },
     "contact.successMessage": { fr: "Nous vous répondrons dans les plus brefs délais.", en: "We will get back to you as soon as possible.", ar: "سنقوم بالرد عليك في أقرب وقت ممكن.", es: "Te responderemos lo antes posible." },
@@ -122,7 +122,7 @@ const translations: Record<string, Record<Locale, string>> = {
     "email_retargeting_description": { fr: "Inscrivez-vous pour recevoir les meilleures promotions StayFloow directement.", en: "Sign up to receive the best StayFloow promotions directly.", ar: "اشترك لتلقي أفضل عروض StayFloow مباشرة.", es: "Regístrate para recibir las mejores promociones de StayFloow directamente." },
     "email_retargeting_cta": { fr: "S'inscrire aux offres", en: "Sign up for deals", ar: "اشترك في العروض", es: "Suscribirse a ofertas" },
 
-    // Amenities List (Translate common amenities)
+    // Amenities List
     "Wi-Fi gratuit": { fr: "Wi-Fi gratuit", en: "Free Wi-Fi", ar: "واي فاي مجاني", es: "Wi-Fi gratuito" },
     "Petit-déjeuner inclus": { fr: "Petit-déjeuner inclus", en: "Breakfast included", ar: "إفطار مشمول", es: "Desayuno incluido" },
     "Climatisation": { fr: "Climatisation", en: "Air conditioning", ar: "تكييف", es: "Aire acondicionado" },
@@ -147,7 +147,6 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [locale, setLocale] = useState<Locale>('fr');
 
   useEffect(() => {
-    // Persist locale in localStorage for better UX
     const savedLocale = localStorage.getItem('stayfloow_locale') as Locale;
     if (savedLocale && ['fr', 'en', 'ar', 'es'].includes(savedLocale)) {
       setLocale(savedLocale);

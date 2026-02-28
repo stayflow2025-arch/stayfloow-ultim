@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, Suspense } from "react";
@@ -221,7 +220,6 @@ function BookCarContent() {
                         {isSubmitting ? <Loader2 className="h-6 w-6 animate-spin" /> : "Confirmer et Payer"}
                       </Button>
                     </div>
-                    {/* Décoration */}
                     <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-primary/20 rounded-full blur-3xl" />
                   </div>
                 </CardContent>

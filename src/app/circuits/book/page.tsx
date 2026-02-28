@@ -1,7 +1,6 @@
-
 "use client";
 
-import React, { Suspense, useState, useEffect } from 'react';
+import React, { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { useDoc, useFirestore } from '@/firebase';
@@ -48,8 +47,6 @@ function CircuitBookingContent() {
     const totalAmount = Number(searchParams.get('total')) || 0;
 
     const { data: dbCircuit, loading } = useDoc(tourId ? doc(db, 'listings', tourId) : null);
-    
-    // Fallback sur les données mockées si Firestore ne renvoie rien
     const circuit = dbCircuit || mockCircuits.find(c => c.id === tourId);
 
     const [isConfirmed, setIsConfirmed] = useState(false);
@@ -105,11 +102,7 @@ function CircuitBookingContent() {
                   <Link href="/">Retour à l'accueil</Link>
                 </Button>
             </Card>
-
-            <CrossSellCard 
-              location={location.split(',')[0].trim()} 
-              bookedItemType="circuit" 
-            />
+            <CrossSellCard location={location.split(',')[0].trim()} bookedItemType="circuit" />
         </div>
     );
 
@@ -171,11 +164,7 @@ function CircuitBookingContent() {
                                 </FormItem>
                             )}/>
 
-                            <Button 
-                                type="submit" 
-                                disabled={isSubmitting}
-                                className="w-full h-16 text-xl font-black bg-primary hover:bg-primary/90 shadow-xl rounded-2xl"
-                            >
+                            <Button type="submit" disabled={isSubmitting} className="w-full h-16 text-xl font-black bg-primary hover:bg-primary/90 shadow-xl rounded-2xl">
                                 {isSubmitting ? <Loader2 className="animate-spin h-6 w-6" /> : `Confirmer et Payer ${formatPrice(totalAmount)}`}
                             </Button>
                         </form>
