@@ -1,10 +1,11 @@
+'use server';
+
 import { Resend } from "resend";
 import { getEmailTemplate } from "./email-templates";
-import type { Property } from "./data";
 
 /**
  * @fileOverview Système d'envoi d'emails StayFloow via Resend API.
- * Gère les confirmations de réservation, l'onboarding partenaire et les alertes admin.
+ * Géré via Server Actions pour éviter les erreurs de bundle côté client.
  */
 
 // ------------------------------

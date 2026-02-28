@@ -87,7 +87,7 @@ export default function PropertyBookingPage({ params }: { params: Promise<{ id: 
         customerEmail: values.email,
         reservationNumber,
         itemName: property?.details?.name || "Hébergement StayFloow",
-        itemType: 'accommodation',
+        itemType: 'hébergement',
         hostName: "Support StayFloow",
         hostEmail: "contact@stayfloow.com",
         hostPhone: "+213 550 00 00 00",
@@ -96,7 +96,6 @@ export default function PropertyBookingPage({ params }: { params: Promise<{ id: 
           endDate: date.to.toISOString(),
           nights,
           totalPrice,
-          customerPhone: `${values.dialCode} ${values.phone}`
         }
       });
 
@@ -106,6 +105,7 @@ export default function PropertyBookingPage({ params }: { params: Promise<{ id: 
         description: `Un email a été envoyé à ${values.email}`,
       });
     } catch (error) {
+      console.error(error);
       toast({
         variant: "destructive",
         title: "Erreur",

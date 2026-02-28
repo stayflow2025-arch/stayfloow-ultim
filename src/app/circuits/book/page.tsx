@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { Suspense, useState, useEffect } from 'react';
@@ -51,6 +50,7 @@ function CircuitBookingContent() {
     const circuit = dbCircuit || mockCircuits.find(c => c.id === tourId);
 
     const [isConfirmed, setIsConfirmed] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const form = useForm({
         resolver: zodResolver(bookingSchema),
@@ -58,6 +58,7 @@ function CircuitBookingContent() {
     });
 
     const onSubmit = async (values: any) => {
+        setIsSubmitting(true);
         const resNum = `ST-TICKET-${Math.floor(1000 + Math.random() * 8999)}`;
         try {
             await sendBookingConfirmationEmail({
@@ -73,7 +74,12 @@ function CircuitBookingContent() {
             });
             setIsConfirmed(true);
             toast({ title: "Réservation réussie !" });
-        } catch (e) { console.error(e); }
+        } catch (e) { 
+            console.error(e);
+            toast({ variant: "destructive", title: "Erreur lors de l'envoi de l'email." });
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     if (loading) return <div className="p-20 text-center"><Loader2 className="animate-spin h-10 w-10 mx-auto text-primary" /></div>;
@@ -151,7 +157,13 @@ function CircuitBookingContent() {
                                 </FormItem>
                             )}/>
 
-                            <Button type="submit" className="w-full h-16 text-xl font-black bg-primary hover:bg-primary/90 shadow-xl rounded-2xl">Confirmer et Payer {formatPrice(totalAmount)}</Button>
+                            <Button 
+                                type="submit" 
+                                disabled={isSubmitting}
+                                className="w-full h-16 text-xl font-black bg-primary hover:bg-primary/90 shadow-xl rounded-2xl"
+                            >
+                                {isSubmitting ? <Loader2 className="animate-spin h-6 w-6" /> : `Confirmer et Payer ${formatPrice(totalAmount)}`}
+                            </Button>
                         </form>
                     </Form>
                 </div>

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useForm } from 'react-hook-form';
@@ -9,7 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import Link from 'next/link';
+import Link from 'link';
 import { KeyRound, Loader2, ArrowLeft } from 'lucide-react';
 import { sendPasswordResetEmail } from '@/lib/mail';
 import { useState } from 'react';
@@ -75,7 +74,7 @@ export default function ForgotPasswordPage() {
                     <Input 
                       type="email" 
                       placeholder="votre@email.com" 
-                      className="h-12 border-slate-200 focus:border-primary"
+                      className="h-12 bg-slate-50 border-slate-200 focus:border-primary"
                       {...field} 
                     />
                   </FormControl>
