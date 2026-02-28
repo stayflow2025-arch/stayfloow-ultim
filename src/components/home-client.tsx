@@ -1,3 +1,4 @@
+
 "use client";
 
 import dynamic from 'next/dynamic';
@@ -46,15 +47,15 @@ export function HomeClient() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Hero Section Premium */}
-      <section className="bg-primary text-white pt-16 pb-40 px-6 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto space-y-6 relative z-10">
-          <div className="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest backdrop-blur-sm">
+      <section className="bg-primary text-white pt-16 pb-48 px-6 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto space-y-6 relative z-10 text-center md:text-left">
+          <div className="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest backdrop-blur-sm mx-auto md:mx-0">
             <Sparkles className="h-4 w-4 text-secondary" /> {t("exclusive_offers") || "Offres Exclusives 2026"}
           </div>
-          <h1 className="text-5xl md:text-7xl font-black tracking-tighter max-w-4xl leading-[0.95]">
+          <h1 className="text-5xl md:text-7xl font-black tracking-tighter max-w-4xl leading-[0.95] mx-auto md:mx-0">
             {t("hero_title")}
           </h1>
-          <p className="text-xl md:text-2xl font-medium opacity-90 max-w-2xl leading-relaxed">
+          <p className="text-xl md:text-2xl font-medium opacity-90 max-w-2xl leading-relaxed mx-auto md:mx-0">
             {t("hero_subtitle")}
           </p>
         </div>
@@ -63,9 +64,9 @@ export function HomeClient() {
         <div className="absolute top-20 left-1/2 w-96 h-96 bg-white/5 rounded-full blur-[100px]" />
       </section>
 
-      {/* Barre de Recherche Avancée */}
-      <div className="max-w-7xl mx-auto w-full px-6 -mt-20 z-30 mb-20">
-        <div className="bg-white p-2 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.15)] border-4 border-white">
+      {/* Barre de Recherche Avancée - POSITION MONTÉE ICI */}
+      <div className="max-w-7xl mx-auto w-full px-6 -mt-32 z-30 mb-20">
+        <div className="bg-white p-6 rounded-[2.5rem] shadow-[0_30px_60px_rgba(0,0,0,0.18)]">
           <AdvancedSearchBar />
         </div>
       </div>

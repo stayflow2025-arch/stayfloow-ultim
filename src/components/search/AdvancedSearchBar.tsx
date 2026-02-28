@@ -85,39 +85,39 @@ export default function AdvancedSearchBar() {
   return (
     <div className="w-full">
       {/* TABS - STYLE PILLULES EXACT */}
-      <div className="flex gap-2 mb-4 overflow-x-auto no-scrollbar py-1">
+      <div className="flex gap-3 mb-6 overflow-x-auto no-scrollbar py-1">
         <CategoryTab 
           active={activeCategory === 'accommodations'} 
           onClick={() => handleTabClick('accommodations')}
-          icon={<Building className="h-4 w-4" />}
+          icon={<Building className="h-5 w-5" />}
           label={t("accommodations")}
         />
         <CategoryTab 
           active={activeCategory === 'cars'} 
           onClick={() => handleTabClick('cars')}
-          icon={<Car className="h-4 w-4" />}
+          icon={<Car className="h-5 w-5" />}
           label={t("car_rental")}
         />
         <CategoryTab 
           active={activeCategory === 'circuits'} 
           onClick={() => handleTabClick('circuits')}
-          icon={<Compass className="h-4 w-4" />}
+          icon={<Compass className="h-5 w-5" />}
           label={t("tours")}
         />
       </div>
 
       {/* CONTENEUR PRINCIPAL - BORDURE JAUNE STYLE SIGNATURE */}
-      <div className="bg-[#FEBA02] p-[3px] rounded-lg shadow-2xl flex flex-col md:flex-row items-stretch gap-[2px]">
+      <div className="bg-[#FEBA02] p-[2px] rounded-xl shadow-2xl flex flex-col md:flex-row items-stretch gap-0 border-2 border-[#FEBA02]">
         
         {/* DESTINATION / LIEU DE PRISE */}
-        <div className="flex-[1.5] bg-white rounded-l-[4px] md:rounded-l-md flex flex-col justify-center px-5 py-2.5 min-h-[70px] relative group">
-          <span className="text-[10px] font-black text-slate-400 uppercase leading-none mb-1">
+        <div className="flex-[1.5] bg-white md:rounded-l-lg flex flex-col justify-center px-6 py-3 min-h-[85px] relative group border-r border-slate-100">
+          <span className="text-[11px] font-black text-slate-400 uppercase tracking-tight mb-1.5">
             {activeCategory === 'cars' ? t('pickup_location') : t('where_to')}
           </span>
           <div className="flex items-center gap-3">
             <MapPin className="text-slate-300 h-5 w-5 shrink-0" />
             <input 
-              className="w-full bg-transparent border-none focus:ring-0 p-0 text-base font-black text-slate-800 placeholder:text-slate-300 outline-none"
+              className="w-full bg-transparent border-none focus:ring-0 p-0 text-lg font-black text-slate-800 placeholder:text-slate-300 outline-none"
               placeholder={activeCategory === 'cars' ? "Lieu de prise en charge" : "Où allez-vous ?"}
               value={destination}
               onChange={(e) => setDestination(e.target.value)}
@@ -128,13 +128,13 @@ export default function AdvancedSearchBar() {
         {/* DATES */}
         <Popover>
           <PopoverTrigger asChild>
-            <div className="flex-[1.5] bg-white flex flex-col justify-center px-5 py-2.5 min-h-[70px] cursor-pointer hover:bg-slate-50 transition-colors">
-              <span className="text-[10px] font-black text-slate-400 uppercase leading-none mb-1">
+            <div className="flex-[1.5] bg-white flex flex-col justify-center px-6 py-3 min-h-[85px] cursor-pointer hover:bg-slate-50 transition-colors border-r border-slate-100">
+              <span className="text-[11px] font-black text-slate-400 uppercase tracking-tight mb-1.5">
                 {activeCategory === 'cars' ? "Date de départ — Date de retour" : "Arrivée — Départ"}
               </span>
               <div className="flex items-center gap-3">
                 <CalendarIcon className="text-slate-300 h-5 w-5 shrink-0" />
-                <span className="text-base font-black text-slate-800 truncate">
+                <span className="text-lg font-black text-slate-800 truncate">
                   {dateRange?.from ? (
                     dateRange.to ? `${format(dateRange.from, "dd MMM", { locale: getDateLocale() })} — ${format(dateRange.to, "dd MMM", { locale: getDateLocale() })}` 
                     : format(dateRange.from, "dd MMM", { locale: getDateLocale() })
@@ -157,11 +157,11 @@ export default function AdvancedSearchBar() {
 
         {/* HEURE / OCCUPANCY */}
         {activeCategory === 'cars' ? (
-          <div className="flex-1 bg-white flex items-center px-5 py-2.5 gap-4 min-h-[70px]">
+          <div className="flex-1 bg-white flex items-center px-6 py-3 gap-4 min-h-[85px] border-r border-slate-100">
             <div className="flex flex-col gap-1 flex-1">
-              <span className="text-[10px] font-black text-slate-400 uppercase">Heure</span>
+              <span className="text-[11px] font-black text-slate-400 uppercase">Heure</span>
               <Select value={times.pickup} onValueChange={(val) => setTimes({...times, pickup: val})}>
-                <SelectTrigger className="border-none p-0 h-auto font-black text-base bg-transparent shadow-none focus:ring-0">
+                <SelectTrigger className="border-none p-0 h-auto font-black text-lg bg-transparent shadow-none focus:ring-0">
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4 text-slate-300" />
                     <SelectValue />
@@ -172,11 +172,11 @@ export default function AdvancedSearchBar() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="w-[1px] h-8 bg-slate-100" />
+            <div className="w-[1px] h-10 bg-slate-100" />
             <div className="flex flex-col gap-1 flex-1">
-              <span className="text-[10px] font-black text-slate-400 uppercase">Heure</span>
+              <span className="text-[11px] font-black text-slate-400 uppercase">Heure</span>
               <Select value={times.return} onValueChange={(val) => setTimes({...times, return: val})}>
-                <SelectTrigger className="border-none p-0 h-auto font-black text-base bg-transparent shadow-none focus:ring-0">
+                <SelectTrigger className="border-none p-0 h-auto font-black text-lg bg-transparent shadow-none focus:ring-0">
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4 text-slate-300" />
                     <SelectValue />
@@ -191,13 +191,13 @@ export default function AdvancedSearchBar() {
         ) : (
           <Popover>
             <PopoverTrigger asChild>
-              <div className="flex-1 bg-white flex flex-col justify-center px-5 py-2.5 min-h-[70px] cursor-pointer hover:bg-slate-50 transition-colors">
-                <span className="text-[10px] font-black text-slate-400 uppercase leading-none mb-1">
+              <div className="flex-1 bg-white flex flex-col justify-center px-6 py-3 min-h-[85px] cursor-pointer hover:bg-slate-50 transition-colors border-r border-slate-100">
+                <span className="text-[11px] font-black text-slate-400 uppercase tracking-tight mb-1.5">
                   Voyageurs & Chambres
                 </span>
                 <div className="flex items-center gap-3">
                   <Users className="text-slate-300 h-5 w-5 shrink-0" />
-                  <span className="text-base font-black text-slate-800 truncate">
+                  <span className="text-lg font-black text-slate-800 truncate">
                     {occupancy.adults} Ad. · {occupancy.children} Enf.
                   </span>
                 </div>
@@ -213,10 +213,10 @@ export default function AdvancedSearchBar() {
           </Popover>
         )}
 
-        {/* BOUTON RECHERCHER - STYLE VERT INTÉGRÉ */}
+        {/* BOUTON RECHERCHER - STYLE VERT INTÉGRÉ EXACT */}
         <button 
           onClick={handleSearch}
-          className="bg-primary hover:bg-[#059669] text-white rounded-r-[4px] md:rounded-r-md px-10 py-4 flex items-center justify-center transition-all active:scale-95 min-h-[70px]"
+          className="bg-primary hover:bg-[#059669] text-white md:rounded-r-lg px-12 py-4 flex items-center justify-center transition-all active:scale-95 min-h-[85px]"
         >
           <span className="text-2xl font-black tracking-tight">
             {t("search_btn")}
@@ -232,10 +232,10 @@ function CategoryTab({ active, onClick, icon, label }: { active: boolean, onClic
     <button 
       onClick={onClick} 
       className={cn(
-        "flex items-center gap-2 px-6 py-3.5 rounded-full text-sm font-black transition-all border-none whitespace-nowrap", 
+        "flex items-center gap-3 px-8 py-4 rounded-full text-base font-black transition-all border-none whitespace-nowrap", 
         active 
-          ? "bg-white text-primary shadow-[0_4px_15px_rgba(0,0,0,0.1)] scale-105" 
-          : "bg-[#065f46]/80 text-white hover:bg-[#065f46]"
+          ? "bg-white text-primary shadow-[0_10px_25px_rgba(0,0,0,0.12)] scale-105" 
+          : "bg-[#065f46] text-white hover:bg-[#044d35]"
       )}
     >
       <span className={cn(active ? "text-primary" : "text-white")}>{icon}</span>
@@ -250,7 +250,7 @@ function OccupancyRow({ label, value, onDec, onInc }: { label: string, value: nu
     <div className="flex items-center justify-between">
       <span className="font-bold text-slate-700 text-sm capitalize">{label}</span>
       <div className="flex items-center gap-4">
-        <button onClick={onDec} className="h-8 w-8 rounded-full border border-primary text-primary flex items-center justify-center hover:bg-primary/5 transition-colors disabled:opacity-30" disabled={value <= 0 && label !== t('adults') || (label === t('adults') && value <= 1)}><Minus className="h-4 w-4" /></button>
+        <button onClick={onDec} className="h-8 w-8 rounded-full border border-primary text-primary flex items-center justify-center hover:bg-primary/5 transition-colors disabled:opacity-30" disabled={(value <= 0 && label !== t('adults')) || (label === t('adults') && value <= 1)}><Minus className="h-4 w-4" /></button>
         <span className="w-4 text-center font-black text-base">{value}</span>
         <button onClick={onInc} className="h-8 w-8 rounded-full border border-primary text-primary flex items-center justify-center hover:bg-primary/5 transition-colors"><Plus className="h-4 w-4" /></button>
       </div>
