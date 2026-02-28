@@ -22,6 +22,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useCurrency } from '@/context/currency-context';
 import { sendBookingConfirmationEmail } from '@/lib/mail';
 import { circuits as mockCircuits } from '@/lib/data';
+import { format } from 'date-fns';
 
 const bookingSchema = z.object({
     fullName: z.string().min(2, "Nom complet requis"),
