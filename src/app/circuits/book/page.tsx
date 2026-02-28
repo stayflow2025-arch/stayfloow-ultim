@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { Suspense, useState, useEffect } from 'react';
@@ -21,6 +22,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useCurrency } from '@/context/currency-context';
 import { sendBookingConfirmationEmail } from '@/lib/mail';
+import { circuits as mockCircuits } from '@/lib/data';
 
 const bookingSchema = z.object({
     fullName: z.string().min(2, "Nom complet requis"),
@@ -43,7 +45,11 @@ function CircuitBookingContent() {
     const tickets = searchParams.get('tickets') ? JSON.parse(searchParams.get('tickets')!) : {};
     const totalAmount = Number(searchParams.get('total')) || 0;
 
-    const { data: circuit, loading } = useDoc(tourId ? doc(db, 'listings', tourId) : null);
+    const { data: dbCircuit, loading } = useDoc(tourId ? doc(db, 'listings', tourId) : null);
+    
+    // Fallback sur les données mockées si Firestore ne renvoie rien
+    const circuit = dbCircuit || mockCircuits.find(c => c.id === tourId);
+
     const [isConfirmed, setIsConfirmed] = useState(false);
 
     const form = useForm({
@@ -55,10 +61,15 @@ function CircuitBookingContent() {
         const resNum = `ST-TICKET-${Math.floor(1000 + Math.random() * 8999)}`;
         try {
             await sendBookingConfirmationEmail({
-                customerName: values.fullName, customerEmail: values.email, reservationNumber: resNum,
-                itemName: circuit?.details?.name || "Circuit", itemType: 'tour',
-                hostName: "StayFloow Guide", hostEmail: "contact@stayfloow.com", hostPhone: "+213 550 00 00 00",
-                bookingDetails: { date: tourDate, tickets, total: totalAmount }
+                customerName: values.fullName, 
+                customerEmail: values.email, 
+                reservationNumber: resNum,
+                itemName: circuit?.details?.name || circuit?.title || "Circuit", 
+                itemType: 'circuit',
+                hostName: "StayFloow Guide", 
+                hostEmail: "contact@stayfloow.com", 
+                hostPhone: "+213 550 00 00 00",
+                bookingDetails: { startDate: tourDate, participants: Object.values(tickets).reduce((a: any, b: any) => a + b, 0) as number, totalPrice: totalAmount }
             });
             setIsConfirmed(true);
             toast({ title: "Réservation réussie !" });
@@ -67,6 +78,9 @@ function CircuitBookingContent() {
 
     if (loading) return <div className="p-20 text-center"><Loader2 className="animate-spin h-10 w-10 mx-auto text-primary" /></div>;
     if (!circuit) return <div className="p-20 text-center">Erreur de chargement.</div>;
+
+    const name = circuit.details?.name || circuit.title;
+    const photos = circuit.photos || circuit.images || ['https://picsum.photos/seed/tour/800/600'];
 
     if (isConfirmed) return (
         <div className="container mx-auto px-4 py-20 text-center max-w-2xl">
@@ -91,20 +105,20 @@ function CircuitBookingContent() {
                                 <CardHeader className="bg-slate-900 text-white rounded-t-3xl p-8"><CardTitle className="text-xl font-black uppercase">1. Vos Informations</CardTitle></CardHeader>
                                 <CardContent className="p-8 space-y-6">
                                     <FormField control={form.control} name="fullName" render={({ field }) => (
-                                        <FormItem><FormLabel className="font-bold">Nom complet</FormLabel><FormControl><Input className="h-14 rounded-xl" {...field} /></FormControl><FormMessage /></FormItem>
+                                        <FormItem><FormLabel className="font-bold">Nom complet</FormLabel><FormControl><Input className="h-14 rounded-xl bg-slate-50 border-slate-100" {...field} /></FormControl><FormMessage /></FormItem>
                                     )}/>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <FormField control={form.control} name="email" render={({ field }) => (
-                                            <FormItem><FormLabel className="font-bold">Email</FormLabel><FormControl><Input className="h-14 rounded-xl" type="email" {...field} /></FormControl><FormMessage /></FormItem>
+                                            <FormItem><FormLabel className="font-bold">Email</FormLabel><FormControl><Input className="h-14 rounded-xl bg-slate-50 border-slate-100" type="email" {...field} /></FormControl><FormMessage /></FormItem>
                                         )}/>
                                         <div className="space-y-2">
                                             <FormLabel className="font-bold">Téléphone (WhatsApp)</FormLabel>
                                             <div className="flex gap-2">
                                                 <FormField control={form.control} name="dialCode" render={({ field }) => (
-                                                    <FormItem className="w-24"><FormControl><Input className="h-14 text-center font-bold bg-slate-50" {...field} /></FormControl></FormItem>
+                                                    <FormItem className="w-24"><FormControl><Input className="h-14 text-center font-bold bg-slate-50 border-slate-100 rounded-xl" {...field} /></FormControl></FormItem>
                                                 )}/>
                                                 <FormField control={form.control} name="phone" render={({ field }) => (
-                                                    <FormItem className="flex-1"><FormControl><Input className="h-14 rounded-xl" {...field} /></FormControl><FormMessage /></FormItem>
+                                                    <FormItem className="flex-1"><FormControl><Input className="h-14 rounded-xl bg-slate-50 border-slate-100" {...field} /></FormControl><FormMessage /></FormItem>
                                                 )}/>
                                             </div>
                                         </div>
@@ -144,8 +158,8 @@ function CircuitBookingContent() {
 
                 <div className="lg:col-span-1">
                     <Card className="sticky top-24 shadow-2xl border-none overflow-hidden rounded-[2.5rem]">
-                        <div className="relative h-48 w-full"><Image src={circuit.photos?.[0]} alt="tour" fill className="object-cover" /></div>
-                        <CardHeader className="p-8 pb-4"><CardTitle className="text-2xl font-black text-primary leading-tight">{circuit.details?.name}</CardTitle></CardHeader>
+                        <div className="relative h-48 w-full"><Image src={photos[0]} alt="tour" fill className="object-cover" /></div>
+                        <CardHeader className="p-8 pb-4"><CardTitle className="text-2xl font-black text-primary leading-tight">{name}</CardTitle></CardHeader>
                         <CardContent className="p-8 pt-0 space-y-6">
                             <Separator />
                             <div className="space-y-4">
@@ -153,7 +167,8 @@ function CircuitBookingContent() {
                                 <div className="space-y-2">
                                     {Object.entries(tickets).map(([tid, count]: [string, any]) => {
                                         if (count === 0) return null;
-                                        const ttype = (circuit.details?.ticketTypes || []).find((t: any) => t.id === tid) || { name: tid, price: circuit.price };
+                                        const ticketTypes = circuit.details?.ticketTypes || circuit.ticketTypes || [];
+                                        const ttype = ticketTypes.find((t: any) => t.id === tid) || { name: tid, price: circuit.price || circuit.pricePerPerson };
                                         return (
                                             <div key={tid} className="flex justify-between text-sm font-black text-slate-700">
                                                 <span>{count} x {ttype.name}</span>

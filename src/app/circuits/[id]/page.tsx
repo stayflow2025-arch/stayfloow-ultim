@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { use, useState, useEffect } from 'react';
@@ -5,7 +6,7 @@ import { useDoc, useFirestore } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { 
   ChevronLeft, Star, Clock, MapPin, Share2, Heart, 
-  Check, Info, X, Users, Calendar as CalendarIcon, Loader2, ShieldCheck, Globe
+  Check, Info, X, Users, Calendar as CalendarIcon, Loader2, ShieldCheck, Globe, Minus, Plus
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,6 +21,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { circuits as mockCircuits } from '@/lib/data';
 
 export default function CircuitDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -29,12 +31,32 @@ export default function CircuitDetailsPage({ params }: { params: Promise<{ id: s
   const { t } = useLanguage();
 
   const docRef = doc(db, 'listings', id);
-  const { data: circuit, loading } = useDoc(docRef);
+  const { data: dbCircuit, loading } = useDoc(docRef);
 
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [ticketCounts, setTicketCounts] = useState<Record<string, number>>({
     adult: 1, child: 0, infant: 0
   });
+
+  // Fallback sur les données mockées si Firestore ne renvoie rien
+  const circuit = dbCircuit || mockCircuits.find(c => c.id === id);
+
+  useEffect(() => {
+    // Initialiser les compteurs si le circuit a des types de tickets spécifiques
+    if (circuit?.details?.ticketTypes) {
+      const initialCounts: Record<string, number> = {};
+      circuit.details.ticketTypes.forEach((t: any) => {
+        initialCounts[t.id] = t.id === 'adult' ? 1 : 0;
+      });
+      setTicketCounts(initialCounts);
+    } else if (circuit?.ticketTypes) {
+        const initialCounts: Record<string, number> = {};
+        circuit.ticketTypes.forEach((t: any) => {
+          initialCounts[t.id] = t.id === 'adult' ? 1 : 0;
+        });
+        setTicketCounts(initialCounts);
+    }
+  }, [circuit]);
 
   const updateCount = (tid: string, delta: number) => {
     setTicketCounts(prev => ({ ...prev, [tid]: Math.max(0, prev[tid] + delta) }));
@@ -42,7 +64,7 @@ export default function CircuitDetailsPage({ params }: { params: Promise<{ id: s
 
   const calculateTotal = () => {
     if (!circuit) return 0;
-    const types = circuit.details?.ticketTypes || [{ id: 'adult', price: circuit.price }];
+    const types = circuit.details?.ticketTypes || circuit.ticketTypes || [{ id: 'adult', price: circuit.price || circuit.pricePerPerson }];
     return types.reduce((acc: number, type: any) => acc + (type.price * (ticketCounts[type.id] || 0)), 0);
   };
 
@@ -59,6 +81,14 @@ export default function CircuitDetailsPage({ params }: { params: Promise<{ id: s
 
   if (loading) return <div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin text-primary h-10 w-10" /></div>;
   if (!circuit) return <div className="p-20 text-center font-black">Circuit introuvable.</div>;
+
+  const amenities = circuit.details?.amenities || circuit.amenities || [];
+  const photos = circuit.photos || circuit.images || ['https://picsum.photos/seed/hero/800/600'];
+  const name = circuit.details?.name || circuit.title;
+  const duration = circuit.details?.duration || circuit.duration;
+  const location = circuit.location?.address || circuit.location;
+  const description = circuit.details?.description || circuit.description;
+  const languages = circuit.details?.languages || circuit.languages || ['Français', 'Arabe'];
 
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
@@ -81,21 +111,21 @@ export default function CircuitDetailsPage({ params }: { params: Promise<{ id: s
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Badge className="bg-primary/10 text-primary font-black px-3">CERTIFIÉ STAYFLOOW</Badge>
-              <div className="flex items-center gap-1"><Star className="h-4 w-4 text-amber-400 fill-amber-400" /> <span className="font-black">9.2</span></div>
+              <div className="flex items-center gap-1"><Star className="h-4 w-4 text-amber-400 fill-amber-400" /> <span className="font-black">{circuit.rating || '9.2'}</span></div>
             </div>
-            <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">{circuit.details?.name}</h1>
+            <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">{name}</h1>
             <div className="flex flex-wrap items-center gap-6 text-sm font-bold text-slate-500">
-              <div className="flex items-center gap-1.5"><Clock className="h-4 w-4 text-primary" /> {circuit.details?.duration}</div>
-              <div className="flex items-center gap-1.5 text-primary"><MapPin className="h-4 w-4" /> {circuit.location?.address}</div>
+              <div className="flex items-center gap-1.5"><Clock className="h-4 w-4 text-primary" /> {duration}</div>
+              <div className="flex items-center gap-1.5 text-primary"><MapPin className="h-4 w-4" /> {location}</div>
             </div>
           </div>
 
           {/* Photo Gallery */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 rounded-3xl overflow-hidden shadow-2xl border-4 border-white aspect-video relative">
-            <Image src={circuit.photos?.[0] || 'https://picsum.photos/seed/hero/800/600'} alt="Hero" fill className="object-cover" />
+          <div className="relative aspect-video rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
+            <Image src={photos[0]} alt="Hero" fill className="object-cover" />
           </div>
 
-          {/* Details (Capture 4 Style) */}
+          {/* Details */}
           <div className="space-y-12 bg-white p-10 rounded-[2.5rem] shadow-xl border border-slate-100">
             {/* Free Cancellation */}
             <div className="flex items-start gap-4 p-6 bg-green-50 rounded-3xl border border-green-100">
@@ -112,20 +142,20 @@ export default function CircuitDetailsPage({ params }: { params: Promise<{ id: s
             <div className="space-y-4">
               <h4 className="font-black text-xl flex items-center gap-2"><Globe className="h-6 w-6 text-primary" /> Langues disponibles</h4>
               <div className="flex flex-wrap gap-3">
-                {circuit.details?.languages?.map((l: string) => (
+                {languages.map((l: string) => (
                   <Badge key={l} variant="secondary" className="bg-slate-50 border border-slate-200 text-slate-700 px-4 py-2 rounded-xl font-bold">
-                    {l === 'Français' ? '🇫🇷' : l === 'Arabe' ? '🇩🇿' : '🇬🇧'} {l}
+                    {l === 'Français' ? '🇫🇷' : l === 'Arabe' ? '🇩🇿' : l === 'Anglais' ? '🇬🇧' : '🌍'} {l}
                   </Badge>
                 ))}
               </div>
             </div>
 
-            {/* Inclusions / Highlights */}
+            {/* Inclusions */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
               <div className="space-y-6">
-                <h4 className="font-black text-xl">Points forts</h4>
+                <h4 className="font-black text-xl">Points forts & Services inclus</h4>
                 <ul className="space-y-4">
-                  {circuit.details?.amenities?.slice(0, 5).map((a: string) => (
+                  {amenities.map((a: string) => (
                     <li key={a} className="flex items-start gap-3 text-sm font-bold text-slate-600">
                       <Check className="h-5 w-5 text-primary shrink-0" /> {a}
                     </li>
@@ -135,9 +165,15 @@ export default function CircuitDetailsPage({ params }: { params: Promise<{ id: s
               <div className="space-y-6">
                 <h4 className="font-black text-xl">Restrictions</h4>
                 <ul className="space-y-4">
-                  <li className="flex items-start gap-3 text-sm font-bold text-slate-400 italic">
-                    <X className="h-5 w-5 text-red-400 shrink-0" /> {t('Non accessible aux fauteuils')}
-                  </li>
+                  {circuit.restrictions?.map((r: string) => (
+                    <li key={r} className="flex items-start gap-3 text-sm font-bold text-slate-400 italic">
+                      <X className="h-5 w-5 text-red-400 shrink-0" /> {r}
+                    </li>
+                  )) || (
+                    <li className="flex items-start gap-3 text-sm font-bold text-slate-400 italic">
+                      <X className="h-5 w-5 text-red-400 shrink-0" /> {t('Non accessible aux fauteuils')}
+                    </li>
+                  )}
                 </ul>
               </div>
             </div>
@@ -148,13 +184,13 @@ export default function CircuitDetailsPage({ params }: { params: Promise<{ id: s
             <div className="space-y-6">
               <h4 className="font-black text-2xl">Description du circuit</h4>
               <p className="text-slate-600 leading-relaxed text-lg font-medium italic border-l-4 border-primary/20 pl-6">
-                "{circuit.details?.description}"
+                "{description}"
               </p>
             </div>
           </div>
         </div>
 
-        {/* Sidebar - Ticket Selection (Capture 3 Style) */}
+        {/* Sidebar - Ticket Selection */}
         <div className="lg:col-span-1">
           <div className="sticky top-28 space-y-6">
             <Card className="border-none shadow-2xl rounded-3xl overflow-hidden bg-white">
@@ -182,7 +218,7 @@ export default function CircuitDetailsPage({ params }: { params: Promise<{ id: s
                 <div className="space-y-6">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">2. Nombre de participants</label>
                   <div className="space-y-4">
-                    {(circuit.details?.ticketTypes || [{id: 'adult', name: 'Adulte', price: circuit.price}]).map((type: any) => (
+                    {(circuit.details?.ticketTypes || circuit.ticketTypes || [{id: 'adult', name: 'Adulte', price: circuit.price || circuit.pricePerPerson}]).map((type: any) => (
                       <div key={type.id} className="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
                         <div>
                           <p className="font-black text-slate-900">{type.name}</p>
