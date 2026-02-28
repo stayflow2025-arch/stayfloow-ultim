@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format, addDays } from "date-fns";
@@ -22,7 +22,7 @@ import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CrossSellCard } from "@/components/cross-sell-card";
 
-export default function BookCarPage() {
+function BookCarContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { formatPrice } = useCurrency();
@@ -323,5 +323,13 @@ function MiniSpec({ icon, value }: { icon: any, value: string }) {
       <span className="text-primary h-3.5 w-3.5">{icon}</span>
       <span>{value}</span>
     </div>
+  );
+}
+
+export default function BookCarPage() {
+  return (
+    <Suspense fallback={<div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin text-primary h-10 w-10" /></div>}>
+      <BookCarContent />
+    </Suspense>
   );
 }
