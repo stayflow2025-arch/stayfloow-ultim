@@ -64,9 +64,9 @@ export function HomeClient() {
         <div className="absolute top-20 left-1/2 w-96 h-96 bg-white/5 rounded-full blur-[100px]" />
       </section>
 
-      {/* Barre de Recherche Avancée - POSITION MONTÉE ICI */}
-      <div className="max-w-7xl mx-auto w-full px-6 -mt-32 z-30 mb-20">
-        <div className="bg-white p-6 rounded-[2.5rem] shadow-[0_30px_60px_rgba(0,0,0,0.18)]">
+      {/* Barre de Recherche Avancée - FOND VERT & POSITION MONTÉE */}
+      <div className="max-w-7xl mx-auto w-full px-6 -mt-40 z-30 mb-20">
+        <div className="bg-primary p-10 rounded-[3rem] shadow-[0_30px_70px_rgba(0,0,0,0.25)] border-4 border-white/5">
           <AdvancedSearchBar />
         </div>
       </div>
