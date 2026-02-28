@@ -60,10 +60,19 @@ export default function LoginPage() {
       router.push("/");
     } catch (error: any) {
       console.error("Login error:", error);
+      
+      let message = "Email ou mot de passe incorrect.";
+      
+      if (error.code === 'auth/operation-not-allowed') {
+        message = "La connexion par email n'est pas activée dans la console Firebase. Veuillez l'activer dans Authentication > Sign-in method.";
+      } else if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        message = "Identifiants invalides.";
+      }
+
       toast({
         variant: "destructive",
         title: "Erreur de connexion",
-        description: "Email ou mot de passe incorrect.",
+        description: message,
       });
     } finally {
       setLoading(false);
