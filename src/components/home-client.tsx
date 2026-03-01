@@ -1,3 +1,4 @@
+
 "use client";
 
 import dynamic from 'next/dynamic';
@@ -33,10 +34,10 @@ export function HomeClient() {
   }, []);
 
   const propertyTypes = [
-    { name: 'Hôtels', image: 'https://picsum.photos/seed/hotel/400/300', count: '820,412' },
-    { name: 'Appartements', image: 'https://picsum.photos/seed/apt/400/300', count: '915,234' },
-    { name: 'Complexes hôteliers', image: 'https://picsum.photos/seed/resort/400/300', count: '145,098' },
-    { name: 'Villas', image: 'https://picsum.photos/seed/villa/400/300', count: '450,123' },
+    { name: t('Hôtels'), image: 'https://picsum.photos/seed/hotel/400/300', count: '820,412', slug: 'hotel' },
+    { name: t('Appartements'), image: 'https://picsum.photos/seed/apt/400/300', count: '915,234', slug: 'apartment' },
+    { name: t('Complexes hôteliers'), image: 'https://picsum.photos/seed/resort/400/300', count: '145,098', slug: 'resort' },
+    { name: t('Villas'), image: 'https://picsum.photos/seed/villa/400/300', count: '450,123', slug: 'villa' },
   ];
 
   const uniqueStays = properties.slice(0, 4);
@@ -49,7 +50,7 @@ export function HomeClient() {
       <section className="bg-primary text-white pt-16 pb-48 px-6 relative overflow-hidden">
         <div className="max-w-7xl mx-auto space-y-6 relative z-10 text-center md:text-left">
           <div className="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest backdrop-blur-sm mx-auto md:mx-0">
-            <Sparkles className="h-4 w-4 text-secondary" /> {t("exclusive_offers") || "Offres Exclusives 2026"}
+            <Sparkles className="h-4 w-4 text-secondary" /> {t("exclusive_offers")}
           </div>
           <h1 className="text-5xl md:text-7xl font-black tracking-tighter max-w-4xl leading-[0.95] mx-auto md:mx-0">
             {t("hero_title")}
@@ -63,7 +64,7 @@ export function HomeClient() {
         <div className="absolute top-20 left-1/2 w-96 h-96 bg-white/5 rounded-full blur-[100px]" />
       </section>
 
-      {/* Barre de Recherche Avancée - FOND VERT & POSITION MONTÉE */}
+      {/* Barre de Recherche Avancée */}
       <div className="max-w-7xl mx-auto w-full px-6 -mt-40 z-30 mb-20">
         <div className="bg-primary p-10 rounded-[3rem] shadow-[0_30px_70px_rgba(0,0,0,0.25)] border-4 border-white/5">
           <AdvancedSearchBar />
@@ -76,12 +77,12 @@ export function HomeClient() {
           <div className="flex justify-between items-end mb-10">
             <div>
               <h2 className="text-3xl font-black text-slate-900 tracking-tight">{t("property_types_title")}</h2>
-              <p className="text-slate-500 font-medium mt-2">Découvrez l'Afrique sous toutes ses formes</p>
+              <p className="text-slate-500 font-medium mt-2">{t("footer_tagline")}</p>
             </div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {propertyTypes.map((type) => (
-              <Link key={type.name} href={`/search?type=${type.name.toLowerCase()}`} className="group block">
+              <Link key={type.slug} href={`/search?type=${type.slug}`} className="group block">
                 <div className="relative aspect-[4/3] rounded-[2rem] overflow-hidden shadow-xl border-4 border-white mb-4 transition-all group-hover:shadow-2xl group-hover:-translate-y-2">
                   <Image 
                     src={type.image} 
@@ -92,7 +93,7 @@ export function HomeClient() {
                   />
                 </div>
                 <h3 className="font-black text-xl text-slate-900 group-hover:text-primary transition-colors">{type.name}</h3>
-                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">{type.count} établissements</p>
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">{type.count} {t('accommodations')}</p>
               </Link>
             ))}
           </div>
@@ -145,12 +146,12 @@ export function HomeClient() {
           </div>
         </section>
 
-        {/* Recommandations Personnalisées IA - Lazy Loaded */}
+        {/* Recommandations Personnalisées IA */}
         <Suspense fallback={<Skeleton className="w-full h-[600px] rounded-[3rem]" />}>
           <PersonalizedRecommendations />
         </Suspense>
 
-        {/* L'Expert IA Recommender - Lazy Loaded */}
+        {/* L'Expert IA Recommender */}
         <section className="mt-32">
           <Suspense fallback={<Skeleton className="w-full h-[450px] rounded-[3rem]" />}>
             <AiRecommender />

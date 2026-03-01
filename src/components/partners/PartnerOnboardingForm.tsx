@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -28,7 +29,7 @@ interface Props {
 export default function PartnerOnboardingForm({ initialCategory }: Props) {
   const { toast } = useToast();
   const db = useFirestore();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [currentStep, setCurrentStep] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -191,7 +192,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
       </div>
       <div className="space-y-2">
         <Label className="font-bold">
-          {initialCategory === 'car_rental' ? 'Nom du véhicule / Flotte *' : initialCategory === 'circuit' ? "Titre de l'excursion / Circuit *" : "Nom commercial de l'annonce *"}
+          {initialCategory === 'car_rental' ? t('brand') : initialCategory === 'circuit' ? t('circuit_title') : t('listing_name_label')} *
         </Label>
         <Input 
           value={formData.listingName} 
@@ -225,15 +226,15 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
         <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
-              <Label className="font-bold">Marque du véhicule *</Label>
+              <Label className="font-bold">{t('brand')} *</Label>
               <Input value={formData.brand} onChange={e => setFormData({...formData, brand: e.target.value})} placeholder="Ex: Toyota" className="h-12 bg-slate-50" />
             </div>
             <div className="space-y-2">
-              <Label className="font-bold">Modèle *</Label>
+              <Label className="font-bold">{t('model')} *</Label>
               <Input value={formData.model} onChange={e => setFormData({...formData, model: e.target.value})} placeholder="Ex: Corolla" className="h-12 bg-slate-50" />
             </div>
             <div className="space-y-2">
-              <Label className="font-bold">Année *</Label>
+              <Label className="font-bold">{t('year')} *</Label>
               <Input value={formData.year} onChange={e => setFormData({...formData, year: e.target.value})} placeholder="Ex: 2023" className="h-12 bg-slate-50" />
             </div>
           </div>
@@ -259,7 +260,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
           </div>
 
           <div className="space-y-4">
-            <Label className="font-black text-lg">Équipements & Options populaires *</Label>
+            <Label className="font-black text-lg">{t('amenities_label')} *</Label>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {carOptions.map(option => (
                 <div key={option} className={cn(
@@ -271,7 +272,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
                     checked={formData.amenities.includes(option)}
                     onCheckedChange={(checked) => setFormData(prev => ({ ...prev, amenities: checked ? [...prev.amenities, option] : prev.amenities.filter(a => a !== option) }))}
                   />
-                  <label htmlFor={option} className="text-sm font-bold text-slate-700 cursor-pointer flex-1">{option}</label>
+                  <label htmlFor={option} className="text-sm font-bold text-slate-700 cursor-pointer flex-1">{t(option)}</label>
                 </div>
               ))}
             </div>
@@ -279,7 +280,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
 
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <Label className="font-black text-lg">Description commerciale</Label>
+              <Label className="font-black text-lg">{t('description_label')}</Label>
               <Button variant="outline" size="sm" onClick={handleAIEnhance} disabled={isGenerating} className="text-primary border-primary rounded-full font-bold">
                 {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4 mr-2" />}
                 {t('ai_improve_btn')}
@@ -318,7 +319,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
           </div>
 
           <div className="space-y-4">
-            <Label className="font-black text-lg">Options & Thèmes populaires *</Label>
+            <Label className="font-black text-lg">{t('amenities_label')} *</Label>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {circuitOptions.map(option => (
                 <div key={option} className={cn(
@@ -330,7 +331,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
                     checked={formData.amenities.includes(option)}
                     onCheckedChange={(checked) => setFormData(prev => ({ ...prev, amenities: checked ? [...prev.amenities, option] : prev.amenities.filter(a => a !== option) }))}
                   />
-                  <label htmlFor={option} className="text-sm font-bold text-slate-700 cursor-pointer flex-1">{option}</label>
+                  <label htmlFor={option} className="text-sm font-bold text-slate-700 cursor-pointer flex-1">{t(option)}</label>
                 </div>
               ))}
             </div>
@@ -355,7 +356,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
 
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <Label className="font-black text-lg">Itinéraire & Points Forts</Label>
+              <Label className="font-black text-lg">{t('description_label')}</Label>
               <Button variant="outline" size="sm" onClick={handleAIEnhance} disabled={isGenerating} className="text-primary border-primary rounded-full font-bold">
                 {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4 mr-2" />}
                 {t('ai_improve_btn')}
@@ -411,7 +412,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
         {formData.propertyType === 'hotel' && (
           <div className="space-y-6 animate-in zoom-in-95">
             <Label className="font-black text-lg flex items-center gap-2 text-primary">
-              <Star className="h-5 w-5 fill-primary" /> Configuration des chambres disponibles
+              <Star className="h-5 w-5 fill-primary" /> {t('chambers')}
             </Label>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-50 p-8 rounded-[2rem] border border-primary/10">
               <CounterField icon={<Bed/>} label={t('single_rooms')} value={formData.singleRoomsCount} onChange={v => setFormData({...formData, singleRoomsCount: v})} />
@@ -433,7 +434,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
 
         {/* Équipements */}
         <div className="space-y-4">
-          <Label className="font-black text-lg">Équipements & Services *</Label>
+          <Label className="font-black text-lg">{t('amenities_label')} *</Label>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {amenitiesList.map(amenity => (
               <div key={amenity} className={cn(
@@ -446,7 +447,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
                   onCheckedChange={(checked) => setFormData(prev => ({ ...prev, amenities: checked ? [...prev.amenities, amenity] : prev.amenities.filter(a => a !== amenity) }))}
                 />
                 <label htmlFor={amenity} className="text-sm font-bold text-slate-700 cursor-pointer flex-1">
-                  {amenity}
+                  {t(amenity)}
                   {amenity === "Petit-déjeuner inclus" && <span className="ml-2 bg-green-600 text-white text-[8px] px-1.5 py-0.5 rounded-full uppercase">Highlight</span>}
                 </label>
               </div>

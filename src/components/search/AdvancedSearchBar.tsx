@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -90,7 +91,10 @@ export default function AdvancedSearchBar() {
       </div>
 
       <form onSubmit={handleSearch} className="bg-[#FEBA02] p-[2px] rounded-xl shadow-2xl flex flex-col md:flex-row items-stretch gap-0 border-2 border-[#FEBA02]">
-        <div className="flex-[1.5] bg-white md:rounded-l-lg flex flex-col justify-center px-6 py-3 min-h-[85px] relative group border-r border-slate-100 transition-colors hover:bg-slate-50">
+        <div className={cn(
+          "flex-[1.5] bg-white flex flex-col justify-center px-6 py-3 min-h-[85px] relative group border-slate-100 transition-colors hover:bg-slate-50",
+          locale === 'ar' ? "md:rounded-r-lg border-l" : "md:rounded-l-lg border-r"
+        )}>
           <span className="text-[11px] font-black text-slate-400 uppercase tracking-tight mb-1.5 leading-none">
             {activeCategory === 'cars' ? t('pickup_location') : t('where_to')}
           </span>
@@ -98,7 +102,7 @@ export default function AdvancedSearchBar() {
             <MapPin className="text-slate-300 h-5 w-5 shrink-0" />
             <input 
               className="w-full bg-transparent border-none focus:ring-0 p-0 text-lg font-black text-slate-800 placeholder:text-slate-300 outline-none"
-              placeholder={activeCategory === 'cars' ? "Lieu de prise en charge" : "Où allez-vous ?"}
+              placeholder={activeCategory === 'cars' ? t('pickup_location') : t('where_to')}
               value={destination}
               onChange={(e) => setDestination(e.target.value)}
             />
@@ -127,7 +131,13 @@ export default function AdvancedSearchBar() {
           </PopoverContent>
         </Popover>
 
-        <button type="submit" className="bg-primary hover:bg-[#059669] text-white md:rounded-r-lg px-12 py-4 flex items-center justify-center transition-all active:scale-95 min-h-[85px] group outline-none">
+        <button 
+          type="submit" 
+          className={cn(
+            "bg-primary hover:bg-[#059669] text-white px-12 py-4 flex items-center justify-center transition-all active:scale-95 min-h-[85px] group outline-none",
+            locale === 'ar' ? "md:rounded-l-lg" : "md:rounded-r-lg"
+          )}
+        >
           <span className="text-2xl font-black tracking-tight group-hover:scale-105 transition-transform">
             {t("search_btn")}
           </span>

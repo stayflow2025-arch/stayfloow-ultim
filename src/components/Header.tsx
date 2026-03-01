@@ -1,8 +1,9 @@
+
 "use client";
 
 import Link from "next/link";
 import { Button } from "./ui/button";
-import { LogOut, User as UserIcon, LayoutDashboard, ShieldCheck, Building, Car, Compass } from "lucide-react";
+import { LogOut, User as UserIcon, LayoutDashboard, ShieldCheck, Building, Car, Compass, ChevronDown } from "lucide-react";
 import { useLanguage } from "@/context/language-context";
 import { useCurrency } from "@/context/currency-context";
 import { useEffect, useState, useMemo } from "react";
@@ -72,31 +73,36 @@ export function Header() {
 
         <div className="flex items-center gap-2 md:gap-4">
           <div className="hidden lg:flex items-center gap-2">
+            {/* SÉLECTEUR DE DEVISE */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="text-sm font-bold hover:bg-white/10 px-3 py-2 rounded-md transition-colors flex items-center gap-2 outline-none">
                   <span>{getCurrencyFlag(currency)}</span>
                   <span>{currency}</span>
+                  <ChevronDown className="h-3 w-3 opacity-50" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="rounded-xl border-none shadow-2xl">
+              <DropdownMenuContent align="end" className="rounded-xl border-none shadow-2xl p-1">
                 {currencies.map((c) => (
-                  <DropdownMenuItem key={c} onSelect={() => setCurrency(c as any)} className="font-bold cursor-pointer">
+                  <DropdownMenuItem key={c} onSelect={() => setCurrency(c as any)} className="font-bold cursor-pointer rounded-lg">
                     <span className="mr-2">{getCurrencyFlag(c as any)}</span> {c}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
 
+            {/* SÉLECTEUR DE LANGUE */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-1 hover:bg-white/10 px-2 py-2 rounded-md transition-colors outline-none">
+                <button className="flex items-center gap-2 hover:bg-white/10 px-3 py-2 rounded-md transition-colors outline-none font-bold text-sm">
                   <span className="text-lg">{getLocaleDetails().flag}</span>
+                  <span className="uppercase">{locale}</span>
+                  <ChevronDown className="h-3 w-3 opacity-50" />
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="rounded-xl border-none shadow-2xl">
+              <DropdownMenuContent align="end" className="rounded-xl border-none shadow-2xl p-1">
                 {availableLocales.map((loc) => (
-                  <DropdownMenuItem key={loc} onSelect={() => setLocale(loc as any)} className="font-bold cursor-pointer">
+                  <DropdownMenuItem key={loc} onSelect={() => setLocale(loc as any)} className="font-bold cursor-pointer rounded-lg">
                     <span className="mr-2">{getLocaleDetails(loc as any).flag}</span> {getLocaleDetails(loc as any).name}
                   </DropdownMenuItem>
                 ))}
