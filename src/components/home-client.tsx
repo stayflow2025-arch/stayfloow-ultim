@@ -1,10 +1,9 @@
-
 "use client";
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import Image from 'next/image';
-import { MapPin, Sparkles } from 'lucide-react';
+import { MapPin, Sparkles, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AdvancedSearchBar from '@/components/search/AdvancedSearchBar';
 import { useLanguage } from '@/context/language-context';
@@ -13,7 +12,6 @@ import { useEffect, useState, Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { properties } from '@/lib/data';
 
-// Optimisation : Chargement différé des composants non critiques
 const AiRecommender = dynamic(() => import('@/components/ai-recommender').then(mod => mod.AiRecommender), {
   ssr: false,
   loading: () => <Skeleton className="w-full h-[400px] rounded-[2.5rem]" />
@@ -46,6 +44,13 @@ export function HomeClient() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background page-fade-in">
+      {/* BANNIÈRE DE TEST DE NAVIGATION (À retirer plus tard) */}
+      <div className="bg-amber-100 p-2 text-center text-xs font-bold text-amber-800 border-b border-amber-200">
+        <Link href="/test" className="underline flex items-center justify-center gap-2">
+          <CheckCircle2 className="h-3 w-3" /> CLIQUEZ ICI POUR TESTER LA NAVIGATION
+        </Link>
+      </div>
+
       {/* Hero Section Premium */}
       <section className="bg-primary text-white pt-16 pb-48 px-6 relative overflow-hidden">
         <div className="max-w-7xl mx-auto space-y-6 relative z-10 text-center md:text-left">
@@ -59,7 +64,6 @@ export function HomeClient() {
             {t("hero_subtitle")}
           </p>
         </div>
-        {/* Décoration de fond optimisée */}
         <div className="absolute -bottom-20 -right-20 w-[500px] h-[500px] bg-secondary/10 rounded-full blur-[120px]" />
         <div className="absolute top-20 left-1/2 w-96 h-96 bg-white/5 rounded-full blur-[100px]" />
       </section>
@@ -146,12 +150,10 @@ export function HomeClient() {
           </div>
         </section>
 
-        {/* Recommandations Personnalisées IA */}
         <Suspense fallback={<Skeleton className="w-full h-[600px] rounded-[3rem]" />}>
           <PersonalizedRecommendations />
         </Suspense>
 
-        {/* L'Expert IA Recommender */}
         <section className="mt-32">
           <Suspense fallback={<Skeleton className="w-full h-[450px] rounded-[3rem]" />}>
             <AiRecommender />

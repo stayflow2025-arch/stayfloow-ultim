@@ -53,22 +53,9 @@
   * {
     @apply border-border;
   }
-  body, html {
-    @apply bg-background text-foreground font-sans text-[14px] antialiased;
-    pointer-events: auto !important;
-    touch-action: auto !important;
-    overflow-x: hidden;
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
   }
-}
-
-/* Fix radical pour les clics bloqués dans l'environnement Studio */
-[data-nextjs-scroll-focus-boundary], 
-[data-radix-portal], 
-[role="region"],
-button, a, [role="button"], input, select {
-  pointer-events: auto !important;
-  cursor: pointer !important;
-  z-index: auto;
 }
 
 .page-fade-in {
