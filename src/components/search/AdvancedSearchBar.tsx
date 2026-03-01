@@ -1,11 +1,9 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { MapPin, Calendar as CalendarIcon, Users, Building, Car, Compass, Minus, Plus, Clock } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { MapPin, Calendar as CalendarIcon, Building, Car, Compass } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format } from 'date-fns';
 import { fr, enUS, es, arDZ } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -28,8 +26,6 @@ export default function AdvancedSearchBar() {
     from: undefined,
     to: undefined,
   });
-  const [occupancy, setOccupancy] = useState({ adults: 2, children: 0, rooms: 1 });
-  const [times, setTimes] = useState({ pickup: "10:00", return: "10:00" });
 
   useEffect(() => {
     setIsClient(true);
@@ -58,11 +54,11 @@ export default function AdvancedSearchBar() {
     
     let url = "";
     if (activeCategory === 'cars') {
-      url = `/cars/results?dest=${encodeURIComponent(destination)}&from=${from}&to=${to}&pickup_time=${times.pickup}&return_time=${times.return}`;
+      url = `/cars/results?dest=${encodeURIComponent(destination)}&from=${from}&to=${to}`;
     } else if (activeCategory === 'circuits') {
       url = `/circuits/results?dest=${encodeURIComponent(destination)}`;
     } else {
-      url = `/search?dest=${encodeURIComponent(destination)}&from=${from}&to=${to}&adults=${occupancy.adults}&rooms=${occupancy.rooms}`;
+      url = `/search?dest=${encodeURIComponent(destination)}&from=${from}&to=${to}`;
     }
     
     router.push(url);
@@ -73,9 +69,24 @@ export default function AdvancedSearchBar() {
   return (
     <div className="w-full">
       <div className="flex gap-3 mb-6 overflow-x-auto no-scrollbar py-1">
-        <TabButton active={activeCategory === 'accommodations'} onClick={() => setActiveCategory('accommodations')} icon={<Building className="h-5 w-5" />} label={t("accommodations")} />
-        <TabButton active={activeCategory === 'cars'} onClick={() => setActiveCategory('cars')} icon={<Car className="h-5 w-5" />} label={t("car_rental")} />
-        <TabButton active={activeCategory === 'circuits'} onClick={() => setActiveCategory('circuits')} icon={<Compass className="h-5 w-5" />} label={t("tours")} />
+        <TabLink 
+          href="/" 
+          active={activeCategory === 'accommodations'} 
+          icon={<Building className="h-5 w-5" />} 
+          label={t("accommodations")} 
+        />
+        <TabLink 
+          href="/cars" 
+          active={activeCategory === 'cars'} 
+          icon={<Car className="h-5 w-5" />} 
+          label={t("car_rental")} 
+        />
+        <TabLink 
+          href="/circuits" 
+          active={activeCategory === 'circuits'} 
+          icon={<Compass className="h-5 w-5" />} 
+          label={t("tours")} 
+        />
       </div>
 
       <form onSubmit={handleSearch} className="bg-[#FEBA02] p-[2px] rounded-xl shadow-2xl flex flex-col md:flex-row items-stretch gap-0 border-2 border-[#FEBA02]">
@@ -126,11 +137,11 @@ export default function AdvancedSearchBar() {
   );
 }
 
-function TabButton({ active, onClick, icon, label }: { active: boolean, onClick: () => void, icon: any, label: string }) {
+function TabLink({ href, active, icon, label }: { href: string, active: boolean, icon: any, label: string }) {
   return (
-    <button 
-      type="button"
-      onClick={onClick} 
+    <Link 
+      href={href}
+      prefetch={true}
       className={cn(
         "flex items-center gap-3 px-8 py-4 rounded-full text-base font-black transition-all border-none whitespace-nowrap outline-none", 
         active 
@@ -140,6 +151,6 @@ function TabButton({ active, onClick, icon, label }: { active: boolean, onClick:
     >
       <span className={cn(active ? "text-primary" : "text-white")}>{icon}</span>
       {label}
-    </button>
+    </Link>
   );
 }

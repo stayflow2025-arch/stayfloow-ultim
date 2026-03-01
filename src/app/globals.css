@@ -53,17 +53,20 @@
   * {
     @apply border-border;
   }
-  body {
+  body, html {
     @apply bg-background text-foreground font-sans text-[14px] antialiased;
     pointer-events: auto !important;
     touch-action: auto !important;
+    overflow-x: hidden;
   }
 }
 
 /* Fix pour les clics bloqués dans Next.js 15 */
-[data-nextjs-scroll-focus-boundary] {
+[data-nextjs-scroll-focus-boundary], 
+[data-radix-portal], 
+[role="region"],
+button, a {
   pointer-events: auto !important;
-  display: contents !important;
 }
 
 .page-fade-in {

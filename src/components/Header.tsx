@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "./ui/button";
-import { LogOut, User as UserIcon, LayoutDashboard, HelpCircle, ShieldCheck } from "lucide-react";
+import { LogOut, User as UserIcon, LayoutDashboard, ShieldCheck, Building, Car, Compass } from "lucide-react";
 import { useLanguage } from "@/context/language-context";
 import { useCurrency } from "@/context/currency-context";
 import { useEffect, useState, useMemo } from "react";
@@ -23,7 +23,7 @@ import { cn } from "@/lib/utils";
 const ADMIN_EMAIL = "stayflow2025@gmail.com";
 
 export function Header() {
-  const { t, setLocale, getLocaleDetails, availableLocales } = useLanguage();
+  const { t, locale, setLocale, getLocaleDetails, availableLocales } = useLanguage();
   const { currency, setCurrency, getCurrencyFlag } = useCurrency();
   const { user, loading: userLoading } = useUser();
   const auth = useAuth();
@@ -55,11 +55,20 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full bg-primary text-white shadow-md">
       <div className="container mx-auto flex h-16 items-center px-4 justify-between">
-        <Link href="/" className="flex items-center gap-2 group" prefetch={true}>
-          <span className="text-2xl font-black tracking-tighter text-white group-hover:scale-105 transition-transform">
-            StayFloow<span className="text-secondary">.com</span>
-          </span>
-        </Link>
+        <div className="flex items-center gap-8">
+          <Link href="/" className="flex items-center gap-2 group" prefetch={true}>
+            <span className="text-2xl font-black tracking-tighter text-white group-hover:scale-105 transition-transform">
+              StayFloow<span className="text-secondary">.com</span>
+            </span>
+          </Link>
+
+          {/* Navigation Principale Desktop */}
+          <nav className="hidden xl:flex items-center gap-1">
+            <NavLink href="/search" icon={<Building className="h-4 w-4" />} label={t("accommodations")} />
+            <NavLink href="/cars" icon={<Car className="h-4 w-4" />} label={t("car_rental")} />
+            <NavLink href="/circuits" icon={<Compass className="h-4 w-4" />} label={t("tours")} />
+          </nav>
+        </div>
 
         <div className="flex items-center gap-2 md:gap-4">
           <div className="hidden lg:flex items-center gap-2">
@@ -164,5 +173,18 @@ export function Header() {
         </div>
       </div>
     </header>
+  );
+}
+
+function NavLink({ href, icon, label }: { href: string, icon: any, label: string }) {
+  return (
+    <Link 
+      href={href} 
+      prefetch={true}
+      className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold hover:bg-white/10 transition-colors"
+    >
+      {icon}
+      <span>{label}</span>
+    </Link>
   );
 }
