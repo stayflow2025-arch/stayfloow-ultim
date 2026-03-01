@@ -32,6 +32,24 @@ const translations: Record<string, Record<Locale, string>> = {
     "rights_reserved": { fr: "Tous droits réservés", en: "All rights reserved", ar: "جميع الحقوق محفوظة", es: "Todos los derechos reservados" },
     "footer_tagline": { fr: "Le partenaire de vos voyages en Afrique.", en: "Your travel partner in Africa.", ar: "شريك سفرك في أفريقيا.", es: "Su socio de viajes en África." },
 
+    // Occupancy Selector
+    "adults": { fr: "Adultes", en: "Adults", ar: "بالغون", es: "Adultos" },
+    "adult_singular": { fr: "adulte", en: "adult", ar: "بالغ", es: "adulto" },
+    "adults_plural": { fr: "adultes", en: "adults", ar: "بالغون", es: "adultos" },
+    "children": { fr: "Enfants", en: "Children", ar: "أطفال", es: "Niños" },
+    "child_singular": { fr: "enfant", en: "child", ar: "طفل", es: "niño" },
+    "children_plural": { fr: "enfants", en: "children", ar: "أطفال", es: "niños" },
+    "rooms": { fr: "Chambres", en: "Rooms", ar: "غرف", es: "Habitaciones" },
+    "room_singular": { fr: "chambre", en: "room", ar: "غرفة", es: "habitación" },
+    "rooms_plural": { fr: "chambres", en: "rooms", ar: "غرف", es: "habitaciones" },
+    "age_label": { fr: "ans", en: "years old", ar: "سنة", es: "años" },
+    "children_age_info": { fr: "Pour trouver un hébergement pouvant accueillir votre groupe et afficher les bons tarifs, nous avons besoin de connaître l'âge qu'auront vos enfants à la fin du séjour.", en: "To find an accommodation that can accommodate your group and show the right prices, we need to know the age your children will be at the end of the stay.", ar: "للعثور على مكان إقامة يمكنه استيعاب مجموعتك وعرض الأسعار الصحيحة ، نحتاج إلى معرفة العمر الذي سيكون عليه أطفالك في نهاية الإقامة.", es: "Para encontrar un alojamiento que pueda acomodar a su grupo y mostrar los precios correctos, necesitamos saber la edad que tendrán sus hijos al final de la estancia." },
+    "travel_with_pet": { fr: "Vous voyagez avec votre animal ?", en: "Are you traveling with your pet?", ar: "هل تسافر مع حيوانك الأليف؟", es: "¿Viajas con tu mascota?" },
+    "service_animal_info": { fr: "Les animaux d'assistance ne sont pas considérés comme des animaux de compagnie.", en: "Service animals are not considered pets.", ar: "لا تُعتبر حيوانات الخدمة حيوانات أليفة.", es: "Los animales de servicio no se consideran mascotas." },
+    "learn_more_service_animal": { fr: "En savoir plus sur les voyages avec un animal d'assistance", en: "Learn more about traveling with a service animal", ar: "تعرف على المزيد حول السفر مع حيوان خدمة", es: "Más información sobre viajar con un perro de asistencia" },
+    "done": { fr: "Terminer", en: "Done", ar: "تم", es: "Terminar" },
+    "guests_rooms": { fr: "Voyageurs & Chambres", en: "Guests & Rooms", ar: "المسافرون والغرف", es: "Viajeros y Habitaciones" },
+
     // Hero & Home
     "hero_title": { fr: "Des séjours inoubliables pour tous les budgets.", en: "Incredible stays for every budget.", ar: "إقامات لا تنسى لجميع الميزانيات.", es: "Estancias inolvidables para todos los presupuestos." },
     "hero_subtitle": { fr: "Économisez 15 % ou plus sur vos réservations de 2026 grâce aux offres StayFloow.", en: "Save 15% or more on 2026 bookings with StayFloow deals.", ar: "وفر 15% أو أكثر على حجوزات 2026 مع عروض StayFloow.", es: "Ahorra un 15% o más en reservas de 2026 con ofertas de StayFloow." },
@@ -40,7 +58,7 @@ const translations: Record<string, Record<Locale, string>> = {
     "where_to": { fr: "Où allez-vous ?", en: "Where to?", ar: "إلى أين أنت ذاهب؟", es: "¿A dónde vas?" },
     "pickup_location": { fr: "Lieu de prise en charge", en: "Pickup Location", ar: "موقع الاستلام", es: "Lugar de recogida" },
     "property_types_title": { fr: "Rechercher par type d'hébergement", en: "Search by property type", ar: "البحث حسب نوع الإقامة", es: "Buscar por tipo de propiedad" },
-    "unique_stays_title": { fr: "Séjournez dans nos hébergements uniques", en: "Stay in our unique stays", ar: "أقم في أماكن إقامتنا الفريدة", es: "Quédese en nuestras estancias únicas" },
+    "unique_stays_title": { fr: "Séjournez dans nos hébergements uniques", en: "Stay in our unique stays", ar: "أقم في أماكن إقامتنا الفريدة", es: "Quédese en nuestras estancias uniques" },
     "unique_stays_desc": { fr: "Une sélection rigoureuse des établissements les mieux notés sur StayFloow.com", en: "A rigorous selection of top-rated properties on StayFloow.com", ar: "اختيار صارم لأفضل العقارات تقييمًا على StayFloow.com", es: "Una selección rigurosa de las propiedades mejor valoradas en StayFloow.com" },
     "recently_viewed": { fr: "Consultés récemment", en: "Recently viewed", ar: "تمت مشاهدتها مؤخراً", es: "Vistos recientemente" },
     "inspired_by_visit": { fr: "Inspirés par votre visite", en: "Inspired by your visit", ar: "مستوحى من زيارتك", es: "Inspirado por tu visita" },
@@ -69,7 +87,7 @@ const translations: Record<string, Record<Locale, string>> = {
     "last_name": { fr: "Nom", en: "Last Name", ar: "اللقب", es: "Apellido" },
     "pro_email": { fr: "Email professionnel", en: "Professional Email", ar: "البريد الإلكتروني المهني", es: "Correo electrónico profesional" },
     "phone_whatsapp": { fr: "Téléphone (WhatsApp)", en: "Phone (WhatsApp)", ar: "الهاتف (واتساب)", es: "Teléfono (WhatsApp)" },
-    "full_address": { fr: "Adresse complète", en: "Full Address", ar: "العنوان الكامل", es: "Dirección completa" },
+    "full_address": { fr: "Adresse complète", en: "Full Address", ar: "العنوان الكامل", es: "Dirección complète" },
     "chambers": { fr: "Chambres", en: "Rooms", ar: "غرف", es: "Habitaciones" },
     "bathrooms": { fr: "Salles de bain", en: "Bathrooms", ar: "حمامات", es: "Baños" },
     "kitchens": { fr: "Cuisines", en: "Kitchens", ar: "مطابخ", es: "Cocinas" },
@@ -134,7 +152,6 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
 
   const t = useCallback((key: string): string => {
     if (!mounted) return key;
-    // Si la clé existe dans les traductions, on la retourne, sinon on retourne la clé elle-même
     return translations[key]?.[locale] || key;
   }, [locale, mounted]);
 
