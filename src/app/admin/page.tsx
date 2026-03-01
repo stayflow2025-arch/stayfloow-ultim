@@ -21,7 +21,7 @@ import {
 } from 'recharts';
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { useUser, useFirestore, useCollection } from "@/firebase";
+import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 
@@ -44,8 +44,8 @@ export default function AdminDashboardMaster() {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
-  const listingsRef = useMemo(() => collection(db, 'listings'), [db]);
-  const { data: listings, loading: listingsLoading } = useCollection(listingsRef);
+  const listingsRef = useMemoFirebase(() => collection(db, 'listings'), [db]);
+  const { data: listings, isLoading: listingsLoading } = useCollection(listingsRef);
 
   useEffect(() => {
     if (!authLoading) {

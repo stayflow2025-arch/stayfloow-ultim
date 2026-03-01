@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useCollection, getFirestore, useUser } from '@/firebase';
+import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebase';
 import { collection, doc, updateDoc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -18,13 +18,13 @@ import { cn } from '@/lib/utils';
 
 export default function AdminValidatePage() {
   const { user, loading: authLoading } = useUser();
-  const db = getFirestore();
+  const db = useFirestore();
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialId = searchParams.get('id');
 
-  const listingsRef = collection(db, 'listings');
-  const { data: listings, loading } = useCollection(listingsRef);
+  const listingsRef = useMemoFirebase(() => collection(db, 'listings'), [db]);
+  const { data: listings, isLoading: loading } = useCollection(listingsRef);
   const [selectedId, setSelectedId] = useState<string | null>(initialId);
 
   useEffect(() => {

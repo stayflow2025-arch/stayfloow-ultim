@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useTransition, useMemo } from "react";
@@ -15,9 +16,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Loader2, Sparkles, Send, BrainCircuit } from "lucide-react";
-import { useCollection } from "@/firebase";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, where, limit } from "firebase/firestore";
-import { getFirestore } from "@/firebase";
 import { Badge } from "./ui/badge";
 
 export function AiRecommender() {
@@ -27,10 +27,17 @@ export function AiRecommender() {
   const [result, setResult] = useState<string | null>(null);
 
   // Récupération du contexte réel du site pour l'IA
-  const db = getFirestore();
-  const listingsRef = collection(db, 'listings');
-  const q = query(listingsRef, where('status', '==', 'approved'), limit(10));
-  const { data: listings } = useCollection(q);
+  const firestore = useFirestore();
+  const listingsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(
+      collection(firestore, 'listings'), 
+      where('status', '==', 'approved'), 
+      limit(10)
+    );
+  }, [firestore]);
+  
+  const { data: listings } = useCollection(listingsQuery);
 
   const siteContext = useMemo(() => {
     if (!listings) return "Aucune donnée disponible pour le moment.";
