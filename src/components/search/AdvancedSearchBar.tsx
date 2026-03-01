@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -16,6 +15,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
 
 type Category = 'accommodations' | 'cars' | 'circuits';
 
@@ -173,11 +173,19 @@ export default function AdvancedSearchBar() {
             </div>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0 border-none shadow-2xl z-[100]" align="center">
-            <Calendar mode="range" selected={dateRange} onSelect={setDateRange} numberOfMonths={2} locale={getDateLocale()} disabled={{ before: new Date() }} />
+            <Calendar 
+              mode="range" 
+              selected={dateRange} 
+              onSelect={setDateRange} 
+              numberOfMonths={2} 
+              locale={getDateLocale()} 
+              disabled={{ before: new Date() }}
+              weekStartsOn={1}
+            />
           </PopoverContent>
         </Popover>
 
-        {/* Colonne 3 : Occupation (Uniquement pour hébergements) */}
+        {/* Colonne 3 : Occupation */}
         {activeCategory === 'accommodations' && (
           <Popover open={isOccupancyOpen} onOpenChange={setIsOccupancyOpen}>
             <PopoverTrigger asChild>
@@ -197,7 +205,6 @@ export default function AdvancedSearchBar() {
               </div>
             </PopoverTrigger>
             <PopoverContent className="w-80 p-6 space-y-6 border-none shadow-2xl rounded-2xl bg-white z-[100]" align="center">
-              {/* Adultes */}
               <div className="flex items-center justify-between">
                 <Label className="font-bold text-slate-700 text-base">{t('adults')}</Label>
                 <div className="flex items-center gap-4 bg-slate-50 rounded-lg p-1 border border-slate-200">
@@ -211,7 +218,6 @@ export default function AdvancedSearchBar() {
                 </div>
               </div>
 
-              {/* Enfants */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <Label className="font-bold text-slate-700 text-base">{t('children')}</Label>
@@ -244,15 +250,8 @@ export default function AdvancedSearchBar() {
                     ))}
                   </div>
                 )}
-                
-                {occupancy.children > 0 && (
-                  <p className="text-[10px] text-slate-500 leading-relaxed italic">
-                    {t('children_age_info')}
-                  </p>
-                )}
               </div>
 
-              {/* Chambres */}
               <div className="flex items-center justify-between">
                 <Label className="font-bold text-slate-700 text-base">{t('rooms')}</Label>
                 <div className="flex items-center gap-4 bg-slate-50 rounded-lg p-1 border border-slate-200">
@@ -268,7 +267,6 @@ export default function AdvancedSearchBar() {
 
               <Separator />
 
-              {/* Animaux */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="pets" className="font-bold text-slate-700 text-sm">{t('travel_with_pet')}</Label>
@@ -277,12 +275,6 @@ export default function AdvancedSearchBar() {
                     checked={occupancy.pets} 
                     onCheckedChange={(checked) => setOccupancy(prev => ({ ...prev, pets: checked }))} 
                   />
-                </div>
-                <div className="space-y-1">
-                  <p className="text-[10px] text-slate-400 font-medium">{t('service_animal_info')}</p>
-                  <button type="button" className="text-[10px] text-primary font-bold hover:underline text-left">
-                    {t('learn_more_service_animal')}
-                  </button>
                 </div>
               </div>
 
@@ -328,8 +320,4 @@ function TabLink({ href, active, icon, label }: { href: string, active: boolean,
       {label}
     </Link>
   );
-}
-
-function Separator() {
-  return <div className="h-px bg-slate-100 w-full" />;
 }
