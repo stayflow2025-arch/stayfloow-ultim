@@ -10,12 +10,13 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   experimental: {
-    // Autorise les origines de développement spécifiques à Google Cloud Workstations et Firebase Studio
+    // Autorise de manière extensive les origines de développement pour éviter les blocages CORS
     allowedDevOrigins: [
       '*.cloudworkstations.dev',
       '*.firebaseapp.com',
       '*.web.app',
-      'localhost:9002'
+      'localhost:9002',
+      'localhost:3000'
     ],
   },
   images: {

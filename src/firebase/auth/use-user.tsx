@@ -1,17 +1,21 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getAuth, onAuthStateChanged, User } from 'firebase/auth';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { auth } from '../init';
 
+/**
+ * Hook optimisé pour récupérer l'utilisateur actuel sans bloquer le rendu.
+ */
 export function useUser() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    // Utilisation de l'instance auth déjà initialisée
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(user);
+      setUser(currentUser);
       setLoading(false);
     });
 

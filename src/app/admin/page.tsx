@@ -7,11 +7,9 @@ import {
   CheckCircle2, 
   Clock, Euro, Puzzle, 
   Loader2,
-  TrendingUp,
-  Plus,
-  ArrowRight
+  TrendingUp
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -41,7 +39,7 @@ export default function AdminDashboardMaster() {
   const router = useRouter();
   const db = useFirestore();
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [isReady, setIsReady] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
   const listingsRef = useMemo(() => collection(db, 'listings'), [db]);
   const { data: listings, loading: listingsLoading } = useCollection(listingsRef);
@@ -53,7 +51,7 @@ export default function AdminDashboardMaster() {
       } else if (user.email !== ADMIN_EMAIL) {
         router.replace("/profile");
       } else {
-        setIsReady(true);
+        setIsAuthorized(true);
       }
     }
   }, [user, authLoading, router]);
@@ -68,12 +66,12 @@ export default function AdminDashboardMaster() {
     };
   }, [listings]);
 
-  if (authLoading || !isReady) {
+  if (authLoading || isAuthorized === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-12 w-12 animate-spin text-primary" />
-          <p className="font-black uppercase tracking-widest animate-pulse">StayFloow Engine Loading...</p>
+          <p className="font-black uppercase tracking-widest animate-pulse">StayFloow Engine v3.2 Loading...</p>
         </div>
       </div>
     );
@@ -101,7 +99,7 @@ export default function AdminDashboardMaster() {
       </header>
 
       <div className="flex flex-1 overflow-hidden">
-        <aside className="w-64 bg-slate-800 text-slate-300 flex flex-col border-r border-slate-700 shrink-0 shadow-2xl">
+        <aside className="w-64 bg-slate-800 text-slate-300 flex flex-col border-r border-slate-700 shrink-0">
           <div className="flex-1 py-6">
             <SidebarItem icon={<LayoutDashboard />} label="Tableau de Bord" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
             <SidebarItem icon={<Calendar />} label="Réservations" active={activeTab === 'bookings'} onClick={() => setActiveTab('bookings')} />

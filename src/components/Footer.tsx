@@ -27,7 +27,7 @@ export function Footer() {
   const { currency, setCurrency, getCurrencySymbol, getCurrencyFlag } = useCurrency();
   const { locale, setLocale, t, getLocaleDetails, availableLocales } = useLanguage();
   const pathname = usePathname();
-  const isAdminPage = pathname.startsWith("/admin");
+  const isAdminPage = pathname?.startsWith("/admin");
   const [socialLinks, setSocialLinks] = useState<SocialLinks | null>(null);
 
   useEffect(() => {
@@ -72,7 +72,7 @@ export function Footer() {
             </p>
 
             <Button className="px-10 py-8 bg-secondary hover:bg-secondary/90 text-primary text-xl font-black rounded-xl shadow-2xl active:scale-95 transition-all" asChild>
-              <Link href="/partners/join">
+              <Link href="/partners/join" prefetch={true}>
                 {t("start")}
               </Link>
             </Button>
@@ -83,7 +83,7 @@ export function Footer() {
       <div className="container mx-auto px-4 py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           <div className="flex flex-col gap-6">
-            <Link href="/" className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2" prefetch={true}>
               <span className="text-3xl font-black text-primary tracking-tighter">StayFloow<span className="text-secondary">.com</span></span>
             </Link>
 
@@ -107,27 +107,27 @@ export function Footer() {
           <div>
             <h4 className="font-black text-slate-900 mb-6 uppercase tracking-widest text-xs">{t("navigation")}</h4>
             <ul className="space-y-4 text-sm font-bold">
-              <li><Link href="/search?type=accommodations" className="text-slate-500 hover:text-primary transition-colors">{t("accommodations")}</Link></li>
-              <li><Link href="/cars" className="text-slate-500 hover:text-primary transition-colors">{t("car_rental")}</Link></li>
-              <li><Link href="/circuits" className="text-slate-500 hover:text-primary transition-colors">{t("tours")}</Link></li>
+              <li><Link href="/search" prefetch={true} className="text-slate-500 hover:text-primary transition-colors">{t("accommodations")}</Link></li>
+              <li><Link href="/cars" prefetch={true} className="text-slate-500 hover:text-primary transition-colors">{t("car_rental")}</Link></li>
+              <li><Link href="/circuits" prefetch={true} className="text-slate-500 hover:text-primary transition-colors">{t("tours")}</Link></li>
             </ul>
           </div>
 
           <div>
             <h4 className="font-black text-slate-900 mb-6 uppercase tracking-widest text-xs">{t("company")}</h4>
             <ul className="space-y-4 text-sm font-bold">
-              <li><Link href="/about" className="text-slate-500 hover:text-primary transition-colors">{t("about")}</Link></li>
-              <li><Link href="/contact" className="text-slate-500 hover:text-primary transition-colors">{t("contact")}</Link></li>
-              <li><Link href="/admin" className="text-slate-500 hover:text-primary transition-colors">Portail Admin</Link></li>
+              <li><Link href="/about" prefetch={true} className="text-slate-500 hover:text-primary transition-colors">{t("about")}</Link></li>
+              <li><Link href="/contact" prefetch={true} className="text-slate-500 hover:text-primary transition-colors">{t("contact")}</Link></li>
+              <li><Link href="/admin" prefetch={true} className="text-[#10B981] font-black hover:underline transition-colors">Portail Admin</Link></li>
             </ul>
           </div>
 
           <div>
             <h4 className="font-black text-slate-900 mb-6 uppercase tracking-widest text-xs">{t("legal")}</h4>
             <ul className="space-y-4 text-sm font-bold">
-              <li><Link href="/partners/dashboard" className="text-slate-500 hover:text-primary transition-colors">Espace Partenaire</Link></li>
-              <li><Link href="/terms" className="text-slate-500 hover:text-primary transition-colors">{t("terms")}</Link></li>
-              <li><Link href="/privacy" className="text-slate-500 hover:text-primary transition-colors">{t("privacy")}</Link></li>
+              <li><Link href="/partners/dashboard" prefetch={true} className="text-slate-500 hover:text-primary transition-colors">Espace Partenaire</Link></li>
+              <li><Link href="/terms" prefetch={true} className="text-slate-500 hover:text-primary transition-colors">{t("terms")}</Link></li>
+              <li><Link href="/privacy" prefetch={true} className="text-slate-500 hover:text-primary transition-colors">{t("privacy")}</Link></li>
             </ul>
           </div>
         </div>
