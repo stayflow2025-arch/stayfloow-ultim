@@ -71,7 +71,7 @@ export default function AdminDashboardMaster() {
       <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-12 w-12 animate-spin text-primary" />
-          <p className="font-black uppercase tracking-widest animate-pulse">StayFloow Engine v3.2 Loading...</p>
+          <p className="font-black uppercase tracking-widest animate-pulse">Accès Admin en cours...</p>
         </div>
       </div>
     );
@@ -94,7 +94,7 @@ export default function AdminDashboardMaster() {
         </nav>
         <div className="px-6 flex items-center gap-4 border-l border-slate-700 h-full">
           <Badge className="bg-green-600 border-none font-black text-[10px]">ADMIN CONNECTÉ</Badge>
-          <div className="h-8 w-8 rounded-full bg-primary border-2 border-primary/20 flex items-center justify-center font-black text-xs">AD</div>
+          <div className="h-8 w-8 rounded-full bg-primary border-2 border-primary/20 flex items-center justify-center font-black text-xs">SF</div>
         </div>
       </header>
 

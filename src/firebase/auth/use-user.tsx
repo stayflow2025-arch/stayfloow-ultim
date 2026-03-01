@@ -14,7 +14,6 @@ export function useUser() {
   useEffect(() => {
     // Utilisation de l'instance auth déjà initialisée
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(user);
       setUser(currentUser);
       setLoading(false);
     });

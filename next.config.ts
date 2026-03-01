@@ -9,16 +9,6 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
-  experimental: {
-    // Autorise de manière extensive les origines de développement pour éviter les blocages CORS
-    allowedDevOrigins: [
-      '*.cloudworkstations.dev',
-      '*.firebaseapp.com',
-      '*.web.app',
-      'localhost:9002',
-      'localhost:3000'
-    ],
-  },
   images: {
     remotePatterns: [
       {
