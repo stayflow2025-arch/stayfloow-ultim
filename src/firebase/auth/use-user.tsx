@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -5,29 +6,25 @@ import { onAuthStateChanged, User } from 'firebase/auth';
 import { auth } from '../init';
 
 /**
- * Hook d'authentification robuste avec gestion de timeout pour éviter les blocages infinis.
+ * Hook d'authentification robuste.
+ * Utilise l'instance Firebase Auth centralisée pour une détection immédiate.
  */
 export function useUser() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fail-safe : si Firebase met trop de temps, on libère le rendu après 5s
-    const timer = setTimeout(() => {
-      if (loading) setLoading(false);
-    }, 5000);
-
+    // Écouter les changements d'état d'authentification
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
-      clearTimeout(timer);
+    }, (error) => {
+      console.error("Auth observer error:", error);
+      setLoading(false);
     });
 
-    return () => {
-      unsubscribe();
-      clearTimeout(timer);
-    };
-  }, [loading]);
+    return () => unsubscribe();
+  }, []);
 
   return { user, loading };
 }

@@ -31,7 +31,6 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
-  // Redirection automatique basée sur le rôle si déjà connecté
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -66,24 +65,28 @@ export default function LoginPage() {
         description: "Bienvenue sur StayFloow.com !",
       });
 
-      // Redirection spécifique au rôle
       if (user.email === ADMIN_EMAIL) {
         router.push("/admin");
       } else {
         router.push("/profile");
       }
     } catch (error: any) {
-      console.error("Login error:", error);
+      console.error("Login error:", error.code, error.message);
       
+      let title = "Erreur de connexion";
       let message = "Email ou mot de passe incorrect.";
       
-      if (error.code === 'auth/operation-not-allowed') {
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+        message = "Vos identifiants sont incorrects. Veuillez vérifier votre email et mot de passe.";
+      } else if (error.code === 'auth/too-many-requests') {
+        message = "Trop de tentatives échouées. Votre compte est temporairement bloqué. Réessayez plus tard.";
+      } else if (error.code === 'auth/operation-not-allowed') {
         message = "La connexion par email n'est pas activée dans la console Firebase.";
       }
 
       toast({
         variant: "destructive",
-        title: "Erreur de connexion",
+        title: title,
         description: message,
       });
     } finally {

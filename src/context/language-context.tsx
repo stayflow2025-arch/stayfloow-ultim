@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
@@ -39,27 +40,28 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [locale, setLocale] = useState<Locale>('fr');
-  const [isReady, setIsReady] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const savedLocale = localStorage.getItem('stayfloow_locale') as Locale;
     if (savedLocale && localeDetails[savedLocale]) {
       setLocale(savedLocale);
     }
-    setIsReady(true);
+    setMounted(true);
   }, []);
 
   useEffect(() => {
-    if (isReady) {
+    if (mounted) {
       document.documentElement.lang = locale;
       document.documentElement.dir = localeDetails[locale].dir;
       localStorage.setItem('stayfloow_locale', locale);
     }
-  }, [locale, isReady]);
+  }, [locale, mounted]);
 
   const t = useCallback((key: string): string => {
+    if (!mounted) return key; // Prevent hydration mismatch by returning key during SSR
     return translations[key]?.[locale] || key;
-  }, [locale]);
+  }, [locale, mounted]);
 
   const getLocaleDetails = (loc?: Locale) => {
     return localeDetails[loc || locale];

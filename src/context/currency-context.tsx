@@ -1,6 +1,7 @@
+
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
 export type Currency = 'DZD' | 'USD' | 'EUR' | 'GBP' | 'CHF' | 'EGP';
 
@@ -44,6 +45,21 @@ const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined
 
 export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
   const [currency, setCurrency] = useState<Currency>('DZD');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('stayfloow_currency') as Currency;
+    if (saved && conversionRates[saved]) {
+      setCurrency(saved);
+    }
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted) {
+      localStorage.setItem('stayfloow_currency', currency);
+    }
+  }, [currency, mounted]);
 
   const convertFromDZD = (priceInDZD: number) => {
     return priceInDZD * conversionRates[currency];
@@ -58,6 +74,8 @@ export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const formatPrice = (priceInDZD: number, isRawValue = false) => {
+    if (!mounted) return priceInDZD.toString(); // Safety for hydration
+
     const rate = conversionRates[currency];
     const convertedPrice = priceInDZD * rate;
 
@@ -100,31 +118,17 @@ export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-/**
- * Hook personnalisé useCurrency avec protection anti-crash.
- * Garantit des valeurs par défaut si le provider est absent.
- */
 export const useCurrency = () => {
   const context = useContext(CurrencyContext);
-
   if (!context) {
     return {
       currency: "DZD" as Currency,
       setCurrency: () => {},
-      formatPrice: (priceInDZD: number, isRawValue = false) => {
-        if (isRawValue) return priceInDZD.toString();
-        return new Intl.NumberFormat("fr-DZ", {
-          style: "currency",
-          currency: "DZD",
-          currencyDisplay: "narrowSymbol",
-          minimumFractionDigits: 0,
-        }).format(priceInDZD);
-      },
-      convertFromDZD: (priceInDZD: number) => priceInDZD,
+      formatPrice: (p: number) => p.toString(),
+      convertFromDZD: (p: number) => p,
       getCurrencySymbol: () => "DA",
       getCurrencyFlag: () => "🇩🇿",
     };
   }
-
   return context;
 };
