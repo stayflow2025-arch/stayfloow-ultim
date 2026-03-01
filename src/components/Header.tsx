@@ -55,14 +55,12 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full bg-primary text-white shadow-md">
       <div className="container mx-auto flex h-16 items-center px-4 justify-between">
-        {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group" prefetch={true}>
           <span className="text-2xl font-black tracking-tighter text-white group-hover:scale-105 transition-transform">
             StayFloow<span className="text-secondary">.com</span>
           </span>
         </Link>
 
-        {/* Actions Droite */}
         <div className="flex items-center gap-2 md:gap-4">
           <div className="hidden lg:flex items-center gap-2">
             <DropdownMenu>
@@ -74,7 +72,7 @@ export function Header() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="rounded-xl border-none shadow-2xl">
                 {currencies.map((c) => (
-                  <DropdownMenuItem key={c} onSelect={() => setCurrency(c as any)} className="font-bold cursor-pointer hover:bg-primary/5">
+                  <DropdownMenuItem key={c} onSelect={() => setCurrency(c as any)} className="font-bold cursor-pointer">
                     <span className="mr-2">{getCurrencyFlag(c as any)}</span> {c}
                   </DropdownMenuItem>
                 ))}
@@ -89,16 +87,12 @@ export function Header() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="rounded-xl border-none shadow-2xl">
                 {availableLocales.map((loc) => (
-                  <DropdownMenuItem key={loc} onSelect={() => setLocale(loc as any)} className="font-bold cursor-pointer hover:bg-primary/5">
+                  <DropdownMenuItem key={loc} onSelect={() => setLocale(loc as any)} className="font-bold cursor-pointer">
                     <span className="mr-2">{getLocaleDetails(loc as any).flag}</span> {getLocaleDetails(loc as any).name}
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
-
-            <button className="hover:bg-white/10 p-2 rounded-full transition-colors outline-none">
-              <HelpCircle className="h-5 w-5" />
-            </button>
 
             {!isAdmin && (
               <Button variant="ghost" className="text-sm font-bold hover:bg-white/10 px-3 py-2 rounded-md transition-colors" asChild>
@@ -123,7 +117,7 @@ export function Header() {
                       </Avatar>
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-64 p-2 rounded-xl mt-2 border-none shadow-2xl animate-in zoom-in-95 duration-200" align="end">
+                  <DropdownMenuContent className="w-64 p-2 rounded-xl mt-2 border-none shadow-2xl" align="end">
                     <DropdownMenuLabel className="font-normal p-4">
                       <div className="flex flex-col space-y-1">
                         <p className="text-sm font-black text-slate-900">{isAdmin ? "Administrateur" : (user.displayName || "Voyageur")}</p>

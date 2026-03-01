@@ -21,6 +21,7 @@ export default function AdvancedSearchBar() {
   const router = useRouter();
   const pathname = usePathname();
   
+  const [isClient, setIsClient] = useState(false);
   const [activeCategory, setActiveCategory] = useState<Category>('accommodations');
   const [destination, setDestination] = useState('');
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
@@ -31,6 +32,7 @@ export default function AdvancedSearchBar() {
   const [times, setTimes] = useState({ pickup: "10:00", return: "10:00" });
 
   useEffect(() => {
+    setIsClient(true);
     if (pathname.startsWith('/cars')) {
       setActiveCategory('cars');
     } else if (pathname.startsWith('/circuits')) {
@@ -66,46 +68,17 @@ export default function AdvancedSearchBar() {
     router.push(url);
   };
 
-  const hours = Array.from({ length: 24 * 2 }, (_, i) => {
-    const h = Math.floor(i / 2).toString().padStart(2, '0');
-    const m = (i % 2 === 0 ? '00' : '30');
-    return `${h}:${m}`;
-  });
+  if (!isClient) return <div className="w-full h-[85px] bg-slate-100 animate-pulse rounded-xl" />;
 
   return (
     <div className="w-full">
-      {/* TABS - Utilisation de Link pour une réponse instantanée */}
       <div className="flex gap-3 mb-6 overflow-x-auto no-scrollbar py-1">
-        <Link href="/" prefetch={true}>
-          <CategoryTab 
-            active={activeCategory === 'accommodations'} 
-            onClick={() => setActiveCategory('accommodations')}
-            icon={<Building className="h-5 w-5" />}
-            label={t("accommodations")}
-          />
-        </Link>
-        <Link href="/cars" prefetch={true}>
-          <CategoryTab 
-            active={activeCategory === 'cars'} 
-            onClick={() => setActiveCategory('cars')}
-            icon={<Car className="h-5 w-5" />}
-            label={t("car_rental")}
-          />
-        </Link>
-        <Link href="/circuits" prefetch={true}>
-          <CategoryTab 
-            active={activeCategory === 'circuits'} 
-            onClick={() => setActiveCategory('circuits')}
-            icon={<Compass className="h-5 w-5" />}
-            label={t("tours")}
-          />
-        </Link>
+        <TabButton active={activeCategory === 'accommodations'} onClick={() => setActiveCategory('accommodations')} icon={<Building className="h-5 w-5" />} label={t("accommodations")} />
+        <TabButton active={activeCategory === 'cars'} onClick={() => setActiveCategory('cars')} icon={<Car className="h-5 w-5" />} label={t("car_rental")} />
+        <TabButton active={activeCategory === 'circuits'} onClick={() => setActiveCategory('circuits')} icon={<Compass className="h-5 w-5" />} label={t("tours")} />
       </div>
 
-      {/* SEARCH CONTAINER */}
       <form onSubmit={handleSearch} className="bg-[#FEBA02] p-[2px] rounded-xl shadow-2xl flex flex-col md:flex-row items-stretch gap-0 border-2 border-[#FEBA02]">
-        
-        {/* DESTINATION */}
         <div className="flex-[1.5] bg-white md:rounded-l-lg flex flex-col justify-center px-6 py-3 min-h-[85px] relative group border-r border-slate-100 transition-colors hover:bg-slate-50">
           <span className="text-[11px] font-black text-slate-400 uppercase tracking-tight mb-1.5 leading-none">
             {activeCategory === 'cars' ? t('pickup_location') : t('where_to')}
@@ -121,7 +94,6 @@ export default function AdvancedSearchBar() {
           </div>
         </div>
 
-        {/* DATES */}
         <Popover>
           <PopoverTrigger asChild>
             <div className="flex-[1.5] bg-white flex flex-col justify-center px-6 py-3 min-h-[85px] cursor-pointer hover:bg-slate-50 transition-colors border-r border-slate-100">
@@ -140,80 +112,11 @@ export default function AdvancedSearchBar() {
             </div>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0 border-none shadow-2xl z-[100]" align="center">
-            <Calendar
-              mode="range"
-              selected={dateRange}
-              onSelect={setDateRange}
-              numberOfMonths={2}
-              locale={getDateLocale()}
-              disabled={{ before: new Date() }}
-            />
+            <Calendar mode="range" selected={dateRange} onSelect={setDateRange} numberOfMonths={2} locale={getDateLocale()} disabled={{ before: new Date() }} />
           </PopoverContent>
         </Popover>
 
-        {/* HEURE / OCCUPANCY */}
-        {activeCategory === 'cars' ? (
-          <div className="flex-1 bg-white flex items-center px-6 py-3 gap-4 min-h-[85px] border-r border-slate-100">
-            <div className="flex flex-col gap-1 flex-1">
-              <span className="text-[11px] font-black text-slate-400 uppercase leading-none mb-1">DÉPART</span>
-              <Select value={times.pickup} onValueChange={(val) => setTimes({...times, pickup: val})}>
-                <SelectTrigger className="border-none p-0 h-auto font-black text-lg bg-transparent shadow-none focus:ring-0">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-slate-300" />
-                    <SelectValue />
-                  </div>
-                </SelectTrigger>
-                <SelectContent className="max-h-[300px]">
-                  {hours.map(h => <SelectItem key={`p-${h}`} value={h}>{h}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="w-[1px] h-10 bg-slate-100" />
-            <div className="flex flex-col gap-1 flex-1">
-              <span className="text-[11px] font-black text-slate-400 uppercase leading-none mb-1">RETOUR</span>
-              <Select value={times.return} onValueChange={(val) => setTimes({...times, return: val})}>
-                <SelectTrigger className="border-none p-0 h-auto font-black text-lg bg-transparent shadow-none focus:ring-0">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-slate-300" />
-                    <SelectValue />
-                  </div>
-                </SelectTrigger>
-                <SelectContent className="max-h-[300px]">
-                  {hours.map(h => <SelectItem key={`r-${h}`} value={h}>{h}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        ) : (
-          <Popover>
-            <PopoverTrigger asChild>
-              <div className="flex-1 bg-white flex flex-col justify-center px-6 py-3 min-h-[85px] cursor-pointer hover:bg-slate-50 transition-colors border-r border-slate-100">
-                <span className="text-[11px] font-black text-slate-400 uppercase tracking-tight mb-1.5 leading-none">
-                  Voyageurs & Chambres
-                </span>
-                <div className="flex items-center gap-3">
-                  <Users className="text-slate-300 h-5 w-5 shrink-0" />
-                  <span className="text-lg font-black text-slate-800 truncate">
-                    {occupancy.adults} Ad. · {occupancy.children} Enf.
-                  </span>
-                </div>
-              </div>
-            </PopoverTrigger>
-            <PopoverContent className="w-80 p-6 shadow-2xl bg-white rounded-2xl border border-slate-100 z-[100]" align="center">
-              <div className="space-y-6">
-                <OccupancyRow label={t('adults')} value={occupancy.adults} onDec={() => setOccupancy({...occupancy, adults: Math.max(1, occupancy.adults - 1)})} onInc={() => setOccupancy({...occupancy, adults: occupancy.adults + 1})} />
-                <OccupancyRow label={t('children')} value={occupancy.children} onDec={() => setOccupancy({...occupancy, children: Math.max(0, occupancy.children - 1)})} onInc={() => setOccupancy({...occupancy, children: occupancy.children + 1})} />
-                <OccupancyRow label={t('rooms')} value={occupancy.rooms} onDec={() => setOccupancy({...occupancy, rooms: Math.max(1, occupancy.rooms - 1)})} onInc={() => setOccupancy({...occupancy, rooms: occupancy.rooms + 1})} />
-              </div>
-            </PopoverContent>
-          </Popover>
-        )}
-
-        {/* SEARCH BUTTON */}
-        <button 
-          type="submit"
-          className="bg-primary hover:bg-[#059669] text-white md:rounded-r-lg px-12 py-4 flex items-center justify-center transition-all active:scale-95 min-h-[85px] group outline-none"
-        >
+        <button type="submit" className="bg-primary hover:bg-[#059669] text-white md:rounded-r-lg px-12 py-4 flex items-center justify-center transition-all active:scale-95 min-h-[85px] group outline-none">
           <span className="text-2xl font-black tracking-tight group-hover:scale-105 transition-transform">
             {t("search_btn")}
           </span>
@@ -223,7 +126,7 @@ export default function AdvancedSearchBar() {
   );
 }
 
-function CategoryTab({ active, onClick, icon, label }: { active: boolean, onClick: () => void, icon: any, label: string }) {
+function TabButton({ active, onClick, icon, label }: { active: boolean, onClick: () => void, icon: any, label: string }) {
   return (
     <button 
       type="button"
@@ -231,26 +134,12 @@ function CategoryTab({ active, onClick, icon, label }: { active: boolean, onClic
       className={cn(
         "flex items-center gap-3 px-8 py-4 rounded-full text-base font-black transition-all border-none whitespace-nowrap outline-none", 
         active 
-          ? "bg-white text-primary shadow-[0_10px_25px_rgba(0,0,0,0.12)] scale-105" 
+          ? "bg-white text-primary shadow-xl scale-105" 
           : "bg-[#065f46] text-white hover:bg-[#044d35]"
       )}
     >
       <span className={cn(active ? "text-primary" : "text-white")}>{icon}</span>
       {label}
     </button>
-  );
-}
-
-function OccupancyRow({ label, value, onDec, onInc }: { label: string, value: number, onDec: () => void, onInc: () => void }) {
-  const { t } = useLanguage();
-  return (
-    <div className="flex items-center justify-between">
-      <span className="font-bold text-slate-700 text-sm capitalize">{label}</span>
-      <div className="flex items-center gap-4">
-        <button type="button" onClick={(e) => { e.preventDefault(); onDec(); }} className="h-8 w-8 rounded-full border border-primary text-primary flex items-center justify-center hover:bg-primary/5 transition-colors disabled:opacity-30" disabled={(value <= 0 && label !== t('adults')) || (label === t('adults') && value <= 1)}><Minus className="h-4 w-4" /></button>
-        <span className="w-4 text-center font-black text-base">{value}</span>
-        <button type="button" onClick={(e) => { e.preventDefault(); onInc(); }} className="h-8 w-8 rounded-full border border-primary text-primary flex items-center justify-center hover:bg-primary/5 transition-colors"><Plus className="h-4 w-4" /></button>
-      </div>
-    </div>
   );
 }
