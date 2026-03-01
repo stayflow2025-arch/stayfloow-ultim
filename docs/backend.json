@@ -1,45 +1,743 @@
-
 {
   "entities": {
-    "Listing": {
-      "title": "Listing",
-      "description": "Une annonce de partenaire sur StayFloow.com (Hébergement, Voiture ou Circuit)",
+    "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserProfile",
       "type": "object",
+      "description": "Represents a user of the StayFloow application, storing their preferences and activity data, separate from authentication details.",
       "properties": {
-        "category": { "type": "string", "enum": ["accommodation", "car_rental", "circuit"] },
-        "status": { "type": "string", "enum": ["pending", "approved", "rejected", "mod_requested"] },
-        "partnerInfo": {
-          "type": "object",
-          "properties": {
-            "firstName": { "type": "string" },
-            "lastName": { "type": "string" },
-            "email": { "type": "string", "format": "email" },
-            "phone": { "type": "string" }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserProfile entity."
+        },
+        "email": {
+          "type": "string",
+          "description": "The user's email address, primarily for communication and notifications (not for authentication).",
+          "format": "email"
+        },
+        "firstName": {
+          "type": "string",
+          "description": "The user's first name."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "The user's last name."
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "The user's phone number, including country code, primarily for communication."
+        },
+        "languagePreference": {
+          "type": "string",
+          "description": "The user's preferred language for the application interface (e.g., 'en', 'fr', 'ar')."
+        },
+        "currencyPreference": {
+          "type": "string",
+          "description": "The user's preferred currency for displaying prices (e.g., 'DZD', 'EGP', 'USD')."
+        },
+        "favoriteListingIds": {
+          "type": "array",
+          "description": "References to PartnerListings that the user has marked as favorites. (Relationship: UserProfile N:N PartnerListing)",
+          "items": {
+            "type": "string"
           }
         },
-        "location": {
-          "type": "object",
-          "properties": {
-            "address": { "type": "string" },
-            "lat": { "type": "number" },
-            "lng": { "type": "number" }
-          }
-        },
-        "details": { "type": "object" },
-        "photos": { "type": "array", "items": { "type": "string" } },
-        "price": { "type": "number" },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "loyaltyPoints": {
+          "type": "number",
+          "description": "The number of loyalty points accumulated by the user (e.g., AfricaPoints)."
+        }
       },
-      "required": ["category", "status", "partnerInfo", "location"]
+      "required": [
+        "id",
+        "email",
+        "firstName",
+        "lastName",
+        "phoneNumber",
+        "languagePreference",
+        "currencyPreference"
+      ]
+    },
+    "Partner": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Partner",
+      "type": "object",
+      "description": "Represents a business or individual offering listings (accommodations, cars, circuits) on StayFloow.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Partner entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the partner or establishment (e.g., 'Hotel Sahara', 'Ahmed's Car Rentals')."
+        },
+        "email": {
+          "type": "string",
+          "description": "The official contact email for the partner.",
+          "format": "email"
+        },
+        "phoneNumber": {
+          "type": "string",
+          "description": "The official contact phone number for the partner."
+        },
+        "joinDate": {
+          "type": "string",
+          "description": "The date and time when the partner registered on the platform.",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the partner account (e.g., 'pending', 'active', 'suspended', 'rejected')."
+        },
+        "bankAccountReference": {
+          "type": "string",
+          "description": "A reference or token for the partner's bank account details for payouts. (Sensitive data like actual bank account numbers are not stored directly)."
+        },
+        "mobileMoneyReference": {
+          "type": "string",
+          "description": "A reference or token for mobile money payout details (e.g., Fawry account ID). (Sensitive data like actual mobile money credentials are not stored directly)."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "email",
+        "phoneNumber",
+        "joinDate",
+        "status"
+      ]
+    },
+    "PartnerListing": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "PartnerListing",
+      "type": "object",
+      "description": "Represents a single listing provided by a partner, which can be an accommodation, a car rental, or a circuit/excursion. It includes general fields and category-specific details.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the PartnerListing entity."
+        },
+        "partnerId": {
+          "type": "string",
+          "description": "Reference to the Partner who owns this listing. (Relationship: Partner 1:N PartnerListing)"
+        },
+        "name": {
+          "type": "string",
+          "description": "The public-facing name or title of the listing."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the listing. This can be enhanced by AI-suggested content."
+        },
+        "category": {
+          "type": "string",
+          "description": "The primary category of the listing (e.g., 'accommodation', 'car', 'circuit')."
+        },
+        "address": {
+          "type": "string",
+          "description": "The full street address or meeting point for the listing."
+        },
+        "latitude": {
+          "type": "number",
+          "description": "Geographical latitude coordinate of the listing location, obtained from OpenStreetMap/Nominatim."
+        },
+        "longitude": {
+          "type": "number",
+          "description": "Geographical longitude coordinate of the listing location, obtained from OpenStreetMap/Nominatim."
+        },
+        "photoUrls": {
+          "type": "array",
+          "description": "An array of URLs for the listing's photos, with the first URL typically being the hero image.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "type": "string",
+          "description": "The current validation status of the listing (e.g., 'pending', 'approved', 'rejected', 'modification_requested')."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "The date and time when the listing was initially created by the partner.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "The date and time when the listing was last updated.",
+          "format": "date-time"
+        },
+        "adminNotes": {
+          "type": "string",
+          "description": "Internal notes from administrators regarding validation, rejection reasons, or modification requests for the listing."
+        },
+        "basePrice": {
+          "type": "number",
+          "description": "The base price for the listing (e.g., per night for accommodation, per day for car, per person for circuit)."
+        },
+        "currency": {
+          "type": "string",
+          "description": "The currency of the base price (e.g., 'DZD', 'EGP')."
+        },
+        "averageRating": {
+          "type": "number",
+          "description": "The calculated average rating based on user reviews for this listing."
+        },
+        "reviewCount": {
+          "type": "number",
+          "description": "The total number of reviews received for this listing."
+        },
+        "rules": {
+          "type": "array",
+          "description": "General rules and policies for the listing (e.g., 'Non-smoking', 'Heure arrivée 14h-22h', 'Départ avant 11h').",
+          "items": {
+            "type": "string"
+          }
+        },
+        "accommodationType": {
+          "type": "string",
+          "description": "Type of accommodation (e.g., 'Hôtel', 'Riad traditionnel', 'Villa', 'Appartement', 'Studio', 'Maison entière', 'Gîte / Éco-lodge', 'Tente / Glamping'). Applicable if category is 'accommodation'."
+        },
+        "totalRooms": {
+          "type": "number",
+          "description": "Total number of rooms in the establishment. Applicable if accommodationType is 'Hôtel', 'Riad traditionnel', 'Gîte / Éco-lodge', 'Maison d’hôtes'."
+        },
+        "onlineRooms": {
+          "type": "number",
+          "description": "Number of rooms the partner wishes to list on StayFloow. Applicable if accommodationType is 'Hôtel', 'Riad traditionnel', 'Gîte / Éco-lodge', 'Maison d’hôtes'."
+        },
+        "isChildUnder3Free": {
+          "type": "boolean",
+          "description": "Indicates if children under 3 years old stay for free. Applicable if accommodationType is 'Hôtel', 'Riad traditionnel', 'Gîte / Éco-lodge', 'Maison d’hôtes'."
+        },
+        "maxPersonsPerRoom": {
+          "type": "number",
+          "description": "Maximum number of persons (adults + children) allowed per room. Applicable if accommodationType is 'Hôtel', 'Riad traditionnel', 'Gîte / Éco-lodge', 'Maison d’hôtes'."
+        },
+        "amenities": {
+          "type": "array",
+          "description": "A list of amenities available (e.g., 'WiFi gratuit', 'Piscine', 'Climatisation', 'Parking gratuit', 'Petit-déjeuner', 'Cuisine', 'Terrasse', 'Vue mer/désert/montagne'). Applicable if category is 'accommodation'.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "checkInTime": {
+          "type": "string",
+          "description": "Standard check-in time for accommodations (e.g., '14:00'). Applicable if category is 'accommodation'."
+        },
+        "checkOutTime": {
+          "type": "string",
+          "description": "Standard check-out time for accommodations (e.g., '11:00'). Applicable if category is 'accommodation'."
+        },
+        "numBedrooms": {
+          "type": "number",
+          "description": "Number of bedrooms. Applicable if accommodationType is 'Appartement', 'Villa / Maison d’hôtes', 'Maison entière', 'Studio'."
+        },
+        "numLivingRooms": {
+          "type": "number",
+          "description": "Number of living rooms. Applicable if accommodationType is 'Appartement', 'Villa / Maison d’hôtes', 'Maison entière'."
+        },
+        "numBathrooms": {
+          "type": "number",
+          "description": "Number of bathrooms. Applicable if accommodationType is 'Appartement', 'Villa / Maison d’hôtes', 'Maison entière', 'Studio'."
+        },
+        "numToilets": {
+          "type": "number",
+          "description": "Number of separate toilets. Applicable if accommodationType is 'Appartement', 'Villa / Maison d’hôtes', 'Maison entière', 'Studio'."
+        },
+        "hasGarden": {
+          "type": "boolean",
+          "description": "Indicates if the property has a garden. Applicable if accommodationType is 'Appartement', 'Villa / Maison d’hôtes', 'Maison entière'."
+        },
+        "hasTerrace": {
+          "type": "boolean",
+          "description": "Indicates if the property has a terrace. Applicable if accommodationType is 'Appartement', 'Villa / Maison d’hôtes', 'Maison entière', 'Studio'."
+        },
+        "hasBalcony": {
+          "type": "boolean",
+          "description": "Indicates if the property has a balcony. Applicable if accommodationType is 'Appartement', 'Villa / Maison d’hôtes', 'Maison entière', 'Studio'."
+        },
+        "hasPrivatePool": {
+          "type": "boolean",
+          "description": "Indicates if the property has a private pool. Applicable if accommodationType is 'Appartement', 'Villa / Maison d’hôtes', 'Maison entière'."
+        },
+        "surfaceSqM": {
+          "type": "number",
+          "description": "Surface area of the property in square meters. Applicable if accommodationType is 'Appartement', 'Villa / Maison d’hôtes', 'Maison entière', 'Studio'."
+        },
+        "maxCapacity": {
+          "type": "number",
+          "description": "Maximum total capacity of people for the entire property. Applicable if accommodationType is 'Appartement', 'Villa / Maison d’hôtes', 'Maison entière', 'Studio'."
+        },
+        "hasEquippedKitchen": {
+          "type": "boolean",
+          "description": "Indicates if the property has an equipped kitchen. Applicable if accommodationType is 'Appartement', 'Villa / Maison d’hôtes', 'Maison entière', 'Studio'."
+        },
+        "vehicleType": {
+          "type": "string",
+          "description": "Type of vehicle (e.g., 'Berline / Économique', 'SUV / 4x4 (désert)', 'Van / Minibus', 'Voiture de luxe', 'Scooter / Moto'). Applicable if category is 'car'."
+        },
+        "fuelType": {
+          "type": "string",
+          "description": "Type of fuel the vehicle uses (e.g., 'Essence', 'Diesel', 'Électrique', 'Hybride'). Applicable if category is 'car'."
+        },
+        "transmissionType": {
+          "type": "string",
+          "description": "Type of transmission (e.g., 'Boîte manuelle', 'Automatique'). Applicable if category is 'car'."
+        },
+        "numSeats": {
+          "type": "number",
+          "description": "Number of passenger seats in the vehicle. Applicable if category is 'car'."
+        },
+        "isUnlimitedMileage": {
+          "type": "boolean",
+          "description": "Indicates if the car rental includes unlimited mileage. Applicable if category is 'car'."
+        },
+        "mileageLimitKmPerDay": {
+          "type": "number",
+          "description": "Daily mileage limit in kilometers, if mileage is not unlimited. Applicable if category is 'car'."
+        },
+        "isInsuranceIncluded": {
+          "type": "boolean",
+          "description": "Indicates if full insurance is included in the rental price. Applicable if category is 'car'."
+        },
+        "hasAC": {
+          "type": "boolean",
+          "description": "Indicates if the vehicle has air conditioning. Applicable if category is 'car'."
+        },
+        "hasGPS": {
+          "type": "boolean",
+          "description": "Indicates if the vehicle has an integrated GPS system. Applicable if category is 'car'."
+        },
+        "hasBabySeat": {
+          "type": "boolean",
+          "description": "Indicates if a baby seat/booster is available. Applicable if category is 'car'."
+        },
+        "currentMileage": {
+          "type": "number",
+          "description": "The current mileage of the vehicle at the time of listing. Applicable if category is 'car'."
+        },
+        "minDriverAge": {
+          "type": "number",
+          "description": "Minimum age required for the driver. Applicable if category is 'car'."
+        },
+        "minDrivingExperienceYears": {
+          "type": "number",
+          "description": "Minimum years of driving experience required for the driver. Applicable if category is 'car'."
+        },
+        "securityDepositAmount": {
+          "type": "number",
+          "description": "Amount of the security deposit required for the rental. Applicable if category is 'car'."
+        },
+        "securityDepositCurrency": {
+          "type": "string",
+          "description": "Currency of the security deposit. Applicable if category is 'car'."
+        },
+        "carYear": {
+          "type": "number",
+          "description": "Year of manufacture for the car. Applicable if category is 'car'."
+        },
+        "carModel": {
+          "type": "string",
+          "description": "Model of the car. Applicable if category is 'car'."
+        },
+        "licensePlate": {
+          "type": "string",
+          "description": "License plate number of the car (optional). Applicable if category is 'car'."
+        },
+        "circuitType": {
+          "type": "string",
+          "description": "Type of circuit/excursion (e.g., 'Demi-journée', 'Multi-jours (2 à 7 jours)', 'Circuit désert (4x4)', 'Croisière Nil / Lac', 'Randonnée / Trek', 'Visite guidée culturelle'). Applicable if category is 'circuit'."
+        },
+        "inclusions": {
+          "type": "array",
+          "description": "A list of what is included in the circuit (e.g., 'Transport 4x4 / Minibus climatisé', 'Repas', 'Guide professionnel', 'Entrées aux sites', 'Bouteilles d’eau', 'Nuit en bivouac / hôtel', 'Assurance voyage'). Applicable if category is 'circuit'.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "maxParticipantsPerGroup": {
+          "type": "number",
+          "description": "Maximum number of participants allowed per group for the circuit. Applicable if category is 'circuit'."
+        },
+        "minParticipantsPerGroup": {
+          "type": "number",
+          "description": "Minimum number of participants required to run the circuit. Applicable if category is 'circuit'."
+        },
+        "detailedItinerary": {
+          "type": "string",
+          "description": "A detailed itinerary of the circuit, including stops and activities. This field supports adding steps with GPS coordinates. Applicable if category is 'circuit'."
+        },
+        "priceModel": {
+          "type": "string",
+          "description": "How the price is calculated ('perPerson' or 'perGroup'). Applicable if category is 'circuit'."
+        }
+      },
+      "required": [
+        "id",
+        "partnerId",
+        "name",
+        "description",
+        "category",
+        "address",
+        "latitude",
+        "longitude",
+        "photoUrls",
+        "status",
+        "createdAt",
+        "basePrice",
+        "currency",
+        "rules"
+      ]
+    },
+    "AvailabilityBlock": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "AvailabilityBlock",
+      "type": "object",
+      "description": "Manages specific date ranges for listings to indicate unavailability or custom pricing, relevant for all categories.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the AvailabilityBlock entity."
+        },
+        "listingId": {
+          "type": "string",
+          "description": "Reference to the PartnerListing this availability block applies to. (Relationship: PartnerListing 1:N AvailabilityBlock)"
+        },
+        "startDate": {
+          "type": "string",
+          "description": "The starting date and time of the availability block.",
+          "format": "date-time"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "The ending date and time of the availability block.",
+          "format": "date-time"
+        },
+        "isBlocked": {
+          "type": "boolean",
+          "description": "If true, the listing is unavailable during this period. If false, it indicates special pricing or status."
+        },
+        "priceOverride": {
+          "type": "number",
+          "description": "An optional alternative price for the listing during this period (e.g., for high/low season). If null, basePrice applies."
+        },
+        "currency": {
+          "type": "string",
+          "description": "The currency of the priceOverride, if specified. Defaults to listing's currency."
+        },
+        "availableSlots": {
+          "type": "number",
+          "description": "Number of available slots/units during this period (e.g., rooms available, cars available, seats in a circuit). Applicable for categories with limited inventory."
+        }
+      },
+      "required": [
+        "id",
+        "listingId",
+        "startDate",
+        "endDate",
+        "isBlocked"
+      ]
+    },
+    "Booking": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Booking",
+      "type": "object",
+      "description": "Represents a confirmed reservation made by a user for a specific listing.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Booking entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the UserProfile who made the booking. (Relationship: UserProfile 1:N Booking)"
+        },
+        "listingId": {
+          "type": "string",
+          "description": "Reference to the PartnerListing that was booked. (Relationship: PartnerListing 1:N Booking)"
+        },
+        "bookingDate": {
+          "type": "string",
+          "description": "The date and time when the booking was made.",
+          "format": "date-time"
+        },
+        "checkInDate": {
+          "type": "string",
+          "description": "The check-in date for accommodations, or start date for car rentals/circuits.",
+          "format": "date-time"
+        },
+        "checkOutDate": {
+          "type": "string",
+          "description": "The check-out date for accommodations, or end date for car rentals/circuits.",
+          "format": "date-time"
+        },
+        "guestName": {
+          "type": "string",
+          "description": "The full name of the primary guest."
+        },
+        "guestEmail": {
+          "type": "string",
+          "description": "The email address of the primary guest for communication.",
+          "format": "email"
+        },
+        "guestPhoneNumber": {
+          "type": "string",
+          "description": "The phone number of the primary guest."
+        },
+        "numAdults": {
+          "type": "number",
+          "description": "Number of adult guests included in the booking."
+        },
+        "numChildren": {
+          "type": "number",
+          "description": "Number of child guests included in the booking."
+        },
+        "totalPrice": {
+          "type": "number",
+          "description": "The total price of the booking."
+        },
+        "currency": {
+          "type": "string",
+          "description": "The currency of the total price."
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the booking (e.g., 'pending_payment', 'confirmed', 'cancelled', 'completed')."
+        },
+        "paymentStatus": {
+          "type": "string",
+          "description": "The status of the payment for the booking (e.g., 'pending', 'paid', 'refunded', 'failed')."
+        },
+        "specialRequests": {
+          "type": "string",
+          "description": "Any special requests made by the guest during booking."
+        },
+        "cancellationPolicyApplied": {
+          "type": "string",
+          "description": "A snapshot of the cancellation policy in effect at the time of booking."
+        },
+        "confirmationCode": {
+          "type": "string",
+          "description": "A unique code generated for the booking confirmation."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "listingId",
+        "bookingDate",
+        "checkInDate",
+        "checkOutDate",
+        "guestName",
+        "guestEmail",
+        "numAdults",
+        "totalPrice",
+        "currency",
+        "status",
+        "paymentStatus",
+        "confirmationCode"
+      ]
+    },
+    "Review": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Review",
+      "type": "object",
+      "description": "Stores user-submitted ratings and comments for a specific listing, linked to a booking for verification.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Review entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the UserProfile who submitted the review. (Relationship: UserProfile 1:N Review)"
+        },
+        "listingId": {
+          "type": "string",
+          "description": "Reference to the PartnerListing being reviewed. (Relationship: PartnerListing 1:N Review)"
+        },
+        "bookingId": {
+          "type": "string",
+          "description": "Reference to the Booking associated with this review, used for verification. (Relationship: Booking 1:1 Review)"
+        },
+        "rating": {
+          "type": "number",
+          "description": "The numerical rating given by the user (e.g., 1 to 5)."
+        },
+        "comment": {
+          "type": "string",
+          "description": "The textual comment or feedback provided by the user."
+        },
+        "reviewDate": {
+          "type": "string",
+          "description": "The date and time when the review was submitted.",
+          "format": "date-time"
+        },
+        "isVerified": {
+          "type": "boolean",
+          "description": "Indicates if the review is verified, meaning it's linked to a confirmed booking."
+        },
+        "responseFromPartner": {
+          "type": "string",
+          "description": "An optional textual response from the partner to the user's review."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "listingId",
+        "bookingId",
+        "rating",
+        "reviewDate",
+        "isVerified"
+      ]
     }
   },
   "auth": {
-    "providers": ["google", "password"]
+    "providers": [
+      "password",
+      "anonymous"
+    ]
   },
   "firestore": {
-    "/listings/{listingId}": {
-      "schema": "#/backend/entities/Listing",
-      "description": "Collection des annonces soumises par les partenaires"
-    }
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores user-specific profile data and preferences. The `userId` matches the Firebase Authentication UID, ensuring path-based ownership for private user data.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user, corresponding to their Firebase Authentication UID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/partners/{partnerId}",
+        "definition": {
+          "entityName": "Partner",
+          "schema": {
+            "$ref": "#/backend/entities/Partner"
+          },
+          "description": "Stores details for each registered partner. The `partnerId` matches the Firebase Authentication UID of the partner, ensuring path-based ownership for partner management. Includes the `status` field to track partner account state.",
+          "params": [
+            {
+              "name": "partnerId",
+              "description": "The unique identifier for the partner, corresponding to their Firebase Authentication UID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/partners/{partnerId}/listings/{listingId}",
+        "definition": {
+          "entityName": "PartnerListing",
+          "schema": {
+            "$ref": "#/backend/entities/PartnerListing"
+          },
+          "description": "Stores listings created by a specific partner, including those in 'pending', 'rejected', or 'modification_requested' statuses. This collection is for partner-only management and admin validation. It naturally includes `partnerId` for authorization independence, which is also part of the `PartnerListing` schema.",
+          "params": [
+            {
+              "name": "partnerId",
+              "description": "The unique identifier of the partner who owns this listing."
+            },
+            {
+              "name": "listingId",
+              "description": "The unique identifier for the specific listing."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/public_listings/{listingId}",
+        "definition": {
+          "entityName": "PartnerListing",
+          "schema": {
+            "$ref": "#/backend/entities/PartnerListing"
+          },
+          "description": "Stores publicly visible listings that have been 'approved' by an administrator. This collection is globally readable for search and browsing. Documents are synced from `/partners/{partnerId}/listings/{listingId}` upon approval and include the denormalized `partnerId` for rules and potential future linking.",
+          "params": [
+            {
+              "name": "listingId",
+              "description": "The unique identifier for the public listing."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/public_listings/{listingId}/availabilityBlocks/{availabilityBlockId}",
+        "definition": {
+          "entityName": "AvailabilityBlock",
+          "schema": {
+            "$ref": "#/backend/entities/AvailabilityBlock"
+          },
+          "description": "Manages specific date ranges for listings, indicating unavailability or custom pricing. Documents in this subcollection include denormalized `partnerId` (copied from the parent listing) to ensure authorization independence, allowing the owning partner to manage their availability blocks without a `get()` call to the parent `PartnerListing` document. Clients can read these blocks directly for public listings.",
+          "params": [
+            {
+              "name": "listingId",
+              "description": "The unique identifier of the parent public listing."
+            },
+            {
+              "name": "availabilityBlockId",
+              "description": "The unique identifier for the specific availability block."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/bookings/{bookingId}",
+        "definition": {
+          "entityName": "Booking",
+          "schema": {
+            "$ref": "#/backend/entities/Booking"
+          },
+          "description": "Represents confirmed reservations. Documents include `userId` (for user-specific access) and denormalized `partnerId` (copied from the `PartnerListing`) for authorization independence, enabling partners to view bookings for their listings without additional `get()` calls.",
+          "params": [
+            {
+              "name": "bookingId",
+              "description": "The unique identifier for the booking."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/reviews/{reviewId}",
+        "definition": {
+          "entityName": "Review",
+          "schema": {
+            "$ref": "#/backend/entities/Review"
+          },
+          "description": "Stores user-submitted ratings and comments for listings. Documents include `userId` (for user-specific access) and denormalized `partnerId` (copied from the `PartnerListing`) for authorization independence, allowing partners to respond to reviews on their listings.",
+          "params": [
+            {
+              "name": "reviewId",
+              "description": "The unique identifier for the review."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/admin_roles/{userId}",
+        "definition": {
+          "entityName": "admin_role",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "A dedicated collection for global administrator roles. The mere existence of a document at `/admin_roles/{userId}` grants administrative privileges, following the 'existence over content' principle. The `userId` matches the Firebase Authentication UID.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user assigned the administrator role."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to be secure, scalable, and debuggable, strictly adhering to the core design principles and strategy mandates. \n\n**Authorization Independence (CRITICAL):** This structure eliminates `get()` calls in security rules by denormalizing authorization context directly into the relevant documents. For instance:\n*   `AvailabilityBlock` documents will include `partnerId` (copied from the parent `PartnerListing`) so a partner can manage their blocks without a `get()` call to the listing.\n*   `Booking` documents will include `partnerId` (copied from the `PartnerListing`) allowing partners to view bookings related to their listings without a `get()` to the listing or partner.\n*   `Review` documents will include `partnerId` to enable partners to respond to reviews on their listings without extra `get()` calls.\nThis denormalization ensures atomic operations (like creating a booking and updating an availability block) and simplifies rule debugging.\n\n**Structural Segregation & QAPs:** To support secure and efficient `list` operations (QAPs - Queries Are Not Filters), data with different security postures is segregated:\n*   **User-owned data** like `UserProfile` is stored under `/users/{userId}` paths, making `request.auth.uid` rules simple and explicit.\n*   **Partner-owned data** is primarily managed under `/partners/{partnerId}/listings/{listingId}`. This allows partners to securely manage their listings, including drafts and those awaiting approval.\n*   **Publicly visible listings** are stored in a separate top-level collection, `/public_listings/{listingId}`. These documents represent `approved` listings, are globally readable, and are synced from the partner's private collection upon approval. This separation ensures that `list` queries for public discovery are fast and don't expose private partner data. \n*   `AvailabilityBlock` entities, despite being managed by partners, are placed under `/public_listings/{listingId}/availabilityBlocks/{availabilityBlockId}` for public readability by customers. Partner write access is secured via the denormalized `partnerId` within each `AvailabilityBlock` document. This allows clients to query availability for a specific public listing directly without needing partner-specific paths.\n*   `Booking` and `Review` data are stored in top-level collections (`/bookings/{bookingId}`, `/reviews/{reviewId}`) and include both `userId` and `partnerId` to facilitate QAPs for both users (e.g., 'show my bookings') and partners (e.g., 'show bookings for my listings') without needing complex rule logic or `get()` operations.\n\n**DBAC & Global Roles:** Administrator roles are implemented using the \"existence over content\" pattern with `/admin_roles/{userId}`, making admin checks in rules straightforward.\n\n**Radical Consistency:** Consistent naming (`userId`, `partnerId`, `listingId`, `status`) and path structures are used throughout to enhance clarity and predictability for developers and security rule authors. This design prioritizes maintainability and minimizes the risk of security vulnerabilities."
   }
 }

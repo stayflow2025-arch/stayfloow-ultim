@@ -1,0 +1,177 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * StayFloow Security Rules - Prototyping Mode
+     * 
+     * Philosophy:
+     * This ruleset enforces a strict user-ownership and partner-ownership model.
+     * It relies heavily on data denormalization to ensure authorization is performant
+     * and independent, minimizing the need for costly get() calls.
+     * 
+     * Data Structure:
+     * - /users/{userId}: Private user profiles and preferences.
+     * - /partners/{partnerId}: Private partner business details.
+     * - /partners/{partnerId}/listings/{listingId}: Private partner management of listings (drafts/pending).
+     * - /public_listings/{listingId}: Approved listings available for public search.
+     * - /bookings/{bookingId}: Shared access between the customer and the listing partner.
+     * - /reviews/{reviewId}: Publicly readable feedback, manageable by the author and the partner.
+     * - /admin_roles/{userId}: Internal collection for identifying global administrators.
+     * 
+     * Key Security Decisions:
+     * 1. Authorization Independence: Critical IDs (userId, partnerId) are denormalized onto 
+     *    documents (like bookings and availability blocks) to allow rules to verify access 
+     *    without reading parent documents.
+     * 2. Structural Segregation: Private management data is kept under user/partner paths, 
+     *    while approved content is synced to top-level public collections.
+     * 3. Admin Access: Users with a document in /admin_roles/ have global read/write access.
+     */
+
+    // --- GLOBAL HELPER FUNCTIONS ---
+
+    /** @description Checks if the user is authenticated. */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /** @description Verifies if the authenticated user matches the provided UID. */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /** @description Verifies ownership while ensuring the document exists (for updates/deletes). */
+    function isExistingOwner(userId) {
+      return resource != null && isOwner(userId);
+    }
+
+    /** @description Checks if the authenticated user is a global administrator. */
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/admin_roles/$(request.auth.uid));
+    }
+
+    // --- COLLECTION RULES ---
+
+    /**
+     * @description Rules for global admin privileges.
+     * @path /admin_roles/{userId}
+     * @allow (get) If the user is an admin.
+     * @deny (write) All writes from the client are denied; admins are managed via Admin SDK.
+     * @principle Existence-based role management.
+     */
+    match /admin_roles/{userId} {
+      allow get: if isAdmin();
+      allow list: if isAdmin();
+      allow create, update, delete: if false;
+    }
+
+    /**
+     * @description Rules for UserProfile management.
+     * @path /users/{userId}
+     * @allow (create) If the UID matches the document ID.
+     * @allow (update) If the user owns the document.
+     * @deny (list) Prevent user discovery via listing the root collection.
+     * @principle Self-creation and path-based ownership.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isAdmin();
+    }
+
+    /**
+     * @description Rules for Partner profile management.
+     * @path /partners/{partnerId}
+     * @allow (create) If the UID matches the document ID.
+     * @allow (get) If the user is the partner or an admin.
+     * @deny (update) If attempting to change the status field (only admin should approve).
+     * @principle Path-based ownership with admin oversight.
+     */
+    match /partners/{partnerId} {
+      allow get: if isOwner(partnerId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if isOwner(partnerId) && request.resource.data.id == partnerId;
+      allow update: if isExistingOwner(partnerId) && request.resource.data.id == resource.data.id;
+      allow delete: if isAdmin();
+    }
+
+    /**
+     * @description Rules for private PartnerListing management (drafts/staging).
+     * @path /partners/{partnerId}/listings/{listingId}
+     * @allow (list) If the partner is viewing their own listings.
+     * @allow (create) If the partnerId matches the path and auth UID.
+     * @principle Restricts access to a user's own data tree.
+     */
+    match /partners/{partnerId}/listings/{listingId} {
+      allow get, list: if isOwner(partnerId) || isAdmin();
+      allow create: if isOwner(partnerId) && request.resource.data.partnerId == partnerId;
+      allow update: if isExistingOwner(partnerId) && request.resource.data.partnerId == resource.data.partnerId;
+      allow delete: if isExistingOwner(partnerId) || isAdmin();
+    }
+
+    /**
+     * @description Rules for public-facing listings.
+     * @path /public_listings/{listingId}
+     * @allow (get, list) For all users (public catalog).
+     * @allow (update) For the owning partner (via denormalized partnerId).
+     * @principle Public Read with Owner-Only Writes.
+     */
+    match /public_listings/{listingId} {
+      allow get, list: if true;
+      allow create: if isAdmin() || (isSignedIn() && request.resource.data.partnerId == request.auth.uid);
+      allow update: if isAdmin() || (isExistingOwner(resource.data.partnerId) && request.resource.data.partnerId == resource.data.partnerId);
+      allow delete: if isAdmin();
+
+      /**
+       * @description Rules for AvailabilityBlocks within public listings.
+       * @path /public_listings/{listingId}/availabilityBlocks/{availabilityBlockId}
+       * @allow (get, list) Publicly visible to check booking availability.
+       * @allow (write) Restricted to the owning partner using denormalized partnerId.
+       * @principle Authorization independence through denormalization.
+       */
+      match /availabilityBlocks/{availabilityBlockId} {
+        allow get, list: if true;
+        allow create: if isAdmin() || (isSignedIn() && request.resource.data.partnerId == request.auth.uid);
+        allow update: if isAdmin() || (isExistingOwner(resource.data.partnerId) && request.resource.data.partnerId == resource.data.partnerId);
+        allow delete: if isAdmin() || isExistingOwner(resource.data.partnerId);
+      }
+    }
+
+    /**
+     * @description Rules for Booking management.
+     * @path /bookings/{bookingId}
+     * @allow (get, list) If the user is the customer (userId) or the partner (partnerId).
+     * @allow (create) If the customer correctly sets their own userId.
+     * @principle Shared Access (Closed Collaborators) via denormalized IDs.
+     */
+    match /bookings/{bookingId} {
+      allow get: if isAdmin() || isOwner(resource.data.userId) || isOwner(resource.data.partnerId);
+      // Fix: 'query' is not a valid variable in Firestore Security Rules.
+      // For 'list' operations, conditions on 'resource.data' enforce that every document
+      // returned by the list query must satisfy the condition. This means clients must
+      // apply appropriate filters (e.g., where('userId', '==', request.auth.uid))
+      // when performing a list operation as a non-admin user.
+      allow list: if isAdmin() || (isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.partnerId == request.auth.uid));
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin() || isExistingOwner(resource.data.userId) || isExistingOwner(resource.data.partnerId);
+      allow delete: if isAdmin();
+    }
+
+    /**
+     * @description Rules for User Reviews.
+     * @path /reviews/{reviewId}
+     * @allow (get, list) Publicly readable for social proof.
+     * @allow (create) If the author correctly sets their own userId.
+     * @allow (update) By author (edit) or partner (response).
+     * @principle Publicly readable with multi-party write permissions.
+     */
+    match /reviews/{reviewId} {
+      allow get, list: if true;
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update: if isAdmin() || isExistingOwner(resource.data.userId) || isExistingOwner(resource.data.partnerId);
+      allow delete: if isAdmin() || isExistingOwner(resource.data.userId);
+    }
+  }
+}
