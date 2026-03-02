@@ -8,15 +8,16 @@ service cloud.firestore {
     function isAdmin() {
       return isSignedIn() && (
         request.auth.uid == "G4d04MgUW4fguFOjmhQBbWezheB2" ||
-        request.auth.token.email in ["stayflow2025@gmail.com", "kiosque.du.passage@gmail.com"]
+        request.auth.token.email.matches('(?i)stayflow2025@gmail.com') ||
+        request.auth.token.email.matches('(?i)kiosque.du.passage@gmail.com')
       );
     }
     
     function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
 
     match /users/{userId} {
-      allow get: if isOwner(userId) || isAdmin();
       allow list: if isAdmin();
+      allow get: if isOwner(userId) || isAdmin();
       allow write: if isOwner(userId) || isAdmin();
     }
 
@@ -27,7 +28,10 @@ service cloud.firestore {
     }
 
     match /bookings/{bookingId} {
-      allow list: if isAdmin() || (isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.partnerId == request.auth.uid));
+      // Split list to allow admin global view without filters
+      allow list: if isAdmin();
+      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.partnerId == request.auth.uid);
+      
       allow get: if isAdmin() || (isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.partnerId == request.auth.uid));
       allow create: if isSignedIn();
       allow update: if isAdmin() || (isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.partnerId == request.auth.uid));
@@ -53,7 +57,6 @@ service cloud.firestore {
     }
 
     match /conversations/{convId} {
-      // Split list and get to allow admin global listing
       allow list: if isAdmin();
       allow list: if isSignedIn() && resource.data.participants.hasAny([request.auth.uid]);
       allow get: if isAdmin() || (isSignedIn() && request.auth.uid in resource.data.participants);

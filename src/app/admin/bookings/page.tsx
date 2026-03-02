@@ -20,6 +20,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
 const ADMIN_EMAILS = ["stayflow2025@gmail.com", "kiosque.du.passage@gmail.com"];
+const ADMIN_UIDS = ["G4d04MgUW4fguFOjmhQBbWezheB2"];
 
 export default function AdminBookingsPage() {
   const router = useRouter();
@@ -27,22 +28,26 @@ export default function AdminBookingsPage() {
   const { user, isUserLoading } = useUser();
   const { formatPrice } = useCurrency();
 
-  const isAdmin = useMemo(() => user && ADMIN_EMAILS.includes(user.email || ""), [user]);
+  const isAdmin = useMemo(() => {
+    if (!user) return false;
+    return ADMIN_UIDS.includes(user.uid) || ADMIN_EMAILS.includes(user.email?.toLowerCase() || "");
+  }, [user]);
 
   const bookingsRef = useMemoFirebase(() => {
-    if (!isAdmin) return null;
+    if (!isAdmin || !db) return null;
     return query(collection(db, "bookings"), orderBy("createdAt", "desc"));
   }, [db, isAdmin]);
+  
   const { data: bookings, isLoading } = useCollection(bookingsRef);
 
   const handleStatusUpdate = async (id: string, newStatus: string) => {
     await updateDoc(doc(db, "bookings", id), { status: newStatus });
   };
 
-  if (isUserLoading || isLoading) return <div className="h-screen flex items-center justify-center bg-slate-900"><Loader2 className="animate-spin text-primary h-12 w-12" /></div>;
+  if (isUserLoading || (isAdmin && isLoading)) return <div className="h-screen flex items-center justify-center bg-slate-900"><Loader2 className="animate-spin text-primary h-12 w-12" /></div>;
 
   if (!user || !isAdmin) {
-    router.replace("/");
+    if (!isUserLoading) router.replace("/");
     return null;
   }
 
