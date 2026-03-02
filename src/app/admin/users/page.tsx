@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useFirestore, useCollection, useMemoFirebase, useUser } from "@/firebase";
 import { collection, query, orderBy, doc, updateDoc } from "firebase/firestore";
 import { 
@@ -29,7 +29,12 @@ export default function AdminUsersPage() {
   const { user: adminUser, isUserLoading } = useUser();
   const [searchTerm, setSearchTerm] = useState("");
 
-  const usersRef = useMemoFirebase(() => query(collection(db, "users"), orderBy("createdAt", "desc")), [db]);
+  const isAdmin = useMemo(() => adminUser && ADMIN_EMAILS.includes(adminUser.email || ""), [adminUser]);
+
+  const usersRef = useMemoFirebase(() => {
+    if (!isAdmin) return null;
+    return query(collection(db, "users"), orderBy("createdAt", "desc"));
+  }, [db, isAdmin]);
   const { data: users, isLoading } = useCollection(usersRef);
 
   const handleStatusUpdate = async (id: string, newStatus: string) => {
@@ -38,7 +43,7 @@ export default function AdminUsersPage() {
 
   if (isUserLoading || isLoading) return <div className="h-screen flex items-center justify-center bg-slate-900"><Loader2 className="animate-spin text-primary h-12 w-12" /></div>;
 
-  if (!adminUser || !ADMIN_EMAILS.includes(adminUser.email || "")) {
+  if (!adminUser || !isAdmin) {
     router.replace("/");
     return null;
   }
@@ -111,7 +116,7 @@ export default function AdminUsersPage() {
                     <Mail className="h-4 w-4 text-primary" /> {user.email}
                   </div>
                   <div className="flex items-center gap-3 text-xs font-bold text-slate-500">
-                    <Calendar className="h-4 w-4 text-primary" /> Inscrit le {new Date(user.createdAt).toLocaleDateString()}
+                    <Calendar className="h-4 w-4 text-primary" /> Inscrit le {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '...'}
                   </div>
                   <div className="pt-2 flex justify-between items-center">
                     <Badge className={cn(

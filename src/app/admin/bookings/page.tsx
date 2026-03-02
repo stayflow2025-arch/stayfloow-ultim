@@ -27,7 +27,12 @@ export default function AdminBookingsPage() {
   const { user, isUserLoading } = useUser();
   const { formatPrice } = useCurrency();
 
-  const bookingsRef = useMemoFirebase(() => query(collection(db, "bookings"), orderBy("createdAt", "desc")), [db]);
+  const isAdmin = useMemo(() => user && ADMIN_EMAILS.includes(user.email || ""), [user]);
+
+  const bookingsRef = useMemoFirebase(() => {
+    if (!isAdmin) return null;
+    return query(collection(db, "bookings"), orderBy("createdAt", "desc"));
+  }, [db, isAdmin]);
   const { data: bookings, isLoading } = useCollection(bookingsRef);
 
   const handleStatusUpdate = async (id: string, newStatus: string) => {
@@ -36,7 +41,7 @@ export default function AdminBookingsPage() {
 
   if (isUserLoading || isLoading) return <div className="h-screen flex items-center justify-center bg-slate-900"><Loader2 className="animate-spin text-primary h-12 w-12" /></div>;
 
-  if (!user || !ADMIN_EMAILS.includes(user.email || "")) {
+  if (!user || !isAdmin) {
     router.replace("/");
     return null;
   }
@@ -88,7 +93,7 @@ export default function AdminBookingsPage() {
                         <User className="h-4 w-4 text-primary" /> {booking.customerName}
                       </div>
                       <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
-                        <Calendar className="h-4 w-4 text-primary" /> {format(new Date(booking.startDate), "dd MMM yyyy", { locale: fr })}
+                        <Calendar className="h-4 w-4 text-primary" /> {booking.startDate ? format(new Date(booking.startDate), "dd MMM yyyy", { locale: fr }) : '...'}
                       </div>
                     </div>
                   </div>

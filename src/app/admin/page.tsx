@@ -17,7 +17,7 @@ import {
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection, query, orderBy, limit } from "firebase/firestore";
+import { collection, query, orderBy, limit, where } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { useCurrency } from "@/context/currency-context";
 
@@ -30,14 +30,22 @@ export default function AdminDashboardMaster() {
   const { formatPrice } = useCurrency();
   const [activeTab, setActiveTab] = useState("dashboard");
 
-  // DATA FETCHING REAL-TIME
+  const isAdmin = useMemo(() => user && ADMIN_EMAILS.includes(user.email || ""), [user]);
+
+  // DATA FETCHING REAL-TIME - Conditionné à isAdmin pour éviter les erreurs de permission
   const listingsRef = useMemoFirebase(() => query(collection(db, 'listings'), orderBy('createdAt', 'desc')), [db]);
   const { data: listings, isLoading: listingsLoading } = useCollection(listingsRef);
 
-  const usersRef = useMemoFirebase(() => query(collection(db, 'users'), limit(1000)), [db]);
+  const usersRef = useMemoFirebase(() => {
+    if (!isAdmin) return null;
+    return query(collection(db, 'users'), limit(1000));
+  }, [db, isAdmin]);
   const { data: usersData, isLoading: usersLoading } = useCollection(usersRef);
 
-  const bookingsRef = useMemoFirebase(() => query(collection(db, 'bookings'), orderBy('createdAt', 'desc')), [db]);
+  const bookingsRef = useMemoFirebase(() => {
+    if (!isAdmin) return null;
+    return query(collection(db, 'bookings'), orderBy('createdAt', 'desc'));
+  }, [db, isAdmin]);
   const { data: bookings, isLoading: bookingsLoading } = useCollection(bookingsRef);
 
   useEffect(() => {
@@ -64,7 +72,7 @@ export default function AdminDashboardMaster() {
     };
   }, [listings, usersData, bookings]);
 
-  if (isUserLoading || !user) {
+  if (isUserLoading || !user || !isAdmin) {
     return <div className="h-screen flex items-center justify-center bg-slate-900"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
   }
 
