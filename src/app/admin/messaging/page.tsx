@@ -5,7 +5,7 @@ import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebas
 import { collection, query, orderBy, limit, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
 import { 
   MessageSquare, Search, ArrowLeft, Loader2, 
-  User as UserIcon, Send, ShieldCheck, Clock, Info
+  Send, ShieldCheck, Info
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -100,7 +100,6 @@ function AdminMessagingContent() {
       </header>
 
       <div className="flex-1 flex overflow-hidden">
-        {/* Liste des discussions */}
         <aside className={cn(
           "w-full md:w-80 bg-white border-r flex flex-col shadow-inner shrink-0",
           activeId ? "hidden md:flex" : "flex"
@@ -140,7 +139,6 @@ function AdminMessagingContent() {
           </div>
         </aside>
 
-        {/* Espace Chat */}
         <main className={cn(
           "flex-1 bg-[#F8FAFC] flex flex-col relative",
           !activeId ? "hidden md:flex items-center justify-center" : "flex"
