@@ -1,7 +1,6 @@
-
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useFirestore, useUser, useDoc, useMemoFirebase } from "@/firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { 
@@ -15,8 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-
-const ADMIN_EMAILS = ["stayflow2025@gmail.com", "kiosque.du.passage@gmail.com"];
+import { checkIsAdmin } from "@/lib/admin-config";
 
 export default function AdminSettingsPage() {
   const router = useRouter();
@@ -24,6 +22,8 @@ export default function AdminSettingsPage() {
   const { toast } = useToast();
   const { user, isUserLoading } = useUser();
   const [isSaving, setIsSaving] = useState(false);
+
+  const isAdmin = useMemo(() => checkIsAdmin(user), [user]);
 
   const configRef = useMemoFirebase(() => doc(db, "settings", "siteConfig"), [db]);
   const { data: config, isLoading: configLoading } = useDoc(configRef);
@@ -68,7 +68,7 @@ export default function AdminSettingsPage() {
 
   if (isUserLoading || configLoading) return <div className="h-screen flex items-center justify-center bg-slate-900"><Loader2 className="animate-spin text-primary h-12 w-12" /></div>;
 
-  if (!user || !ADMIN_EMAILS.includes(user.email || "")) {
+  if (!user || !isAdmin) {
     router.replace("/");
     return null;
   }

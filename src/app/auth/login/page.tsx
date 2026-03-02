@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -21,8 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, LogIn, ArrowLeft } from "lucide-react";
-
-const ADMIN_EMAIL = "stayflow2025@gmail.com";
+import { checkIsAdmin } from "@/lib/admin-config";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -34,7 +32,7 @@ export default function LoginPage() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        if (user.email === ADMIN_EMAIL) {
+        if (checkIsAdmin(user)) {
           router.push("/admin");
         } else {
           router.push("/profile");
@@ -65,14 +63,12 @@ export default function LoginPage() {
         description: "Bienvenue sur StayFloow.com !",
       });
 
-      if (user.email === ADMIN_EMAIL) {
+      if (checkIsAdmin(user)) {
         router.push("/admin");
       } else {
         router.push("/profile");
       }
     } catch (error: any) {
-      // Les erreurs d'authentification sont gérées via des messages toast au lieu de console.error
-      // pour éviter de déclencher l'overlay de développement Next.js.
       let title = "Erreur de connexion";
       let message = "Email ou mot de passe incorrect.";
       

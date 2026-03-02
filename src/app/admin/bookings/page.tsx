@@ -17,9 +17,7 @@ import { useCurrency } from "@/context/currency-context";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-
-const ADMIN_EMAILS = ["stayflow2025@gmail.com", "kiosque.du.passage@gmail.com"];
-const ADMIN_UIDS = ["G4d04MgUW4fguFOjmhQBbWezheB2"];
+import { checkIsAdmin } from "@/lib/admin-config";
 
 export default function AdminBookingsPage() {
   const router = useRouter();
@@ -28,11 +26,7 @@ export default function AdminBookingsPage() {
   const { formatPrice } = useCurrency();
 
   // Détection robuste de l'administrateur
-  const isAdmin = useMemo(() => {
-    if (!user || isUserLoading) return false;
-    const email = user.email?.toLowerCase() || "";
-    return ADMIN_UIDS.includes(user.uid) || ADMIN_EMAILS.includes(email);
-  }, [user, isUserLoading]);
+  const isAdmin = useMemo(() => checkIsAdmin(user), [user]);
 
   useEffect(() => {
     if (!isUserLoading && (!user || !isAdmin)) {
@@ -43,7 +37,6 @@ export default function AdminBookingsPage() {
   // On attend que isAdmin soit TRUE avant de lancer la requête Firestore
   const bookingsRef = useMemoFirebase(() => {
     if (!isAdmin || !db || isUserLoading) return null;
-    // La requête est désormais autorisée sans filtre car isAdmin() est en God Mode dans les rules
     return query(collection(db, "bookings"), orderBy("createdAt", "desc"));
   }, [db, isAdmin, isUserLoading]);
   

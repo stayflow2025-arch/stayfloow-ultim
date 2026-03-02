@@ -17,9 +17,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
-
-const ADMIN_EMAILS = ["stayflow2025@gmail.com", "kiosque.du.passage@gmail.com"];
-const ADMIN_UIDS = ["G4d04MgUW4fguFOjmhQBbWezheB2"];
+import { checkIsAdmin } from "@/lib/admin-config";
 
 function AdminMessagingContent() {
   const { user, isUserLoading } = useUser();
@@ -30,11 +28,7 @@ function AdminMessagingContent() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Détection robuste de l'admin
-  const isAdmin = useMemo(() => {
-    if (!user || isUserLoading) return false;
-    const email = user.email?.toLowerCase() || "";
-    return ADMIN_UIDS.includes(user.uid) || ADMIN_EMAILS.includes(email);
-  }, [user, isUserLoading]);
+  const isAdmin = useMemo(() => checkIsAdmin(user), [user]);
 
   // Redirection si non-admin
   useEffect(() => {

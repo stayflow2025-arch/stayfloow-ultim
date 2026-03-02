@@ -19,9 +19,7 @@ import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebas
 import { collection, query, orderBy, limit, where } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { useCurrency } from "@/context/currency-context";
-
-const ADMIN_EMAILS = ["stayflow2025@gmail.com", "kiosque.du.passage@gmail.com"];
-const ADMIN_UIDS = ["G4d04MgUW4fguFOjmhQBbWezheB2"];
+import { checkIsAdmin } from "@/lib/admin-config";
 
 export default function AdminDashboardMaster() {
   const { user, isUserLoading } = useUser();
@@ -30,11 +28,7 @@ export default function AdminDashboardMaster() {
   const { formatPrice } = useCurrency();
   const [activeTab, setActiveTab] = useState("dashboard");
 
-  const isAdmin = useMemo(() => {
-    if (!user || isUserLoading) return false;
-    const email = user.email?.toLowerCase() || "";
-    return ADMIN_UIDS.includes(user.uid) || ADMIN_EMAILS.includes(email);
-  }, [user, isUserLoading]);
+  const isAdmin = useMemo(() => checkIsAdmin(user), [user]);
 
   // DATA FETCHING REAL-TIME - Sécurisé par la vérification isAdmin
   const listingsRef = useMemoFirebase(() => {

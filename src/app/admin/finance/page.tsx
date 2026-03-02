@@ -14,9 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useRouter } from "next/navigation";
 import { useCurrency } from "@/context/currency-context";
 import { cn } from "@/lib/utils";
-
-const ADMIN_EMAILS = ["stayflow2025@gmail.com", "kiosque.du.passage@gmail.com"];
-const ADMIN_UIDS = ["G4d04MgUW4fguFOjmhQBbWezheB2"];
+import { checkIsAdmin } from "@/lib/admin-config";
 
 export default function AdminFinancePage() {
   const router = useRouter();
@@ -25,11 +23,7 @@ export default function AdminFinancePage() {
   const { formatPrice } = useCurrency();
 
   // Détection robuste de l'administrateur
-  const isAdmin = useMemo(() => {
-    if (!user || isUserLoading) return false;
-    const email = user.email?.toLowerCase() || "";
-    return ADMIN_UIDS.includes(user.uid) || ADMIN_EMAILS.includes(email);
-  }, [user, isUserLoading]);
+  const isAdmin = useMemo(() => checkIsAdmin(user), [user]);
 
   // Chargement sécurisé des réservations uniquement si Admin confirmé
   const bookingsRef = useMemoFirebase(() => {

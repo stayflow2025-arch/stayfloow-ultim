@@ -24,9 +24,7 @@ import Image from "next/image";
 import { useCurrency } from "@/context/currency-context";
 import { cn } from "@/lib/utils";
 import { properties as mockProperties, cars as mockCars, circuits as mockCircuits } from "@/lib/data";
-
-const ADMIN_EMAILS = ["stayflow2025@gmail.com", "kiosque.du.passage@gmail.com"];
-const ADMIN_UIDS = ["G4d04MgUW4fguFOjmhQBbWezheB2"];
+import { checkIsAdmin } from "@/lib/admin-config";
 
 export default function AdminCatalogPage() {
   const router = useRouter();
@@ -35,10 +33,7 @@ export default function AdminCatalogPage() {
   const { formatPrice } = useCurrency();
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   
-  const isAdmin = useMemo(() => {
-    if (!user) return false;
-    return ADMIN_UIDS.includes(user.uid) || ADMIN_EMAILS.includes(user.email || "");
-  }, [user]);
+  const isAdmin = useMemo(() => checkIsAdmin(user), [user]);
 
   // Requête sécurisée
   const listingsRef = useMemoFirebase(() => {

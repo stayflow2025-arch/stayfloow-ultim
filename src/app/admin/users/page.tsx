@@ -19,9 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-
-const ADMIN_EMAILS = ["stayflow2025@gmail.com", "kiosque.du.passage@gmail.com"];
-const ADMIN_UIDS = ["G4d04MgUW4fguFOjmhQBbWezheB2"];
+import { checkIsAdmin } from "@/lib/admin-config";
 
 export default function AdminUsersPage() {
   const router = useRouter();
@@ -29,11 +27,7 @@ export default function AdminUsersPage() {
   const { user: adminUser, isUserLoading } = useUser();
   const [searchTerm, setSearchTerm] = useState("");
 
-  const isAdmin = useMemo(() => {
-    if (!adminUser || isUserLoading) return false;
-    const email = adminUser.email?.toLowerCase() || "";
-    return ADMIN_UIDS.includes(adminUser.uid) || ADMIN_EMAILS.includes(email);
-  }, [adminUser, isUserLoading]);
+  const isAdmin = useMemo(() => checkIsAdmin(adminUser), [adminUser]);
 
   const usersRef = useMemoFirebase(() => {
     if (!isAdmin || !db) return null;
