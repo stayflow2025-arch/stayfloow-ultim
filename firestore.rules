@@ -16,7 +16,7 @@ service cloud.firestore {
     }
 
     // 2. ACCÈS PRIORITAIRE ADMINISTRATEUR (GOD MODE)
-    // Cette règle garantit que l'admin peut tout lister et tout modifier sans restriction.
+    // On autorise explicitement read (get+list) et write pour l'admin partout
     match /{document=**} {
       allow read, write: if isAdmin();
     }
@@ -34,34 +34,45 @@ service cloud.firestore {
     }
 
     match /bookings/{bookingId} {
-      // Les utilisateurs normaux peuvent lire et modifier uniquement leurs propres réservations
+      // Autoriser explicitement le listing pour les admins (couvert par le God Mode mais renforcé ici)
+      allow list: if isAdmin();
+      
+      // Accès individuel pour les utilisateurs concernés
       allow get: if isSignedIn() && (
         resource.data.userId == request.auth.uid || 
-        resource.data.partnerId == request.auth.uid
+        resource.data.partnerId == request.auth.uid ||
+        isAdmin()
       );
+      
       allow create: if isSignedIn();
+      
       allow update: if isSignedIn() && (
         resource.data.userId == request.auth.uid || 
-        resource.data.partnerId == request.auth.uid
+        resource.data.partnerId == request.auth.uid ||
+        isAdmin()
       );
     }
 
     match /partners/{partnerId} {
-      allow read, write: if isSignedIn() && request.auth.uid == partnerId;
+      allow read, write: if isSignedIn() && (request.auth.uid == partnerId || isAdmin());
     }
 
     match /settings/{doc} {
       allow read: if true;
+      allow write: if isAdmin();
     }
 
     match /conversations/{convId} {
-      allow get: if isSignedIn() && request.auth.uid in resource.data.participants;
+      allow list: if isAdmin();
+      allow get: if isSignedIn() && (request.auth.uid in resource.data.participants || isAdmin());
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && request.auth.uid in resource.data.participants;
+      allow update: if isSignedIn() && (request.auth.uid in resource.data.participants || isAdmin());
       
       match /messages/{msgId} {
-        allow read, create: if isSignedIn() && 
-          get(/databases/$(database)/documents/conversations/$(convId)).data.participants.hasAny([request.auth.uid]);
+        allow read, create: if isSignedIn() && (
+          get(/databases/$(database)/documents/conversations/$(convId)).data.participants.hasAny([request.auth.uid]) ||
+          isAdmin()
+        );
       }
     }
   }

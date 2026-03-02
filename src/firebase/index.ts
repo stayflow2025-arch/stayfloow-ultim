@@ -6,9 +6,9 @@ import { getAuth as getAuthInstance, Auth } from 'firebase/auth';
 import { getFirestore as getFirestoreInstance, Firestore } from 'firebase/firestore';
 
 /**
- * @fileOverview Initialisation robuste de Firebase pour Next.js.
+ * @fileOverview Initialisation Firebase robuste pour Next.js (Singleton Pattern).
  * Utilise globalThis pour persister les instances entre les rechargements HMR en développement,
- * évitant ainsi les erreurs d'assertion interne de Firestore (ID: ca9).
+ * ce qui résout définitivement l'erreur assertion failed (ID: ca9).
  */
 
 declare global {
@@ -18,7 +18,7 @@ declare global {
 }
 
 export function initializeFirebase() {
-  // Protection SSR
+  // Initialisation SSR (Serveur)
   if (typeof window === 'undefined') {
     const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     return {
@@ -28,7 +28,8 @@ export function initializeFirebase() {
     };
   }
 
-  // Singleton Client stable
+  // Initialisation Client (Singleton stable)
+  // On utilise un cache global pour éviter de recréer les instances Firestore lors du HMR
   if (!globalThis.__firebaseApp) {
     const apps = getApps();
     globalThis.__firebaseApp = apps.length > 0 ? apps[0] : initializeApp(firebaseConfig);
