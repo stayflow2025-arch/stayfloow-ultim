@@ -1,4 +1,3 @@
-
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
@@ -9,7 +8,6 @@ import { Header } from '@/components/Header';
 import { ChatLoader } from '@/components/chat-loader';
 import ClientProviders from '@/components/client-providers';
 
-// Optimisation des polices locale via Next.js
 const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
@@ -23,12 +21,44 @@ export const metadata: Metadata = {
     default: 'StayFloow.com | Réservez Hébergements, Voitures & Circuits en Afrique',
     template: '%s | StayFloow.com'
   },
-  description: 'La plateforme de référence pour réserver hôtels, riads, locations de voitures et excursions en Algérie et partout en Afrique. Meilleurs prix garantis.',
-  keywords: ['voyage Afrique', 'réservation hôtel Algérie', 'location voiture Alger', 'circuit Sahara', 'StayFloow', 'tourisme Afrique'],
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'StayFloow',
+  description: 'La plateforme de référence pour réserver hôtels, riads, villas, locations de voitures et excursions en Algérie, Égypte et partout en Afrique. Meilleurs prix garantis.',
+  keywords: ['voyage Afrique', 'réservation hôtel Algérie', 'location voiture Alger', 'circuit Sahara', 'StayFloow', 'tourisme Afrique', 'vacances Égypte', 'riad Marrakech'],
+  authors: [{ name: 'StayFloow Team' }],
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'fr_FR',
+    url: 'https://www.stayfloow.com',
+    siteName: 'StayFloow.com',
+    title: 'StayFloow.com | Le partenaire de vos voyages en Afrique',
+    description: 'Hébergements uniques, locations de voitures et circuits guidés. Planifiez votre séjour parfait en quelques clics.',
+    images: [
+      {
+        url: 'https://picsum.photos/seed/stayfloow-og/1200/630',
+        width: 1200,
+        height: 630,
+        alt: 'StayFloow.com Travel Platform',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'StayFloow.com | Réservez votre séjour en Afrique',
+    description: 'Hôtels, Voitures et Circuits aux meilleurs prix.',
+    images: ['https://picsum.photos/seed/stayfloow-twitter/1200/630'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
   },
 };
 
@@ -48,7 +78,6 @@ export default function RootLayout({
   return (
     <html lang="fr" suppressHydrationWarning className={inter.variable}>
       <head>
-        {/* Pré-connexion aux domaines critiques pour la rapidité */}
         <link rel="preconnect" href="https://images.unsplash.com" />
         <link rel="preconnect" href="https://picsum.photos" />
       </head>
