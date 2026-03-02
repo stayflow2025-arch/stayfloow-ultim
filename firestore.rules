@@ -3,16 +3,8 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // --- GLOBAL HELPER FUNCTIONS ---
-
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
     function isAdmin() {
       return isSignedIn() && (
         exists(/databases/$(database)/documents/admin_roles/$(request.auth.uid)) ||
@@ -21,37 +13,35 @@ service cloud.firestore {
       );
     }
 
-    // --- COLLECTION RULES ---
-
-    match /admin_roles/{userId} {
-      allow get, list: if isAdmin();
-      allow write: if false;
-    }
-
     match /users/{userId} {
       allow get: if isOwner(userId) || isAdmin();
-      allow create: if isOwner(userId);
-      allow update: if isOwner(userId);
-      allow list, delete: if isAdmin();
+      allow write: if isOwner(userId);
     }
 
     match /listings/{listingId} {
-      // Allow everyone to see approved listings or admins to see all
-      allow get, list: if (resource == null) || resource.data.status == 'approved' || isAdmin();
-      // Only admins can create/update/delete in the master collection
-      allow write: if isAdmin();
+      allow read: if resource.data.status == 'approved' || isAdmin() || (isSignedIn() && resource.data.ownerId == request.auth.uid);
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin() || (isSignedIn() && resource.data.ownerId == request.auth.uid);
     }
 
-    match /partners/{partnerId} {
-      allow get: if isOwner(partnerId) || isAdmin();
-      allow create: if isOwner(partnerId);
-      allow update: if isOwner(partnerId);
-      allow list, delete: if isAdmin();
+    match /bookings/{bookingId} {
+      allow read: if isAdmin() || (isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.partnerId == request.auth.uid));
+      allow create: if isSignedIn();
+      allow update: if isAdmin() || (isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.partnerId == request.auth.uid));
     }
 
-    match /partners/{partnerId}/listings/{listingId} {
-      allow get, list: if isOwner(partnerId) || isAdmin();
-      allow write: if isOwner(partnerId) || isAdmin();
+    match /conversations/{convId} {
+      allow read: if isSignedIn() && request.auth.uid in resource.data.participants;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && request.auth.uid in resource.data.participants;
+
+      match /messages/{msgId} {
+        allow read, write: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/conversations/$(convId)).data.participants;
+      }
+    }
+
+    match /admin_roles/{userId} {
+      allow get, list: if isAdmin();
     }
   }
 }

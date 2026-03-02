@@ -2,174 +2,77 @@
 {
   "entities": {
     "UserProfile": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "UserProfile",
       "type": "object",
-      "description": "Represents a user of the StayFloow application, storing their preferences and activity data, separate from authentication details.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the UserProfile entity."
-        },
-        "email": {
-          "type": "string",
-          "description": "The user's email address, primarily for communication and notifications (not for authentication).",
-          "format": "email"
-        },
-        "firstName": {
-          "type": "string",
-          "description": "The user's first name."
-        },
-        "lastName": {
-          "type": "string",
-          "description": "The user's last name."
-        },
-        "phoneNumber": {
-          "type": "string",
-          "description": "The user's phone number, including country code, primarily for communication."
-        },
-        "languagePreference": {
-          "type": "string",
-          "description": "The user's preferred language for the application interface (e.g., 'en', 'fr', 'ar')."
-        },
-        "currencyPreference": {
-          "type": "string",
-          "description": "The user's preferred currency for displaying prices (e.g., 'DZD', 'EGP', 'USD')."
-        },
-        "favoriteListingIds": {
-          "type": "array",
-          "description": "References to PartnerListings that the user has marked as favorites.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "loyaltyPoints": {
-          "type": "number",
-          "description": "The number of loyalty points accumulated by the user."
-        }
+        "id": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "firstName": { "type": "string" },
+        "lastName": { "type": "string" },
+        "phoneNumber": { "type": "string" },
+        "languagePreference": { "type": "string" },
+        "currencyPreference": { "type": "string" },
+        "loyaltyPoints": { "type": "number" }
       },
-      "required": [
-        "id",
-        "email",
-        "firstName",
-        "lastName",
-        "phoneNumber",
-        "languagePreference",
-        "currencyPreference"
-      ]
-    },
-    "Partner": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Partner",
-      "type": "object",
-      "description": "Represents a business or individual offering listings on StayFloow.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Partner entity."
-        },
-        "name": {
-          "type": "string",
-          "description": "The name of the partner or establishment."
-        },
-        "email": {
-          "type": "string",
-          "format": "email"
-        },
-        "phoneNumber": {
-          "type": "string"
-        },
-        "joinDate": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "status": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "id",
-        "name",
-        "email",
-        "phoneNumber",
-        "joinDate",
-        "status"
-      ]
+      "required": ["id", "email", "firstName", "lastName"]
     },
     "PartnerListing": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "PartnerListing",
       "type": "object",
-      "description": "Represents a single listing provided by a partner.",
       "properties": {
-        "id": {
-          "type": "string"
-        },
-        "partnerId": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "category": {
-          "type": "string",
-          "enum": ["accommodation", "car_rental", "circuit"]
-        },
-        "address": {
-          "type": "string"
-        },
-        "price": {
-          "type": "number"
-        },
-        "status": {
-          "type": "string",
-          "enum": ["pending", "approved", "rejected"]
-        }
+        "id": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "category": { "type": "string", "enum": ["accommodation", "car_rental", "circuit"] },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "price": { "type": "number" },
+        "currency": { "type": "string" },
+        "details": { "type": "object" },
+        "location": { "type": "object" },
+        "photos": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["id", "partnerId", "name", "category", "status", "price"]
+      "required": ["id", "ownerId", "category", "status", "price"]
+    },
+    "Booking": {
+      "title": "Booking",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "partnerId": { "type": "string" },
+        "listingId": { "type": "string" },
+        "itemName": { "type": "string" },
+        "itemType": { "type": "string" },
+        "startDate": { "type": "string", "format": "date-time" },
+        "endDate": { "type": "string", "format": "date-time" },
+        "totalPrice": { "type": "number" },
+        "currency": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected", "cancelled"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "partnerId", "listingId", "startDate", "totalPrice"]
+    },
+    "Conversation": {
+      "title": "Conversation",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "participants": { "type": "array", "items": { "type": "string" } },
+        "bookingId": { "type": "string" },
+        "listingId": { "type": "string" },
+        "lastMessage": { "type": "string" },
+        "lastAt": { "type": "string", "format": "date-time" }
+      }
     }
   },
   "auth": {
-    "providers": [
-      "password",
-      "anonymous"
-    ]
+    "providers": ["password", "anonymous"]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/users/{userId}",
-        "definition": {
-          "entityName": "UserProfile",
-          "schema": {
-            "$ref": "#/backend/entities/UserProfile"
-          },
-          "description": "User profile data."
-        }
-      },
-      {
-        "path": "/listings/{listingId}",
-        "definition": {
-          "entityName": "PartnerListing",
-          "schema": {
-            "$ref": "#/backend/entities/PartnerListing"
-          },
-          "description": "Master collection for all listings. Globally readable if status is approved."
-        }
-      },
-      {
-        "path": "/admin_roles/{userId}",
-        "definition": {
-          "entityName": "admin_role",
-          "schema": {
-            "$ref": "#/backend/entities/UserProfile"
-          },
-          "description": "Existence grants admin privileges."
-        }
-      }
-    ]
+    "/users/{userId}": { "schema": { "$ref": "#/backend/entities/UserProfile" }, "description": "User profiles" },
+    "/listings/{listingId}": { "schema": { "$ref": "#/backend/entities/PartnerListing" }, "description": "Public listings" },
+    "/bookings/{bookingId}": { "schema": { "$ref": "#/backend/entities/Booking" }, "description": "Reservations" },
+    "/conversations/{convId}": { "schema": { "$ref": "#/backend/entities/Conversation" }, "description": "Messaging threads" },
+    "/conversations/{convId}/messages/{msgId}": { "schema": { "type": "object" }, "description": "Individual messages" }
   }
 }
