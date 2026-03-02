@@ -8,7 +8,7 @@ import {
   Search, 
   MoreVertical, Trash2, CheckCircle, XCircle, 
   ArrowLeft, Loader2, ExternalLink, MapPin, Tag, 
-  Filter, Calendar, Building, Car, Compass, User
+  Filter, Calendar, Building, Car, Compass, User, Clock
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
