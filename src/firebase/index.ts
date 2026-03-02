@@ -18,7 +18,7 @@ declare global {
 }
 
 export function initializeFirebase() {
-  // Initialisation SSR (Serveur)
+  // Initialisation SSR (Serveur) - Toujours créer une nouvelle instance légère
   if (typeof window === 'undefined') {
     const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     return {
@@ -29,7 +29,7 @@ export function initializeFirebase() {
   }
 
   // Initialisation Client (Singleton stable)
-  // On utilise un cache global pour éviter de recréer les instances Firestore lors du HMR
+  // On utilise un cache global sur globalThis pour éviter de recréer les instances Firestore lors du HMR (Hot Module Replacement)
   if (!globalThis.__firebaseApp) {
     const apps = getApps();
     globalThis.__firebaseApp = apps.length > 0 ? apps[0] : initializeApp(firebaseConfig);

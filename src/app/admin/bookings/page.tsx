@@ -27,6 +27,7 @@ export default function AdminBookingsPage() {
   const { user, isUserLoading } = useUser();
   const { formatPrice } = useCurrency();
 
+  // Détection robuste de l'administrateur
   const isAdmin = useMemo(() => {
     if (!user || isUserLoading) return false;
     const email = user.email?.toLowerCase() || "";
@@ -39,9 +40,10 @@ export default function AdminBookingsPage() {
     }
   }, [user, isUserLoading, isAdmin, router]);
 
-  // Chargement sécurisé : on attend que isAdmin soit confirmé pour lancer la requête
+  // On attend que isAdmin soit TRUE avant de lancer la requête Firestore
   const bookingsRef = useMemoFirebase(() => {
     if (!isAdmin || !db || isUserLoading) return null;
+    // La requête est désormais autorisée sans filtre car isAdmin() est en God Mode dans les rules
     return query(collection(db, "bookings"), orderBy("createdAt", "desc"));
   }, [db, isAdmin, isUserLoading]);
   
@@ -57,7 +59,7 @@ export default function AdminBookingsPage() {
       <div className="h-screen flex items-center justify-center bg-slate-900">
         <div className="text-center space-y-4">
           <Loader2 className="animate-spin text-primary h-12 w-12 mx-auto" />
-          <p className="text-white/50 font-black uppercase tracking-widest text-[10px]">Vérification des privilèges...</p>
+          <p className="text-white/50 font-black uppercase tracking-widest text-[10px]">Vérification des accès administrateur...</p>
         </div>
       </div>
     );
@@ -76,7 +78,7 @@ export default function AdminBookingsPage() {
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Contrôle global ({bookings?.length || 0} transactions)</p>
             </div>
           </div>
-          <Badge className="bg-green-600 border-none font-black text-[10px]">MODE ADMINISTRATEUR</Badge>
+          <Badge className="bg-green-600 border-none font-black text-[10px]">SYNC LIVE ACTIVE</Badge>
         </div>
       </header>
 
