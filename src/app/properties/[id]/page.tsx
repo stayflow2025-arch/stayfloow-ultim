@@ -388,7 +388,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
           </div>
           
           {totalBookingPrice > 0 && (
-            <div className="flex justify-end animate-in fade-in slide-in-from-right-4">
+            <div className="flex flex-col items-end gap-6 mt-8 animate-in fade-in slide-in-from-bottom-4">
               <Card className="w-full md:w-80 border-2 border-primary shadow-2xl bg-white">
                 <CardContent className="p-6 space-y-4">
                   <div className="flex justify-between items-baseline">
@@ -401,6 +401,14 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                   <p className="text-[10px] text-center text-slate-400 uppercase font-bold">Confirmation instantanée StayFloow</p>
                 </CardContent>
               </Card>
+
+              {/* BOUTON RÉSERVER FINAL (DESIGN IMAGE) */}
+              <Button 
+                onClick={() => router.push(`/properties/${id}/book`)}
+                className="bg-[#10B981] hover:bg-[#0da372] text-white font-black text-xl px-16 py-8 rounded-xl shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2"
+              >
+                Réserver
+              </Button>
             </div>
           )}
         </section>
