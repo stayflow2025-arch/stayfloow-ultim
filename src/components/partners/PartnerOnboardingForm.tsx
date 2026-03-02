@@ -25,7 +25,7 @@ import {
 import { cn } from '@/lib/utils';
 import { generatePartnerDescription } from '@/ai/flows/partner-description-generator';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
+import { useFirestore, useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { OnboardingMap } from '@/components/onboarding-map';
 import { useLanguage } from '@/context/language-context';
@@ -37,6 +37,7 @@ interface Props {
 export default function PartnerOnboardingForm({ initialCategory }: Props) {
   const { toast } = useToast();
   const db = useFirestore();
+  const { user } = useUser();
   const { t } = useLanguage();
   const [currentStep, setCurrentStep] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -110,14 +111,22 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
   };
 
   const handleSubmit = async () => {
+    if (!user) {
+      toast({ variant: 'destructive', title: 'Connexion requise', description: 'Veuillez vous connecter pour soumettre une annonce.' });
+      return;
+    }
+
     if (photos.length < 1) {
       toast({ variant: 'destructive', title: 'Photos manquantes', description: 'Veuillez ajouter au moins une photo.' });
       return;
     }
+
     setIsSubmitting(true);
     try {
       const listingId = `list_${Date.now()}`;
       const finalData = {
+        id: listingId,
+        ownerId: user.uid,
         category: initialCategory,
         status: 'pending',
         partnerInfo: {
@@ -162,16 +171,49 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
         isDiscountEnabled: formData.isDiscountEnabled,
         photos: photos,
         rating: 8.0,
-        createdAt: serverTimestamp()
+        createdAt: new Date().toISOString()
       };
 
       await setDoc(doc(db, 'listings', listingId), finalData);
       setCurrentStep(5);
     } catch (error) {
-      toast({ variant: 'destructive', title: 'Erreur', description: 'Échec de la soumission.' });
+      console.error("Submission error:", error);
+      toast({ variant: 'destructive', title: 'Erreur', description: 'Échec de la soumission. Vérifiez votre connexion.' });
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Helper to resize images to avoid 1MB Firestore limit
+  const resizeImage = (base64Str: string): Promise<string> => {
+    return new Promise((resolve) => {
+      const img = new window.Image();
+      img.src = base64Str;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 800;
+        const MAX_HEIGHT = 600;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.7)); // Compresse à 70%
+      };
+    });
   };
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -179,8 +221,9 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
     if (files) {
       Array.from(files).forEach(file => {
         const reader = new FileReader();
-        reader.onloadend = () => {
-          setPhotos(prev => [...prev, reader.result as string].slice(0, 30));
+        reader.onloadend = async () => {
+          const resized = await resizeImage(reader.result as string);
+          setPhotos(prev => [...prev, resized].slice(0, 30));
         };
         reader.readAsDataURL(file);
       });
@@ -297,6 +340,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
             <input type="file" multiple className="hidden" accept="image/*" onChange={handlePhotoUpload} />
           </label>
         </div>
+        <p className="text-[10px] text-slate-400 italic">Astuce : Vos photos sont compressées automatiquement pour garantir une publication rapide.</p>
       </div>
 
       <div className="space-y-8">
@@ -389,15 +433,22 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
 
         <div className="mt-12 pt-8 border-t flex justify-between">
           <Button variant="ghost" onClick={handlePrev} disabled={currentStep === 1} className="font-bold text-slate-400">← {t('back')}</Button>
-          {currentStep === steps.length ? (
-            <Button onClick={handleSubmit} disabled={isSubmitting} className="bg-primary hover:bg-primary/90 px-12 h-14 rounded-xl font-black text-lg shadow-xl shadow-primary/20">
-              {isSubmitting ? <Loader2 className="animate-spin mr-2"/> : t('submit_review_btn')}
-            </Button>
-          ) : (
-            <Button onClick={handleNext} className="bg-primary hover:bg-primary/90 px-12 h-14 rounded-xl font-black text-lg shadow-xl shadow-primary/20">
-              {t('continue')} →
-            </Button>
-          )}
+          <div className="flex gap-4">
+            {!user && currentStep === steps.length && (
+              <Button variant="outline" className="h-14 px-8 rounded-xl font-black text-primary border-primary" onClick={() => toast({ title: "Connexion requise", description: "Veuillez vous connecter avant de soumettre." })}>
+                Se connecter pour publier
+              </Button>
+            )}
+            {currentStep === steps.length ? (
+              <Button onClick={handleSubmit} disabled={isSubmitting} className="bg-primary hover:bg-primary/90 px-12 h-14 rounded-xl font-black text-lg shadow-xl shadow-primary/20">
+                {isSubmitting ? <Loader2 className="animate-spin mr-2"/> : t('submit_review_btn')}
+              </Button>
+            ) : (
+              <Button onClick={handleNext} className="bg-primary hover:bg-primary/90 px-12 h-14 rounded-xl font-black text-lg shadow-xl shadow-primary/20">
+                {t('continue')} →
+              </Button>
+            )}
+          </div>
         </div>
       </CardContent>
     </Card>
