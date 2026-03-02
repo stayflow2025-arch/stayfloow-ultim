@@ -19,7 +19,7 @@ const translations: Record<string, Record<Locale, string>> = {
     "tours": { fr: "Circuits", en: "Tours & Activities", ar: "الجولات والأنشطة", es: "Tours y Actividades" },
     "login": { fr: "Se connecter", en: "Log In", ar: "تسجيل الدخول", es: "Iniciar sesión" },
     "register": { fr: "S'inscrire", en: "Sign Up", ar: "إنشاء حساب", es: "Registrarse" },
-    "logout": { fr: "Déconnexion", en: "Log Out", ar: "تسجيل الخروج", es: "Cerrar sesión" },
+    "logout": { fr: "Déconnexion", en: "Log Out", ar: "تسجيل الخروج", es: "Cerrar séance" },
     "list_property": { fr: "Inscrire mon bien", en: "List your property", ar: "أضف عقارك", es: "Inscribe tu bien" },
     "help": { fr: "Aide", en: "Help", ar: "مساعدة", es: "Ayuda" },
     "navigation": { fr: "Navigation", en: "Navigation", ar: "الملاحة", es: "Navegación" },
@@ -43,7 +43,7 @@ const translations: Record<string, Record<Locale, string>> = {
     "room_singular": { fr: "chambre", en: "room", ar: "غرفة", es: "habitación" },
     "rooms_plural": { fr: "chambres", en: "rooms", ar: "غرف", es: "habitaciones" },
     "age_label": { fr: "ans", en: "years old", ar: "سنة", es: "años" },
-    "children_age_info": { fr: "Pour trouver un hébergement pouvant accueillir votre groupe et afficher les bons tarifs, nous avons besoin de connaître l'âge qu'auront vos enfants à la fin du séjour.", en: "To find an accommodation that can accommodate your group and show the right prices, we need to know the age your children will be at the end of the stay.", ar: "للعثور على مكان إقامة يمكنه استيعاب مجموعتك وعرض الأسعار الصحيحة ، نحتاج إلى معرفة العمر الذي سيكون عليه أطفالك في نهاية الإقامة.", es: "Para encontrar un alojamiento que pueda acomodar a su grupo y mostrar los precios correctos, necesitamos saber la edad que tendrán sus hijos al final de la estancia." },
+    "children_age_info": { fr: "Pour trouver un hébergement pouvant accueillir votre groupe et afficher les bons tarifs, nous avons besoin de connaître l'âge qu'auront vos enfants à la fin du séjour.", en: "To find an accommodation that can accommodate your group and show the right prices, we need to know the age your children will be at the end of the stay.", ar: "للعثور على مكان إقامة يمكنه استيعاب مجموعتك وعرض الأسعار الصحيحة ، نحتاج إلى معرفة العمر الذي سيكون عليه أطفالك في نهاية الإقامة.", es: "Para encontrar un alojamiento que pueda acomodar a su groupe y mostrar los precios correctos, necesitamos saber la edad que tendrán sus hijos al final de la estancia." },
     "travel_with_pet": { fr: "Vous voyagez avec votre animal ?", en: "Are you traveling with your pet?", ar: "هل تسافر مع حيوانك الأليف؟", es: "¿Viajas con tu mascota?" },
     "service_animal_info": { fr: "Les animaux d'assistance ne sont pas considérés comme des animaux de compagnie.", en: "Service animals are not considered pets.", ar: "لا تُعتبر حيوانات الخدمة حيوانات أليفة.", es: "Los animales de servicio no se consideran mascotas." },
     "learn_more_service_animal": { fr: "En savoir plus sur les voyages avec un animal d'assistance", en: "Learn more about traveling with a service animal", ar: "تعرف على المزيد حول السفر مع حيوان خدمة", es: "Más información sobre viajar con un perro de asistencia" },
@@ -67,7 +67,7 @@ const translations: Record<string, Record<Locale, string>> = {
 
     // Onboarding Partenaire
     "partner_hero_title": { fr: "Inscrivez votre établissement sur StayFloow.com", en: "List your property on StayFloow.com", ar: "سجل عقارك على StayFloow.com", es: "Inscriba su establecimiento en StayFloow.com" },
-    "partner_hero_subtitle": { fr: "Rejoignez la plus grande communauté de voyageurs en Afrique.", en: "Join the largest travel community in Africa.", ar: "انضم إلى أكبر مجتمع للمسافرين في أفريقيا.", es: "Únase a la mayor comunidad de viajeros de África." },
+    "partner_hero_subtitle": { fr: "Rejoignez la plus grande communauté de voyageurs en Afrique.", en: "Join the largest travel community in Africa.", ar: "انضم إلى أكبر مجتمع للمسافرين في أفريقيا.", es: "Únase a la mayor communauté de viajeros de África." },
     "partner_hero_cta": { fr: "Commencer gratuitement", en: "Get started for free", ar: "ابدأ مجاناً", es: "Empezar gratis" },
     "partner_cat_acc_desc": { fr: "Hôtels, riads, appartements, villas, maisons d'hôtes...", en: "Hotels, riads, apartments, villas, guest houses...", ar: "فنادق، رياض، شقق، فيلات، دور ضيافة...", es: "Hoteles, riads, apartamentos, villas, casas de huéspedes..." },
     "partner_cat_car_desc": { fr: "Berlines, SUV, 4x4, minibus, voitures de luxe...", en: "Sedans, SUVs, 4x4s, minibuses, luxury cars...", ar: "سيدان، دفع رباعي، ميني باص، سيارات فاخرة...", es: "Sedanes, SUV, 4x4, minibuses, coches de lujo..." },
@@ -100,13 +100,13 @@ const translations: Record<string, Record<Locale, string>> = {
     "description_label": { fr: "Description commerciale", en: "Commercial Description", ar: "الوصف التجاري", es: "Descripción comercial" },
     "ai_improve_btn": { fr: "Améliorer via IA", en: "Improve with AI", ar: "تحسين عبر الذكاء الاصطناعي", es: "Mejorar con IA" },
     "photos_label": { fr: "Photos professionnelles", en: "Professional Photos", ar: "صور احترافية", es: "Fotos profesionales" },
-    "base_price_label": { fr: "Prix de base (DZD)", en: "Base Price (DZD)", ar: "السعر الأساسي (د.ج)", es: "Precio base (DZD)" },
+    "base_price_label": { fr: "Prix de base", en: "Base Price", ar: "السعر الأساسي", es: "Precio base" },
     
     // Buttons & Success
     "back": { fr: "Précédent", en: "Back", ar: "رجوع", es: "Atrás" },
     "continue": { fr: "Continuer", en: "Continue", ar: "استمرار", es: "Continuar" },
     "submit_review_btn": { fr: "Soumettre pour vérification", en: "Submit for review", ar: "إرسال للمراجعة", es: "Enviar para revisión" },
-    "success_msg_title": { fr: "Demande envoyée avec succès !", en: "Request sent successfully!", ar: "تم إرسال الطلب بنجاح!", es: "¡Solicitud enviada con éxito!" },
+    "success_msg_title": { fr: "Demande envoyée avec succès !", en: "Request sent successfully!", ar: "تم إرسال الطلب بنjاح!", es: "¡Solicitud enviada con éxito!" },
     "success_msg_desc": { fr: "Votre annonce est en cours de modération. Vous recevrez un email de confirmation d'ici 24h.", en: "Your listing is being reviewed. You will receive a confirmation email within 24h.", ar: "إعلانك قيد المراجعة. ستتلقى رسالة تأكيد عبر البريد الإلكتروني خلال 24 ساعة.", es: "Su anuncio está siendo revisado. Recibirá un correo electrónico de confirmación en 24 horas." },
     "back_home_btn": { fr: "Retour à l'accueil", en: "Back to Home", ar: "العودة للرئيسية", es: "Volver al inicio" },
 
@@ -130,7 +130,7 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-export const LanguageProvider = ({ children }: { children: ReactNode }) => {
+export const LanguageProvider = ({ children }: { children: React.ReactNode }) => {
   const [locale, setLocale] = useState<Locale>('fr');
   const [mounted, setMounted] = useState(false);
 

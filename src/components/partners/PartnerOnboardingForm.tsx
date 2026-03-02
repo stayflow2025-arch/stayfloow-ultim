@@ -11,6 +11,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { 
   Building, Car, Compass, MapPin, Upload, CheckCircle2, 
   Loader2, Wand2, X, Plus, Minus, Users, Home, Bed, Bath, Utensils, Fuel, Gauge, Calendar as CalendarIcon, Clock, Globe, Sofa, Trees, Star
 } from 'lucide-react';
@@ -45,6 +53,8 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
     listingName: '',
     description: '',
     price: '',
+    listingCurrency: 'DZD',
+    isDiscountEnabled: false,
     // Accommodation fields
     propertyType: 'hotel',
     roomsCount: 1,
@@ -153,6 +163,9 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
           } : {})
         },
         price: parseFloat(formData.price) || 0,
+        currency: formData.listingCurrency,
+        isDiscountEnabled: formData.isDiscountEnabled,
+        discountPercentage: formData.isDiscountEnabled ? 15 : 0,
         photos: photos,
         rating: 8.0,
         createdAt: serverTimestamp()
@@ -494,18 +507,67 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
         </div>
       </div>
 
-      <div className="space-y-4">
-        <Label className="font-black text-lg">{t('base_price_label')} *</Label>
-        <div className="relative max-w-xs">
-          <Input 
-            type="number" 
-            value={formData.price} 
-            onChange={e => setFormData({...formData, price: e.target.value})} 
-            placeholder="Ex: 12500" 
-            className="h-14 pl-12 text-xl font-black rounded-2xl bg-slate-50"
-          />
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">DA</div>
+      <div className="space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-3">
+            <Label className="font-black text-slate-700 uppercase text-[10px] tracking-widest ml-1">Devise de l'annonce</Label>
+            <Select 
+              value={formData.listingCurrency} 
+              onValueChange={v => setFormData({...formData, listingCurrency: v})}
+            >
+              <SelectTrigger className="h-14 bg-slate-50 border-slate-100 rounded-2xl font-bold">
+                <SelectValue placeholder="Choisir une devise" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="DZD">DZD (DA)</SelectItem>
+                <SelectItem value="EUR">EUR (€)</SelectItem>
+                <SelectItem value="USD">USD ($)</SelectItem>
+                <SelectItem value="GBP">GBP (£)</SelectItem>
+                <SelectItem value="CHF">CHF (CHF)</SelectItem>
+                <SelectItem value="EGP">EGP (E£)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-3">
+            <Label className="font-black text-lg">{t('base_price_label')} *</Label>
+            <div className="relative">
+              <Input 
+                type="number" 
+                value={formData.price} 
+                onChange={e => setFormData({...formData, price: e.target.value})} 
+                placeholder="Ex: 12500" 
+                className="h-14 pl-16 text-xl font-black rounded-2xl bg-slate-50 border-slate-100"
+              />
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-primary font-black text-lg">
+                {formData.listingCurrency === 'DZD' ? 'DA' : 
+                 formData.listingCurrency === 'EUR' ? '€' : 
+                 formData.listingCurrency === 'USD' ? '$' : 
+                 formData.listingCurrency === 'GBP' ? '£' : 
+                 formData.listingCurrency === 'EGP' ? 'E£' : 'CHF'}
+              </div>
+            </div>
+          </div>
         </div>
+
+        <div className="flex items-start space-x-4 p-6 bg-primary/5 rounded-[2rem] border-2 border-primary/10 transition-all cursor-pointer group hover:bg-primary/10">
+          <Checkbox 
+            id="discount" 
+            checked={formData.isDiscountEnabled}
+            onCheckedChange={(checked) => setFormData(prev => ({ ...prev, isDiscountEnabled: !!checked }))}
+            className="h-6 w-6 mt-1 rounded-lg"
+          />
+          <div className="space-y-1 cursor-pointer flex-1" onClick={() => setFormData(prev => ({ ...prev, isDiscountEnabled: !prev.isDiscountEnabled }))}>
+            <Label htmlFor="discount" className="text-lg font-black text-slate-900 cursor-pointer flex items-center gap-2">
+              Rendre mon offre attractive (-15% de rabais)
+              <Badge className="bg-secondary text-primary border-none font-black text-[10px]">RECOMMANDÉ</Badge>
+            </Label>
+            <p className="text-sm text-slate-500 font-medium leading-relaxed">
+              Les offres avec réduction sont mises en avant sur StayFloow.com et reçoivent en moyenne 3 fois plus de réservations. La remise sera appliquée automatiquement sur le prix affiché.
+            </p>
+          </div>
+        </div>
+
         <p className="text-xs text-slate-400 font-medium">
           {initialCategory === 'car_rental' ? 'Prix de location par jour (24h).' : initialCategory === 'circuit' ? 'Prix par personne (TTC).' : 'Prix par nuit pour l\'ensemble du logement ou par chambre.'}
         </p>
