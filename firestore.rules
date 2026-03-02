@@ -9,10 +9,8 @@ service cloud.firestore {
     function isAdmin() {
       return isSignedIn() && (
         request.auth.uid == "G4d04MgUW4fguFOjmhQBbWezheB2" ||
-        (request.auth.token.email != null && (
-          request.auth.token.email.lower() == 'stayflow2025@gmail.com' ||
-          request.auth.token.email.lower() == 'kiosque.du.passage@gmail.com'
-        ))
+        (request.auth.token.email != null && 
+         request.auth.token.email.lower() in ['stayflow2025@gmail.com', 'kiosque.du.passage@gmail.com'])
       );
     }
     
@@ -33,7 +31,7 @@ service cloud.firestore {
     }
 
     match /bookings/{bookingId} {
-      // Les admins peuvent lister toutes les réservations
+      // Les admins peuvent lister toutes les réservations sans restriction
       allow list: if isAdmin();
       // Lecture individuelle pour les admins ou les parties concernées
       allow get: if isAdmin() || (isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.partnerId == request.auth.uid));

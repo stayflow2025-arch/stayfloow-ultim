@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { useFirestore, useCollection, useMemoFirebase, useUser } from "@/firebase";
-import { collection, query, orderBy, doc, updateDoc } from "firebase/firestore";
+import { useFirestore, useCollection, useMemoFirebase, useUser, updateDocumentNonBlocking } from "@/firebase";
+import { collection, query, orderBy, doc } from "firebase/firestore";
 import { 
   Calendar, User, Clock, CheckCircle2, 
   XCircle, ArrowLeft, Loader2, Search, Filter, 
@@ -32,6 +32,7 @@ export default function AdminBookingsPage() {
     return ADMIN_UIDS.includes(user.uid) || ADMIN_EMAILS.includes(user.email?.toLowerCase() || "");
   }, [user]);
 
+  // Chargement des données uniquement si admin et auth prête
   const bookingsRef = useMemoFirebase(() => {
     if (!isAdmin || !db || isUserLoading) return null;
     return query(collection(db, "bookings"), orderBy("createdAt", "desc"));
@@ -39,8 +40,10 @@ export default function AdminBookingsPage() {
   
   const { data: bookings, isLoading } = useCollection(bookingsRef);
 
-  const handleStatusUpdate = async (id: string, newStatus: string) => {
-    await updateDoc(doc(db, "bookings", id), { status: newStatus });
+  const handleStatusUpdate = (id: string, newStatus: string) => {
+    const docRef = doc(db, "bookings", id);
+    // Utilisation du pattern non-bloquant avec gestion d'erreur centralisée
+    updateDocumentNonBlocking(docRef, { status: newStatus });
   };
 
   if (isUserLoading) return <div className="h-screen flex items-center justify-center bg-slate-900"><Loader2 className="animate-spin text-primary h-12 w-12" /></div>;

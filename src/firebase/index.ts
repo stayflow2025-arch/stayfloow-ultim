@@ -1,7 +1,7 @@
 'use client';
 
 import { firebaseConfig } from '@/firebase/config';
-import { initializeApp, getApps, FirebaseApp, getApp } from 'firebase/app';
+import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import { getAuth as getAuthInstance, Auth } from 'firebase/auth';
 import { getFirestore as getFirestoreInstance, Firestore } from 'firebase/firestore';
 
@@ -15,52 +15,46 @@ interface GlobalFirebase {
   __firebaseFirestore?: Firestore;
 }
 
-const globalWithFirebase = (typeof globalThis !== 'undefined' 
-  ? globalThis 
-  : typeof window !== 'undefined' 
-    ? window 
-    : {}) as unknown as GlobalFirebase;
+// Accès sécurisé au cache global sur le client
+const getGlobalStore = (): GlobalFirebase => {
+  if (typeof window !== 'undefined') {
+    return window as any;
+  }
+  return {} as any;
+};
 
 /**
  * Initialise les services Firebase de manière stable et unique.
+ * Utilise un cache global pour empêcher la double initialisation lors du HMR.
  */
 export function initializeFirebase() {
-  // 1. Vérification du cache global (Client-side uniquement)
-  if (typeof window !== 'undefined') {
-    if (
-      globalWithFirebase.__firebaseApp &&
-      globalWithFirebase.__firebaseAuth &&
-      globalWithFirebase.__firebaseFirestore
-    ) {
-      return {
-        firebaseApp: globalWithFirebase.__firebaseApp,
-        auth: globalWithFirebase.__firebaseAuth,
-        firestore: globalWithFirebase.__firebaseFirestore,
-      };
-    }
+  const store = getGlobalStore();
+
+  // 1. Retourner les instances si déjà présentes dans le cache global (Client-side)
+  if (store.__firebaseApp && store.__firebaseAuth && store.__firebaseFirestore) {
+    return {
+      firebaseApp: store.__firebaseApp,
+      auth: store.__firebaseAuth,
+      firestore: store.__firebaseFirestore,
+    };
   }
 
   // 2. Initialisation ou récupération de l'App
-  let app: FirebaseApp;
   const apps = getApps();
-  if (apps.length > 0) {
-    app = apps[0];
-  } else {
-    app = initializeApp(firebaseConfig);
-  }
+  const firebaseApp = apps.length > 0 ? apps[0] : initializeApp(firebaseConfig);
 
   // 3. Initialisation des services
-  const auth = getAuthInstance(app);
-  const firestore = getFirestoreInstance(app);
+  const auth = getAuthInstance(firebaseApp);
+  const firestore = getFirestoreInstance(firebaseApp);
 
   // 4. Mise en cache pour les futurs appels sur le client
   if (typeof window !== 'undefined') {
-    globalWithFirebase.__firebaseApp = app;
-    globalWithFirebase.__firebaseAuth = auth;
-    globalWithFirebase.__firebaseFirestore = firestore;
+    store.__firebaseApp = firebaseApp;
+    store.__firebaseAuth = auth;
+    store.__firebaseFirestore = firestore;
   }
 
-  return { firebaseApp: app, auth, firestore };
+  return { firebaseApp, auth, firestore };
 }
 
 /**
