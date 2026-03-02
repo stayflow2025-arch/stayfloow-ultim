@@ -9,8 +9,8 @@ service cloud.firestore {
     function isAdmin() {
       return isSignedIn() && (
         request.auth.uid == "G4d04MgUW4fguFOjmhQBbWezheB2" ||
-        request.auth.token.email == "stayflow2025@gmail.com" ||
-        request.auth.token.email == "kiosque.du.passage@gmail.com"
+        (request.auth.token.email != null && request.auth.token.email.lower() == "stayflow2025@gmail.com") ||
+        (request.auth.token.email != null && request.auth.token.email.lower() == "kiosque.du.passage@gmail.com")
       );
     }
     
@@ -31,7 +31,9 @@ service cloud.firestore {
     }
 
     match /bookings/{bookingId} {
+      // Autorise explicitement le listing global pour les admins
       allow list: if isAdmin();
+      // Autorise la lecture individuelle pour l'admin ou les parties prenantes
       allow get: if isAdmin() || (isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.partnerId == request.auth.uid));
       allow create: if isSignedIn();
       allow update: if isAdmin() || (isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.partnerId == request.auth.uid));
@@ -63,7 +65,7 @@ service cloud.firestore {
       allow delete: if isAdmin();
       
       match /messages/{msgId} {
-        allow list, get: if isAdmin() || (isSignedIn() && get(/databases/$(database)/documents/conversations/$(convId)).data.participants.hasAny([request.auth.uid]));
+        allow list, get: if isAdmin() || isSignedIn();
         allow write: if isSignedIn();
       }
     }

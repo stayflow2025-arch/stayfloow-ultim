@@ -27,29 +27,32 @@ export default function AdminBookingsPage() {
   const { user, isUserLoading } = useUser();
   const { formatPrice } = useCurrency();
 
+  // Détection robuste de l'administrateur
   const isAdmin = useMemo(() => {
-    if (!user) return false;
-    return ADMIN_UIDS.includes(user.uid) || ADMIN_EMAILS.includes(user.email?.toLowerCase() || "");
-  }, [user]);
+    if (!user || isUserLoading) return false;
+    const email = user.email?.toLowerCase() || "";
+    return ADMIN_UIDS.includes(user.uid) || ADMIN_EMAILS.includes(email);
+  }, [user, isUserLoading]);
 
   // Chargement des données uniquement si admin et auth prête
   const bookingsRef = useMemoFirebase(() => {
-    if (!isAdmin || !db || isUserLoading) return null;
+    if (!isAdmin || !db) return null;
     return query(collection(db, "bookings"), orderBy("createdAt", "desc"));
-  }, [db, isAdmin, isUserLoading]);
+  }, [db, isAdmin]);
   
   const { data: bookings, isLoading } = useCollection(bookingsRef);
 
   const handleStatusUpdate = (id: string, newStatus: string) => {
     const docRef = doc(db, "bookings", id);
-    // Utilisation du pattern non-bloquant avec gestion d'erreur centralisée
     updateDocumentNonBlocking(docRef, { status: newStatus });
   };
 
   if (isUserLoading) return <div className="h-screen flex items-center justify-center bg-slate-900"><Loader2 className="animate-spin text-primary h-12 w-12" /></div>;
 
   if (!user || !isAdmin) {
-    router.replace("/");
+    if (!isUserLoading) {
+      router.replace("/");
+    }
     return null;
   }
 

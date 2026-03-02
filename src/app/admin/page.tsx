@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
@@ -32,9 +31,10 @@ export default function AdminDashboardMaster() {
   const [activeTab, setActiveTab] = useState("dashboard");
 
   const isAdmin = useMemo(() => {
-    if (!user) return false;
-    return ADMIN_UIDS.includes(user.uid) || ADMIN_EMAILS.includes(user.email?.toLowerCase() || "");
-  }, [user]);
+    if (!user || isUserLoading) return false;
+    const email = user.email?.toLowerCase() || "";
+    return ADMIN_UIDS.includes(user.uid) || ADMIN_EMAILS.includes(email);
+  }, [user, isUserLoading]);
 
   // DATA FETCHING REAL-TIME - Sécurisé par la vérification isAdmin
   const listingsRef = useMemoFirebase(() => {
