@@ -8,9 +8,7 @@ service cloud.firestore {
     function isAdmin() {
       return isSignedIn() && (
         request.auth.uid == "G4d04MgUW4fguFOjmhQBbWezheB2" ||
-        request.auth.uid == "G4d04MgUW4fguFOjmhQBbWezheB2" ||
-        request.auth.token.email.matches('(?i)stayflow2025@gmail.com') ||
-        request.auth.token.email.matches('(?i)kiosque.du.passage@gmail.com')
+        request.auth.token.email in ["stayflow2025@gmail.com", "kiosque.du.passage@gmail.com"]
       );
     }
     
@@ -29,12 +27,15 @@ service cloud.firestore {
     }
 
     match /bookings/{bookingId} {
-      // Un admin peut tout voir. Un utilisateur ne voit que ses propres réservations (besoin de filtrer la requête).
       allow list: if isAdmin() || (isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.partnerId == request.auth.uid));
       allow get: if isAdmin() || (isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.partnerId == request.auth.uid));
-      
       allow create: if isSignedIn();
       allow update: if isAdmin() || (isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.partnerId == request.auth.uid));
+    }
+
+    match /partners/{partnerId} {
+      allow read: if isSignedIn() && (request.auth.uid == partnerId || isAdmin());
+      allow write: if isSignedIn() && (request.auth.uid == partnerId || isAdmin());
     }
 
     match /payments/{payId} {

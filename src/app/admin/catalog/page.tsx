@@ -35,7 +35,14 @@ export default function AdminCatalogPage() {
   const { formatPrice } = useCurrency();
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
   
-  const listingsRef = useMemoFirebase(() => query(collection(db, 'listings'), orderBy('createdAt', 'desc')), [db]);
+  const isAdmin = useMemo(() => user && ADMIN_EMAILS.includes(user.email || ""), [user]);
+
+  // Requête sécurisée
+  const listingsRef = useMemoFirebase(() => {
+    if (!isAdmin) return null;
+    return query(collection(db, 'listings'), orderBy('createdAt', 'desc'));
+  }, [db, isAdmin]);
+  
   const { data: dbListings, isLoading: listingsLoading } = useCollection(listingsRef);
   
   const [searchTerm, setSearchTerm] = useState("");

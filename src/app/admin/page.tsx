@@ -32,21 +32,24 @@ export default function AdminDashboardMaster() {
 
   const isAdmin = useMemo(() => user && ADMIN_EMAILS.includes(user.email || ""), [user]);
 
-  // DATA FETCHING REAL-TIME - Conditionné à isAdmin pour éviter les erreurs de permission
-  const listingsRef = useMemoFirebase(() => query(collection(db, 'listings'), orderBy('createdAt', 'desc')), [db]);
-  const { data: listings, isLoading: listingsLoading } = useCollection(listingsRef);
+  // DATA FETCHING REAL-TIME - Sécurisé par la vérification isAdmin
+  const listingsRef = useMemoFirebase(() => {
+    if (!isAdmin) return null;
+    return query(collection(db, 'listings'), orderBy('createdAt', 'desc'));
+  }, [db, isAdmin]);
+  const { data: listings } = useCollection(listingsRef);
 
   const usersRef = useMemoFirebase(() => {
     if (!isAdmin) return null;
     return query(collection(db, 'users'), limit(1000));
   }, [db, isAdmin]);
-  const { data: usersData, isLoading: usersLoading } = useCollection(usersRef);
+  const { data: usersData } = useCollection(usersRef);
 
   const bookingsRef = useMemoFirebase(() => {
     if (!isAdmin) return null;
     return query(collection(db, 'bookings'), orderBy('createdAt', 'desc'));
   }, [db, isAdmin]);
-  const { data: bookings, isLoading: bookingsLoading } = useCollection(bookingsRef);
+  const { data: bookings } = useCollection(bookingsRef);
 
   useEffect(() => {
     if (!isUserLoading) {
@@ -58,7 +61,6 @@ export default function AdminDashboardMaster() {
     }
   }, [user, isUserLoading, router]);
 
-  // DYNAMIC STATS
   const stats = useMemo(() => {
     return {
       totalListings: listings?.length || 0,
