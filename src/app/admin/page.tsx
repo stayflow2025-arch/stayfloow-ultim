@@ -18,6 +18,7 @@ import Link from "next/link";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy } from "firebase/firestore";
 import { useRouter } from "next/navigation";
+import { useCurrency } from "@/context/currency-context";
 
 const ADMIN_EMAILS = ["stayflow2025@gmail.com", "kiosque.du.passage@gmail.com"];
 
@@ -35,6 +36,7 @@ export default function AdminDashboardMaster() {
   const { user, isUserLoading } = useUser();
   const router = useRouter();
   const db = useFirestore();
+  const { formatPrice } = useCurrency();
   const [activeTab, setActiveTab] = useState("dashboard");
   const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
 
@@ -61,7 +63,6 @@ export default function AdminDashboardMaster() {
       total: listings.length,
       pending: listings.filter(l => l.status === 'pending').length,
       approved: listings.filter(l => l.status === 'approved').length,
-      // Simulation revenus basés sur les annonces approuvées
       revenue: listings.filter(l => l.status === 'approved').reduce((acc, curr) => acc + (curr.price || 0), 0)
     };
   }, [listings]);
@@ -127,7 +128,7 @@ export default function AdminDashboardMaster() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <KpiCard title="Total Annonces" value={stats.total.toString()} icon={<Building />} color="blue" sub="Gérer le catalogue" onClick={() => router.push('/admin/catalog')} loading={listingsLoading} />
-                <KpiCard title="Revenus Est." value={`${stats.revenue.toLocaleString()} DA`} icon={<Euro />} color="dark-blue" sub="Voir Rapport" onClick={() => {}} loading={listingsLoading} />
+                <KpiCard title="Revenus Est." value={formatPrice(stats.revenue)} icon={<Euro />} color="dark-blue" sub="Voir Rapport" onClick={() => {}} loading={listingsLoading} />
                 <KpiCard title="En attente" value={stats.pending.toString()} icon={<Clock />} color="orange" sub="Vérifier" onClick={() => router.push('/admin/validate')} loading={listingsLoading} />
                 <KpiCard title="Approuvées" value={stats.approved.toString()} icon={<CheckCircle2 />} color="green" sub="Catalogue Actif" onClick={() => router.push('/admin/catalog')} loading={listingsLoading} />
               </div>
