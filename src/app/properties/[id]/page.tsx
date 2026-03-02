@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { use, useState, useEffect, useRef, useMemo } from 'react';
@@ -38,6 +37,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from '@/components/ui/input';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCurrency } from '@/context/currency-context';
