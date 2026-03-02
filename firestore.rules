@@ -4,7 +4,6 @@ service cloud.firestore {
 
     // 1. DÉTECTION ADMIN MAÎTRE (GOD MODE)
     // Vérification ultra-robuste par UID ou Email.
-    // Ajout du nouvel UID: SoSElCrTcwh6UBtGjXwv4Q8dlXc2
     function isAdmin() {
       return request.auth != null && (
         request.auth.uid == "G4d04MgUW4fguFOjmhQBbWezheB2" || 
@@ -19,7 +18,7 @@ service cloud.firestore {
     }
 
     // 2. ACCÈS PRIORITAIRE ADMIN
-    // Cette règle autorise tout pour l'admin et prévaut sur les règles plus spécifiques.
+    // Autorise explicitement le listing global pour les admins
     match /{document=**} {
       allow read, write: if isAdmin();
     }
@@ -37,32 +36,36 @@ service cloud.firestore {
     }
 
     match /bookings/{bookingId} {
-      allow get: if isSignedIn() && (
+      allow get, list: if isSignedIn() && (
+        isAdmin() ||
         resource.data.userId == request.auth.uid || 
         resource.data.partnerId == request.auth.uid
       );
       allow create: if isSignedIn();
       allow update: if isSignedIn() && (
+        isAdmin() ||
         resource.data.userId == request.auth.uid || 
         resource.data.partnerId == request.auth.uid
       );
     }
 
     match /partners/{partnerId} {
-      allow read, write: if isSignedIn() && request.auth.uid == partnerId;
+      allow read, write: if isSignedIn() && (request.auth.uid == partnerId || isAdmin());
     }
 
     match /settings/{doc} {
       allow read: if true;
+      allow write: if isAdmin();
     }
 
     match /conversations/{convId} {
-      allow get: if isSignedIn() && (request.auth.uid in resource.data.participants);
+      allow get, list: if isSignedIn() && (isAdmin() || request.auth.uid in resource.data.participants);
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && (request.auth.uid in resource.data.participants);
+      allow update: if isSignedIn() && (isAdmin() || request.auth.uid in resource.data.participants);
       
       match /messages/{msgId} {
         allow read, create: if isSignedIn() && (
+          isAdmin() ||
           get(/databases/$(database)/documents/conversations/$(convId)).data.participants.hasAny([request.auth.uid])
         );
       }

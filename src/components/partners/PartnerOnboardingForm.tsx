@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -28,6 +27,16 @@ import { useFirestore, useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { OnboardingMap } from '@/components/onboarding-map';
 import { useLanguage } from '@/context/language-context';
+
+// Taux de conversion pour normaliser le prix en DZD avant stockage
+const CONVERSION_RATES: Record<string, number> = {
+  DZD: 1,
+  USD: 1 / 134.5,
+  EUR: 1 / 145.2,
+  GBP: 1 / 171.1,
+  CHF: 1 / 150.5,
+  EGP: 1 / 2.85,
+};
 
 interface Props {
   initialCategory: 'accommodation' | 'car_rental' | 'circuit';
@@ -119,6 +128,11 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
     try {
       const listingId = `list_${Date.now()}`;
       
+      // Calcul du prix normalisé en DZD pour stockage
+      const enteredPrice = parseFloat(formData.price) || 0;
+      const rate = CONVERSION_RATES[formData.listingCurrency] || 1;
+      const normalizedPriceDZD = Math.round(enteredPrice / rate);
+
       // 1. Mettre à jour le rôle de l'utilisateur
       await updateDoc(doc(db, 'users', user.uid), {
         role: 'partner'
@@ -168,8 +182,8 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
             languages: formData.languages,
           })
         },
-        price: parseFloat(formData.price) || 0,
-        currency: formData.listingCurrency,
+        price: normalizedPriceDZD, // Toujours stocké en DZD
+        currency: 'DZD', // Monnaie de base du système
         photos: photos,
         createdAt: new Date().toISOString()
       };
@@ -272,7 +286,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-3">
-                <Label className="font-black text-slate-700 uppercase text-[10px] tracking-widest ml-1">Devise de l'annonce</Label>
+                <Label className="font-black text-slate-700 uppercase text-[10px] tracking-widest ml-1">Saisir le prix en :</Label>
                 <Select value={formData.listingCurrency} onValueChange={v => setFormData({...formData, listingCurrency: v})}>
                   <SelectTrigger className="h-14 bg-slate-50 border-slate-100 rounded-2xl font-bold">
                     <SelectValue />
@@ -285,8 +299,9 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
                 </Select>
               </div>
               <div className="space-y-3">
-                <Label className="font-black text-lg">Prix de base *</Label>
-                <Input type="number" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="h-14 text-xl font-black rounded-2xl bg-slate-50" />
+                <Label className="font-black text-lg">Prix unitaire *</Label>
+                <Input type="number" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="h-14 text-xl font-black rounded-2xl bg-slate-50" placeholder="Ex: 7500" />
+                <p className="text-[10px] text-slate-400 italic">Le prix sera automatiquement converti selon la devise du client.</p>
               </div>
             </div>
           </div>
