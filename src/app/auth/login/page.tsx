@@ -71,8 +71,8 @@ export default function LoginPage() {
         router.push("/profile");
       }
     } catch (error: any) {
-      console.error("Login error:", error.code, error.message);
-      
+      // Les erreurs d'authentification sont gérées via des messages toast au lieu de console.error
+      // pour éviter de déclencher l'overlay de développement Next.js.
       let title = "Erreur de connexion";
       let message = "Email ou mot de passe incorrect.";
       

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useForm } from 'react-hook-form';
@@ -39,7 +40,6 @@ export default function ForgotPasswordPage() {
       });
       form.reset();
     } catch (e) {
-      console.error("Password reset email failed to send:", e);
       toast({
         variant: "destructive",
         title: "Erreur",

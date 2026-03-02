@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { Suspense, useState } from 'react';
@@ -76,7 +77,6 @@ function CircuitBookingContent() {
             toast({ title: "Réservation réussie !" });
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (e) { 
-            console.error(e);
             toast({ variant: "destructive", title: "Erreur lors de l'envoi de l'email." });
         } finally {
             setIsSubmitting(false);

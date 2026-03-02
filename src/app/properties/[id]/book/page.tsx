@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, use } from "react";
@@ -105,7 +106,6 @@ export default function PropertyBookingPage({ params }: { params: Promise<{ id: 
         description: `Un email a été envoyé à ${values.email}`,
       });
     } catch (error) {
-      console.error(error);
       toast({
         variant: "destructive",
         title: "Erreur",

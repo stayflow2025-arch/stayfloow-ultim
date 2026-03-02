@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -63,7 +64,6 @@ export default function RegisterPage() {
       
       router.push("/");
     } catch (error: any) {
-      console.error("Register error:", error);
       toast({
         variant: "destructive",
         title: "Erreur d'inscription",
