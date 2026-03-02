@@ -15,11 +15,15 @@ import {
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function AdminValidatePage() {
   const { user, loading: authLoading } = useUser();
   const db = useFirestore();
   const router = useRouter();
+  const { toast } = useToast();
   const searchParams = useSearchParams();
   const initialId = searchParams.get('id');
 
@@ -34,14 +38,45 @@ export default function AdminValidatePage() {
     }
   }, [user, authLoading, router]);
 
-  const handleApprove = async (id: string) => {
-    await updateDoc(doc(db, 'listings', id), { status: 'approved' });
-    if (selectedId === id) setSelectedId(null);
+  const handleApprove = (id: string) => {
+    const docRef = doc(db, 'listings', id);
+    updateDoc(docRef, { status: 'approved' })
+      .then(() => {
+        toast({
+          title: "Annonce approuvée",
+          description: "L'offre est désormais visible par tous les voyageurs.",
+        });
+        if (selectedId === id) setSelectedId(null);
+      })
+      .catch(async (err) => {
+        const permissionError = new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'update',
+          requestResourceData: { status: 'approved' },
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      });
   };
 
-  const handleReject = async (id: string) => {
-    await updateDoc(doc(db, 'listings', id), { status: 'rejected' });
-    if (selectedId === id) setSelectedId(null);
+  const handleReject = (id: string) => {
+    const docRef = doc(db, 'listings', id);
+    updateDoc(docRef, { status: 'rejected' })
+      .then(() => {
+        toast({
+          variant: "destructive",
+          title: "Annonce refusée",
+          description: "L'offre a été retirée de la file d'attente.",
+        });
+        if (selectedId === id) setSelectedId(null);
+      })
+      .catch(async (err) => {
+        const permissionError = new FirestorePermissionError({
+          path: docRef.path,
+          operation: 'update',
+          requestResourceData: { status: 'rejected' },
+        });
+        errorEmitter.emit('permission-error', permissionError);
+      });
   };
 
   if (loading || authLoading) return <div className="flex h-screen items-center justify-center bg-slate-900 text-white"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div>;
@@ -102,7 +137,10 @@ export default function AdminValidatePage() {
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center bg-white p-10 rounded-[2.5rem] shadow-2xl border border-slate-100 gap-6">
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <Badge className="bg-amber-500 text-white font-black text-[10px] uppercase border-none">STATUT : {selected.status}</Badge>
+                  <Badge className={cn(
+                    "font-black text-[10px] uppercase border-none",
+                    selected.status === 'approved' ? "bg-green-600" : "bg-amber-500"
+                  )}>STATUT : {selected.status}</Badge>
                   <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">ID: {selected.id}</span>
                 </div>
                 <h2 className="text-4xl font-black text-slate-900 tracking-tight leading-none">{selected.details?.name}</h2>

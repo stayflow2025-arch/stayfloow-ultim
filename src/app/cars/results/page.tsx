@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, Suspense, useMemo } from 'react';
@@ -20,6 +21,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { cars as mockCarsData } from '@/lib/data';
 
 function CarResultsContent() {
   const searchParams = useSearchParams();
@@ -48,61 +50,44 @@ function CarResultsContent() {
         
         const dbCars = querySnapshot.docs.map(doc => {
           const data = doc.data();
+          const details = data.details || {};
           return {
             id: doc.id,
-            name: data.details?.name || 'Véhicule',
-            brand: data.details?.brand || 'Marque',
-            supplier: data.partnerInfo?.firstName || 'Partenaire StayFloow',
+            name: details.name || details.model || 'Véhicule',
+            brand: details.brand || 'Marque',
+            supplier: data.partnerInfo?.firstName ? `${data.partnerInfo.firstName} ${data.partnerInfo.lastName || ''}` : 'Partenaire StayFloow',
             rating: data.rating || 8.5,
             reviewsCount: Math.floor(Math.random() * 200) + 10,
-            location: data.location?.address || 'Alger',
-            distance: "À proximité",
-            description: data.details?.description || 'Découvrez ce véhicule récent disponible dès maintenant.',
-            images: data.photos || ["https://picsum.photos/seed/car/400/300"],
-            specs: data.details?.amenities || ["Manuelle", "Climatisé"],
+            location: data.location?.address || 'Algérie',
+            distance: "Disponible",
+            description: details.description || 'Découvrez ce véhicule récent disponible dès maintenant sur StayFloow.com.',
+            images: data.photos || ["https://placehold.co/400x300?text=Car+StayFloow"],
+            specs: details.amenities || [details.transmission, details.fuel].filter(Boolean) || ["Manuelle", "Climatisé"],
             pricePerDay: data.price || 5000,
-            isAutomatic: data.details?.amenities?.includes("Transmission automatique") || false,
-            category: data.details?.type || "Économique"
+            isAutomatic: details.transmission === "Automatique" || details.amenities?.includes("Boîte automatique") || false,
+            category: details.type || details.brand || "Économique"
           } as CarListing;
         });
 
-        // Mock data fallback for demonstration if DB is empty
-        const mockCars: CarListing[] = [
-          {
-            id: 'mock-car-1',
-            name: 'Duster 4x4 (Édition Sahara)',
-            brand: 'Dacia',
-            supplier: 'Sud Location Expert',
-            rating: 9.2,
-            reviewsCount: 342,
-            location: 'Aéroport de Ghardaïa',
-            distance: 'Au terminal',
-            description: 'Idéal pour explorer le grand sud. Véhicule révisé, pneus tout-terrain et climatisation renforcée. Parfait pour les pistes du Sahara.',
-            images: ['https://images.unsplash.com/photo-1761320296536-38a4e068b37d?w=800'],
-            specs: ['4x4 / SUV', 'Climatisation', 'Kilométrage illimité', 'Boîte manuelle'],
-            pricePerDay: 8500,
-            isAutomatic: false,
-            category: 'SUV & 4x4'
-          },
-          {
-            id: 'mock-car-2',
-            name: 'Golf 8 GTI (Luxe & Performance)',
-            brand: 'Volkswagen',
-            supplier: 'Alger VIP Cars',
-            rating: 9.8,
-            reviewsCount: 156,
-            location: 'Alger Centre',
-            distance: 'Livraison hôtel incluse',
-            description: 'Déplacez-vous avec style et puissance dans Alger. Finitions haut de gamme, système audio Beats et aide au stationnement complète.',
-            images: ['https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=800'],
-            specs: ['Transmission automatique', 'Climatisation', 'Voiture récente (moins de 5 ans)', 'GPS intégré'],
-            pricePerDay: 12000,
-            isAutomatic: true,
-            category: 'Luxe'
-          }
-        ];
+        // Mock data base pour assurer du contenu
+        const mocks: CarListing[] = mockCarsData.map(c => ({
+          id: c.id,
+          name: c.name,
+          brand: c.brand,
+          supplier: 'StayFloow Fleet',
+          rating: c.rating,
+          reviewsCount: c.reviewsCount,
+          location: 'Alger Centre',
+          distance: 'Point de retrait aéroport',
+          description: `Véhicule ${c.brand} ${c.name} haute performance.`,
+          images: [c.image],
+          specs: [c.transmission, c.fuel, `${c.seats} places`],
+          pricePerDay: c.pricePerDay,
+          isAutomatic: c.transmission === 'Automatique',
+          category: c.category
+        }));
 
-        setAllApproved([...dbCars, ...mockCars]);
+        setAllApproved([...dbCars, ...mocks]);
       } catch (error) {
         console.error("Error fetching cars:", error);
       } finally {
@@ -123,9 +108,7 @@ function CarResultsContent() {
       "Transmission automatique", "Climatisation", "Kilométrage illimité",
       "Assurance tous risques incluse", "Voiture avec GPS intégré",
       "Siège bébé / rehausseur", "4x4 / SUV", "Essence / Diesel / Électrique",
-      "Âge minimum du conducteur", "Boîte manuelle", "Nombre de places (5+ ou 7+)",
-      "Annulation gratuite", "Payez sur place", "Voiture récente (moins de 5 ans)",
-      "Fournisseur bien noté (rating 8+)"
+      "Boîte manuelle", "Annulation gratuite", "Payez sur place"
     ];
     optionsList.forEach(o => s.options[o] = 0);
 
@@ -242,7 +225,7 @@ function CarResultsContent() {
           <Alert className="bg-slate-50 border-slate-200">
             <Info className="h-4 w-4 text-slate-400 shrink-0" />
             <AlertDescription className="text-[11px] md:text-xs text-slate-600">
-              Réservez votre véhicule en toute confiance. Les prix affichés incluent les taxes locales obligatoires.
+              Réservez votre véhicule en toute confiance sur StayFloow.com. Les prix affichés incluent les taxes locales obligatoires.
             </AlertDescription>
           </Alert>
 
@@ -274,7 +257,7 @@ function CarResultsContent() {
 
 export default function CarResultsPage() {
   return (
-    <Suspense fallback={<div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin text-primary" /></div>}>
+    <Suspense fallback={<div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin text-primary h-10 w-10" /></div>}>
       <CarResultsContent />
     </Suspense>
   );

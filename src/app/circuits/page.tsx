@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, Suspense, useMemo } from 'react';
@@ -46,13 +47,28 @@ function CircuitsContent() {
           where('status', '==', 'approved')
         );
         const snapshot = await getDocs(q);
-        const dbData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const dbData = snapshot.docs.map(doc => {
+          const data = doc.data();
+          const details = data.details || {};
+          return {
+            id: doc.id,
+            title: details.name || details.title || 'Circuit StayFloow',
+            location: data.location?.address || 'Algérie',
+            pricePerPerson: data.price || 5000,
+            rating: data.rating || 8.5,
+            reviewsCount: Math.floor(Math.random() * 50) + 5,
+            duration: details.duration || '1 jour',
+            description: details.description || 'Une aventure inoubliable vous attend.',
+            photos: data.photos || ["https://placehold.co/400x300?text=Tour+StayFloow"],
+            amenities: details.amenities || []
+          };
+        });
         
-        // On combine les données réelles et les données de test (mock) pour que la page ne soit jamais vide au début
+        // On combine les données réelles et les données de test (mock)
         setAllCircuits([...dbData, ...mockCircuits]);
       } catch (e) {
         console.error("Error fetching circuits:", e);
-        setAllCircuits(mockCircuits); // Fallback total sur les mocks en cas d'erreur
+        setAllCircuits(mockCircuits);
       } finally {
         setTimeout(() => setLoading(false), 800);
       }
@@ -71,8 +87,7 @@ function CircuitsContent() {
       "Durée 1 jour", "Durée multi-jours (2-7 jours)", "Annulation gratuite",
       "Langue arabe", "Langue français", "Thème désert/Sahara",
       "Thème culturel/historique (pyramides, ruines)", "Thème Nil/croisière",
-      "Groupe petit (max 10 pers)", "Assurance incluse",
-      "Départ depuis aéroport (Alger/Caire)", "Rating guide 8+"
+      "Groupe petit (max 10 pers)", "Assurance incluse"
     ];
     optionsList.forEach(o => s.options[o] = 0);
 
@@ -83,7 +98,6 @@ function CircuitsContent() {
       if (rating >= 7) s.ratings["7+"]++;
       if (rating >= 6) s.ratings["6+"]++;
 
-      // On vérifie soit dans details.amenities soit dans amenities directement
       const ams = c.details?.amenities || c.amenities || [];
       ams.forEach((opt: string) => {
         if (s.options[opt] !== undefined) s.options[opt]++;
@@ -188,15 +202,15 @@ function CircuitsContent() {
         <main className="flex-1 space-y-6">
           <div className="flex flex-col gap-2">
             <h1 className="text-xl md:text-3xl font-black text-slate-900 tracking-tight">
-              {t('tours_title')}
+              Circuits et Activités en Afrique
             </h1>
-            <p className="text-sm text-slate-500 font-medium">{t('tours_subtitle')}</p>
+            <p className="text-sm text-slate-500 font-medium">Découvrez les meilleures expériences guidées sur StayFloow.com</p>
           </div>
 
           <Alert className="bg-slate-50 border-slate-200">
             <Info className="h-4 w-4 text-slate-400 shrink-0" />
             <AlertDescription className="text-[11px] md:text-xs text-slate-600">
-              {filteredResults.length} {t('tours')} correspondent à votre recherche à {locationParam || 'votre destination'}.
+              {filteredResults.length} circuits correspondent à votre recherche à {locationParam || 'votre destination'}.
             </AlertDescription>
           </Alert>
 
