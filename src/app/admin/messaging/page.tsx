@@ -15,6 +15,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const ADMIN_EMAILS = ["stayflow2025@gmail.com", "kiosque.du.passage@gmail.com"];
 const ADMIN_UIDS = ["G4d04MgUW4fguFOjmhQBbWezheB2"];
@@ -33,7 +35,7 @@ function AdminMessagingContent() {
     return ADMIN_UIDS.includes(user.uid) || ADMIN_EMAILS.includes(email);
   }, [user]);
 
-  // Toutes les conversations de la plateforme - Protégé par isAdmin local pour éviter les requêtes inutiles
+  // Toutes les conversations de la plateforme - Protégé par isAdmin local
   const convsRef = useMemoFirebase(() => {
     if (!isAdmin || !db || isUserLoading) return null;
     return query(collection(db, "conversations"), orderBy("lastAt", "desc"), limit(100));
@@ -49,12 +51,17 @@ function AdminMessagingContent() {
     if (!activeId || !isAdmin || !db) return;
     setMessagesLoading(true);
     const q = query(collection(db, "conversations", activeId, "messages"), orderBy("createdAt", "asc"), limit(100));
+    
     const unsubscribe = onSnapshot(q, (snap) => {
       setMessages(snap.docs.map(d => ({ id: d.id, ...d.data() })));
       setMessagesLoading(false);
       setTimeout(() => scrollRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
-    }, (err) => {
-      console.error("Messages sync error:", err);
+    }, async (err) => {
+      const permissionError = new FirestorePermissionError({
+        path: `conversations/${activeId}/messages`,
+        operation: 'list',
+      });
+      errorEmitter.emit('permission-error', permissionError);
       setMessagesLoading(false);
     });
     return () => unsubscribe();
@@ -72,6 +79,13 @@ function AdminMessagingContent() {
       text: `[SUPPORT ADMIN] ${msg}`,
       createdAt: serverTimestamp(),
       isAdminMessage: true
+    }).catch(async (err) => {
+      const permissionError = new FirestorePermissionError({
+        path: `conversations/${activeId}/messages`,
+        operation: 'create',
+        requestResourceData: { text: msg, isAdminMessage: true }
+      });
+      errorEmitter.emit('permission-error', permissionError);
     });
   };
 

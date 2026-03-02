@@ -10,8 +10,8 @@ service cloud.firestore {
     function isAdmin() {
       return isSignedIn() && (
         request.auth.uid == "G4d04MgUW4fguFOjmhQBbWezheB2" ||
-        request.auth.token.email == "stayflow2025@gmail.com" ||
-        request.auth.token.email == "kiosque.du.passage@gmail.com"
+        request.auth.token.email.lower() == "stayflow2025@gmail.com" ||
+        request.auth.token.email.lower() == "kiosque.du.passage@gmail.com"
       );
     }
     
@@ -30,12 +30,9 @@ service cloud.firestore {
     }
 
     match /bookings/{bookingId} {
-      // L'administrateur peut tout lister. Les utilisateurs doivent filtrer par leur UID dans leur requête.
-      allow list: if isAdmin();
-      allow list: if isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.partnerId == request.auth.uid);
-      
-      allow get: if isAdmin() || (isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.partnerId == request.auth.uid));
-      
+      // L'administrateur peut tout lire et lister. 
+      // Les utilisateurs ne peuvent voir que leurs propres réservations (get ou list filtré).
+      allow read: if isAdmin() || (isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.partnerId == request.auth.uid));
       allow create: if isSignedIn();
       allow update: if isAdmin() || (isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.partnerId == request.auth.uid));
       allow delete: if isAdmin();
@@ -55,12 +52,11 @@ service cloud.firestore {
     }
 
     match /conversations/{convId} {
-      // L'administrateur peut tout lister pour le support.
-      allow list: if isAdmin();
-      allow list: if isSignedIn() && request.auth.uid in resource.data.participants;
+      // L'administrateur a un accès total au support global.
+      allow read, write: if isAdmin();
       
-      allow get: if isAdmin() || (isSignedIn() && request.auth.uid in resource.data.participants);
-      allow write: if isAdmin() || (isSignedIn() && request.auth.uid in resource.data.participants);
+      // Les utilisateurs ne voient que les conversations où ils sont participants.
+      allow read, write: if isSignedIn() && request.auth.uid in resource.data.participants;
       
       match /messages/{msgId} {
         allow read, create: if isAdmin() || (isSignedIn() && get(/databases/$(database)/documents/conversations/$(convId)).data.participants.hasAny([request.auth.uid]));

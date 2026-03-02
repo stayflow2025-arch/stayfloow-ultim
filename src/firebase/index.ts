@@ -18,7 +18,7 @@ declare global {
 }
 
 export function initializeFirebase() {
-  // Côté serveur (SSR), on ne met rien en cache globale
+  // Côté serveur (SSR), on ne met rien en cache globale pour éviter les fuites de mémoire
   if (typeof window === 'undefined') {
     const apps = getApps();
     const app = apps.length > 0 ? apps[0] : initializeApp(firebaseConfig);
@@ -30,6 +30,7 @@ export function initializeFirebase() {
   }
 
   // Côté client avec protection HMR stricte via globalThis
+  // Cela garantit qu'une seule instance de chaque service existe par cycle de vie de la page
   if (!globalThis.__firebaseApp) {
     const apps = getApps();
     globalThis.__firebaseApp = apps.length > 0 ? apps[0] : initializeApp(firebaseConfig);
