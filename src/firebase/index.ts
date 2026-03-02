@@ -1,4 +1,3 @@
-
 'use client';
 
 import { firebaseConfig } from '@/firebase/config';
@@ -8,7 +7,7 @@ import { getFirestore as getFirestoreInstance, Firestore } from 'firebase/firest
 
 /**
  * Interface pour le cache global permettant de survivre au Hot Module Replacement (HMR)
- * durant le développement Next.js.
+ * durant le développement Next.js et de garantir des singletons.
  */
 interface GlobalFirebase {
   __firebaseApp?: FirebaseApp;
@@ -16,10 +15,14 @@ interface GlobalFirebase {
   __firebaseFirestore?: Firestore;
 }
 
-const globalWithFirebase = globalThis as unknown as GlobalFirebase;
+const globalWithFirebase = (typeof globalThis !== 'undefined' 
+  ? globalThis 
+  : typeof window !== 'undefined' 
+    ? window 
+    : {}) as unknown as GlobalFirebase;
 
 /**
- * Initialise Firebase de manière stable et unique.
+ * Initialise les services Firebase de manière stable et unique.
  * Utilise globalThis pour garantir qu'une seule instance de chaque service existe,
  * même lors des rechargements à chaud (HMR), évitant ainsi l'erreur "Unexpected state (ID: ca9)".
  */
