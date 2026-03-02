@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -28,14 +29,15 @@ import { useToast } from '@/hooks/use-toast';
 import { OnboardingMap } from '@/components/onboarding-map';
 import { useLanguage } from '@/context/language-context';
 
-// Taux de conversion pour normaliser le prix en DZD avant stockage
-const CONVERSION_RATES: Record<string, number> = {
-  DZD: 1,
-  USD: 1 / 134.5,
-  EUR: 1 / 145.2,
-  GBP: 1 / 171.1,
-  CHF: 1 / 150.5,
-  EGP: 1 / 2.85,
+/**
+ * Taux de normalisation vers la base EURO pour le stockage
+ */
+const NORMALIZATION_RATES: Record<string, number> = {
+  EUR: 1,
+  DZD: 145.2,
+  USD: 1.08,
+  GBP: 0.83,
+  EGP: 52.5,
 };
 
 interface Props {
@@ -62,7 +64,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
     listingName: '',
     description: '',
     price: '',
-    listingCurrency: 'DZD',
+    listingCurrency: 'EUR', // Par défaut en Euro
     isDiscountEnabled: false,
     propertyType: 'hotel',
     roomsCount: 1,
@@ -128,10 +130,10 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
     try {
       const listingId = `list_${Date.now()}`;
       
-      // Calcul du prix normalisé en DZD pour stockage
+      // Calcul du prix normalisé en EURO pour stockage (BASE)
       const enteredPrice = parseFloat(formData.price) || 0;
-      const rate = CONVERSION_RATES[formData.listingCurrency] || 1;
-      const normalizedPriceDZD = Math.round(enteredPrice / rate);
+      const rate = NORMALIZATION_RATES[formData.listingCurrency] || 1;
+      const normalizedPriceEUR = enteredPrice / rate;
 
       // 1. Mettre à jour le rôle de l'utilisateur
       await updateDoc(doc(db, 'users', user.uid), {
@@ -182,8 +184,8 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
             languages: formData.languages,
           })
         },
-        price: normalizedPriceDZD, // Toujours stocké en DZD
-        currency: 'DZD', // Monnaie de base du système
+        price: normalizedPriceEUR, // Toujours stocké en base EUR
+        currency: 'EUR', 
         photos: photos,
         createdAt: new Date().toISOString()
       };
@@ -292,16 +294,16 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="DZD">DZD (DA)</SelectItem>
                     <SelectItem value="EUR">EUR (€)</SelectItem>
+                    <SelectItem value="DZD">DZD (DA)</SelectItem>
                     <SelectItem value="USD">USD ($)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-3">
                 <Label className="font-black text-lg">Prix unitaire *</Label>
-                <Input type="number" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="h-14 text-xl font-black rounded-2xl bg-slate-50" placeholder="Ex: 7500" />
-                <p className="text-[10px] text-slate-400 italic">Le prix sera automatiquement converti selon la devise du client.</p>
+                <Input type="number" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="h-14 text-xl font-black rounded-2xl bg-slate-50" placeholder="Ex: 75" />
+                <p className="text-[10px] text-slate-400 italic">Ce prix sera la base de calcul pour toutes les devises clients.</p>
               </div>
             </div>
           </div>

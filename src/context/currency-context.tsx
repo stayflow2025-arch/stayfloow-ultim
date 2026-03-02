@@ -3,30 +3,34 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 
-export type Currency = 'DZD' | 'USD' | 'EUR' | 'GBP' | 'CHF' | 'EGP';
+export type Currency = 'EUR' | 'DZD' | 'USD' | 'GBP' | 'CHF' | 'EGP';
 
+/**
+ * Taux de conversion avec l'EURO comme monnaie de référence (1 EUR = X)
+ * Valeurs indicatives pour la version locale StayFloow
+ */
 const conversionRates: Record<Currency, number> = {
-  DZD: 1,
-  USD: 1 / 134.5,
-  EUR: 1 / 145.2,
-  GBP: 1 / 171.1,
-  CHF: 1 / 150.5,
-  EGP: 1 / 2.85,
+  EUR: 1,
+  DZD: 145.2, // 1 EUR = 145.2 DZD (approx)
+  USD: 1.08,  // 1 EUR = 1.08 USD
+  GBP: 0.83,  // 1 EUR = 0.83 GBP
+  CHF: 0.95,  // 1 EUR = 0.95 CHF
+  EGP: 52.5,  // 1 EUR = 52.5 EGP
 };
 
 const currencySymbols: Record<Currency, string> = {
+  EUR: '€',
   DZD: 'DA',
   USD: '$',
-  EUR: '€',
   GBP: '£',
   CHF: 'CHF',
   EGP: 'E£'
 };
 
 const currencyFlags: Record<Currency, string> = {
+  EUR: '🇪🇺',
   DZD: '🇩🇿',
   USD: '🇺🇸',
-  EUR: '🇪🇺',
   GBP: '🇬🇧',
   CHF: '🇨🇭',
   EGP: '🇪🇬'
@@ -35,8 +39,8 @@ const currencyFlags: Record<Currency, string> = {
 interface CurrencyContextType {
   currency: Currency;
   setCurrency: (currency: Currency) => void;
-  formatPrice: (priceInDZD: number, isRawValue?: boolean) => string;
-  convertFromDZD: (priceInDZD: number) => number;
+  formatPrice: (priceInBase: number, isRawValue?: boolean) => string;
+  convertFromBase: (priceInBase: number) => number;
   getCurrencySymbol: (curr?: Currency) => string;
   getCurrencyFlag: (curr?: Currency) => string;
 }
@@ -44,7 +48,7 @@ interface CurrencyContextType {
 const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
 
 export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
-  const [currency, setCurrency] = useState<Currency>('DZD');
+  const [currency, setCurrency] = useState<Currency>('EUR');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -61,8 +65,8 @@ export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [currency, mounted]);
 
-  const convertFromDZD = (priceInDZD: number) => {
-    return priceInDZD * conversionRates[currency];
+  const convertFromBase = (priceInBase: number) => {
+    return priceInBase * (conversionRates[currency] || 1);
   };
 
   const getCurrencySymbol = (curr?: Currency) => {
@@ -73,19 +77,20 @@ export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
     return currencyFlags[curr || currency];
   };
 
-  const formatPrice = (priceInDZD: number, isRawValue = false) => {
-    if (!mounted) return priceInDZD.toString(); // Safety for hydration
+  const formatPrice = (priceInBase: number, isRawValue = false) => {
+    if (!mounted) return priceInBase.toLocaleString();
 
-    const rate = conversionRates[currency];
-    const convertedPrice = priceInDZD * rate;
+    const rate = conversionRates[currency] || 1;
+    const convertedPrice = priceInBase * rate;
 
     if (isRawValue) {
       return new Intl.NumberFormat('fr-FR', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
       }).format(convertedPrice);
     }
 
+    // Formatage spécifique pour le Dinar Algérien
     if (currency === 'DZD') {
       return new Intl.NumberFormat('fr-DZ', {
         style: 'currency',
@@ -95,10 +100,11 @@ export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
       }).format(convertedPrice);
     }
 
+    // Formatage standard pour les autres devises
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
       currency: currency,
-      minimumFractionDigits: 0,
+      minimumFractionDigits: currency === 'EUR' || currency === 'USD' ? 2 : 0,
     }).format(convertedPrice);
   };
 
@@ -108,7 +114,7 @@ export const CurrencyProvider = ({ children }: { children: ReactNode }) => {
         currency,
         setCurrency,
         formatPrice,
-        convertFromDZD,
+        convertFromBase,
         getCurrencySymbol,
         getCurrencyFlag,
       }}
@@ -122,12 +128,12 @@ export const useCurrency = () => {
   const context = useContext(CurrencyContext);
   if (!context) {
     return {
-      currency: "DZD" as Currency,
+      currency: "EUR" as Currency,
       setCurrency: () => {},
-      formatPrice: (p: number) => p.toString(),
-      convertFromDZD: (p: number) => p,
-      getCurrencySymbol: () => "DA",
-      getCurrencyFlag: () => "🇩🇿",
+      formatPrice: (p: number) => p.toLocaleString() + " €",
+      convertFromBase: (p: number) => p,
+      getCurrencySymbol: () => "€",
+      getCurrencyFlag: () => "🇪🇺",
     };
   }
   return context;

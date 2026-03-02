@@ -1,9 +1,10 @@
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     // 1. DÉTECTION ADMIN MAÎTRE (GOD MODE)
-    // Vérification ultra-robuste par UID ou Email.
+    // Autorise TOUT si l'utilisateur est Kamel Dahane ou StayFloow Admin.
     function isAdmin() {
       return request.auth != null && (
         request.auth.uid == "G4d04MgUW4fguFOjmhQBbWezheB2" || 
@@ -17,13 +18,12 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // 2. ACCÈS PRIORITAIRE ADMIN
-    // Autorise explicitement le listing global pour les admins
+    // ACCÈS PRIORITAIRE ADMIN : Pas de restriction de type "list"
     match /{document=**} {
       allow read, write: if isAdmin();
     }
 
-    // 3. RÈGLES UTILISATEURS STANDARDS
+    // 2. RÈGLES UTILISATEURS STANDARDS
     
     match /users/{userId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
@@ -36,7 +36,9 @@ service cloud.firestore {
     }
 
     match /bookings/{bookingId} {
-      allow get, list: if isSignedIn() && (
+      // Autorise explicitement le listing pour les admins, et le get pour les participants
+      allow list: if isAdmin(); 
+      allow get: if isSignedIn() && (
         isAdmin() ||
         resource.data.userId == request.auth.uid || 
         resource.data.partnerId == request.auth.uid
@@ -59,7 +61,8 @@ service cloud.firestore {
     }
 
     match /conversations/{convId} {
-      allow get, list: if isSignedIn() && (isAdmin() || request.auth.uid in resource.data.participants);
+      allow list: if isAdmin();
+      allow get: if isSignedIn() && (isAdmin() || request.auth.uid in resource.data.participants);
       allow create: if isSignedIn();
       allow update: if isSignedIn() && (isAdmin() || request.auth.uid in resource.data.participants);
       
