@@ -3,8 +3,8 @@
 
 import React, { useState, use } from "react";
 import { useRouter } from "next/navigation";
-import { useDoc, useFirestore } from "@/firebase";
-import { doc } from "firebase/firestore";
+import { useDoc, useFirestore, useUser } from "@/firebase";
+import { doc, collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -52,6 +52,7 @@ export default function PropertyBookingPage({ params }: { params: Promise<{ id: 
   const { toast } = useToast();
   const { formatPrice } = useCurrency();
   const db = useFirestore();
+  const { user } = useUser();
   
   const [date] = useState<{ from: Date; to: Date }>({
     from: new Date(),
@@ -79,10 +80,35 @@ export default function PropertyBookingPage({ params }: { params: Promise<{ id: 
   const totalPrice = basePrice * nights;
 
   const onSubmit = async (values: BookingValues) => {
+    if (!user) {
+      toast({ variant: "destructive", title: "Connexion requise", description: "Veuillez vous connecter pour réserver." });
+      router.push("/auth/login");
+      return;
+    }
+
     setIsSubmitting(true);
     const reservationNumber = `ST-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
     try {
+      // 1. Enregistrer la réservation dans Firestore
+      await addDoc(collection(db, "bookings"), {
+        userId: user.uid,
+        partnerId: property?.ownerId || "admin",
+        listingId: id,
+        itemName: property?.details?.name || "Hébergement StayFloow",
+        itemType: 'accommodation',
+        itemImage: property?.photos?.[0] || "",
+        customerName: values.fullName,
+        customerEmail: values.email,
+        totalPrice: totalPrice,
+        status: 'approved', // Simulation approbation auto
+        startDate: date.from.toISOString(),
+        endDate: date.to.toISOString(),
+        createdAt: new Date().toISOString(),
+        reservationNumber
+      });
+
+      // 2. Envoyer l'email (Simulation)
       await sendBookingConfirmationEmail({
         customerName: values.fullName,
         customerEmail: values.email,
@@ -134,11 +160,16 @@ export default function PropertyBookingPage({ params }: { params: Promise<{ id: 
             </div>
             <h1 className="text-3xl font-black text-slate-900 mb-4">Félicitations !</h1>
             <p className="text-slate-500 mb-8 leading-relaxed">
-              Votre demande de réservation a été enregistrée avec succès. Vous recevrez les détails complets par email d'ici quelques instants.
+              Votre demande de réservation a été enregistrée avec succès. Vous pouvez la retrouver dans votre espace client.
             </p>
-            <Button className="w-full h-14 bg-primary text-white font-black rounded-xl" asChild>
-              <Link href="/">Retour à l'accueil</Link>
-            </Button>
+            <div className="space-y-3">
+              <Button className="w-full h-14 bg-primary text-white font-black rounded-xl" asChild>
+                <Link href="/profile/bookings">Voir mes réservations</Link>
+              </Button>
+              <Button variant="ghost" className="w-full font-bold text-slate-400" asChild>
+                <Link href="/">Retour à l'accueil</Link>
+              </Button>
+            </div>
           </Card>
 
           <CrossSellCard 

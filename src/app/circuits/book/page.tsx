@@ -4,8 +4,8 @@
 import React, { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { useDoc, useFirestore } from '@/firebase';
-import { doc } from 'firebase/firestore';
+import { useDoc, useFirestore, useUser } from '@/firebase';
+import { doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -39,6 +39,7 @@ function CircuitBookingContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const db = useFirestore();
+    const { user } = useUser();
     const { toast } = useToast();
     const { formatPrice } = useCurrency();
     
@@ -59,9 +60,32 @@ function CircuitBookingContent() {
     });
 
     const onSubmit = async (values: any) => {
+        if (!user) {
+          toast({ variant: "destructive", title: "Connexion requise" });
+          router.push("/auth/login");
+          return;
+        }
+
         setIsSubmitting(true);
-        const resNum = `ST-TICKET-${Math.floor(1000 + Math.random() * 8999)}`;
+        const resNum = `ST-TOUR-${Math.floor(1000 + Math.random() * 8999)}`;
         try {
+            // Enregistrer dans Firestore
+            await addDoc(collection(db, "bookings"), {
+              userId: user.uid,
+              partnerId: circuit?.ownerId || "guide_stayfloow",
+              listingId: tourId,
+              itemName: circuit?.details?.name || circuit?.title || "Circuit",
+              itemType: 'circuit',
+              itemImage: circuit?.photos?.[0] || circuit?.images?.[0] || "",
+              customerName: values.fullName,
+              customerEmail: values.email,
+              totalPrice: totalAmount,
+              status: 'approved',
+              startDate: tourDate,
+              createdAt: new Date().toISOString(),
+              reservationNumber: resNum
+            });
+
             await sendBookingConfirmationEmail({
                 customerName: values.fullName, 
                 customerEmail: values.email, 
@@ -77,7 +101,7 @@ function CircuitBookingContent() {
             toast({ title: "Réservation réussie !" });
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } catch (e) { 
-            toast({ variant: "destructive", title: "Erreur lors de l'envoi de l'email." });
+            toast({ variant: "destructive", title: "Erreur lors de la réservation." });
         } finally {
             setIsSubmitting(false);
         }
@@ -97,10 +121,15 @@ function CircuitBookingContent() {
                   <CheckCircle className="h-16 w-16 text-primary" />
                 </div>
                 <h1 className="text-3xl font-black mb-4">Votre aventure commence bientôt !</h1>
-                <p className="text-xl text-slate-600 mb-8 font-medium">Les détails de votre ticket ont été envoyés par email.</p>
-                <Button className="bg-primary h-14 px-10 font-black rounded-xl text-lg shadow-xl" asChild>
-                  <Link href="/">Retour à l'accueil</Link>
-                </Button>
+                <p className="text-xl text-slate-600 mb-8 font-medium">Retrouvez votre ticket dans votre portail client.</p>
+                <div className="space-y-3">
+                  <Button className="w-full bg-primary h-14 px-10 font-black rounded-xl text-lg shadow-xl" asChild>
+                    <Link href="/profile/bookings">Gérer mes réservations</Link>
+                  </Button>
+                  <Button variant="ghost" className="w-full font-bold text-slate-400" asChild>
+                    <Link href="/">Retour à l'accueil</Link>
+                  </Button>
+                </div>
             </Card>
             <CrossSellCard location={location.split(',')[0].trim()} bookedItemType="circuit" />
         </div>
