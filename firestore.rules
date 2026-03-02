@@ -16,7 +16,7 @@ service cloud.firestore {
     }
 
     // 2. ACCÈS MAÎTRE (ADMINISTRATION)
-    // Règle globale pour l'administrateur
+    // Règle globale pour l'administrateur - s'applique à tous les documents
     match /{document=**} {
       allow read, write: if isAdmin();
     }
@@ -24,27 +24,28 @@ service cloud.firestore {
     // 3. RÈGLES UTILISATEURS STANDARDS (NON-ADMINS)
     
     match /users/{userId} {
+      // Les admins ont accès via la règle globale. Les utilisateurs accèdent à leur propre profil.
       allow read, write: if request.auth.uid == userId;
     }
 
     match /listings/{listingId} {
       allow read: if true;
       allow create: if isSignedIn();
-      allow update, delete: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow update, delete: if isSignedIn() && (isAdmin() || resource.data.ownerId == request.auth.uid);
     }
 
     match /bookings/{bookingId} {
-      // Les admins ont déjà accès via la règle globale.
-      // Ici on gère les clients et les hôtes.
-      allow read: if isSignedIn() && (
+      // Autorise explicitement le listing global (list) pour les admins
+      // ainsi que la lecture individuelle (get) pour les parties concernées.
+      allow read: if isAdmin() || (isSignedIn() && (
         resource.data.userId == request.auth.uid || 
         resource.data.partnerId == request.auth.uid
-      );
+      ));
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && (
+      allow update: if isAdmin() || (isSignedIn() && (
         resource.data.userId == request.auth.uid || 
         resource.data.partnerId == request.auth.uid
-      );
+      ));
     }
 
     match /partners/{partnerId} {
@@ -56,13 +57,12 @@ service cloud.firestore {
     }
 
     match /conversations/{convId} {
-      // Un utilisateur peut lister les convs dont il est participant
-      // L'admin a accès à tout via la règle globale
-      allow read, write: if isSignedIn() && request.auth.uid in resource.data.participants;
+      // Les admins peuvent lister toutes les conversations pour le support.
+      allow read, write: if isAdmin() || (isSignedIn() && request.auth.uid in resource.data.participants);
       
       match /messages/{msgId} {
-        allow read, create: if isSignedIn() && 
-          get(/databases/$(database)/documents/conversations/$(convId)).data.participants.hasAny([request.auth.uid]);
+        allow read, create: if isAdmin() || (isSignedIn() && 
+          get(/databases/$(database)/documents/conversations/$(convId)).data.participants.hasAny([request.auth.uid]));
       }
     }
   }

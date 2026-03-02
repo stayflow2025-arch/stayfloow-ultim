@@ -41,7 +41,7 @@ export default function AdminBookingsPage() {
     }
   }, [user, isUserLoading, isAdmin, router]);
 
-  // Chargement des données uniquement si admin confirmé
+  // Chargement des données uniquement si admin confirmé et auth stabilisée
   const bookingsRef = useMemoFirebase(() => {
     if (!isAdmin || !db || isUserLoading) return null;
     return query(collection(db, "bookings"), orderBy("createdAt", "desc"));
@@ -59,7 +59,7 @@ export default function AdminBookingsPage() {
       <div className="h-screen flex items-center justify-center bg-slate-900">
         <div className="text-center space-y-4">
           <Loader2 className="animate-spin text-primary h-12 w-12 mx-auto" />
-          <p className="text-white/50 font-black uppercase tracking-widest text-[10px]">Vérification des privilèges maître...</p>
+          <p className="text-white/50 font-black uppercase tracking-widest text-[10px]">Vérification des accès administrateur...</p>
         </div>
       </div>
     );
