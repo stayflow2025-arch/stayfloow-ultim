@@ -6,7 +6,7 @@ service cloud.firestore {
       return request.auth != null;
     }
     
-    // Vérification robuste du rôle administrateur
+    // Vérification robuste du rôle administrateur (UID + Emails autorisés)
     function isAdmin() {
       return isSignedIn() && (
         request.auth.uid == "G4d04MgUW4fguFOjmhQBbWezheB2" ||
@@ -30,10 +30,9 @@ service cloud.firestore {
     }
 
     match /bookings/{bookingId} {
-      // Les admins peuvent tout lister pour le suivi global
+      // Autorise la lecture globale (list) et individuelle (get) pour les admins
       // Les clients/partenaires ne peuvent lire que les leurs
-      allow list: if isAdmin();
-      allow get: if isAdmin() || (isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.partnerId == request.auth.uid));
+      allow read: if isAdmin() || (isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.partnerId == request.auth.uid));
       allow create: if isSignedIn();
       allow update: if isAdmin() || (isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.partnerId == request.auth.uid));
       allow delete: if isAdmin();
@@ -53,9 +52,8 @@ service cloud.firestore {
     }
 
     match /conversations/{convId} {
-      // Permission de liste globale explicite pour l'admin
-      allow list: if isAdmin();
-      allow get: if isAdmin() || (isSignedIn() && request.auth.uid in resource.data.participants);
+      // Accès global pour l'admin, filtré pour les participants
+      allow read: if isAdmin() || (isSignedIn() && request.auth.uid in resource.data.participants);
       allow create: if isSignedIn();
       allow update: if isAdmin() || (isSignedIn() && request.auth.uid in resource.data.participants);
       allow delete: if isAdmin();

@@ -1,11 +1,10 @@
-
 "use client";
 
 import React, { useState, useMemo } from "react";
 import { useFirestore, useCollection, useMemoFirebase, useUser } from "@/firebase";
 import { collection, query, orderBy, doc, updateDoc } from "firebase/firestore";
 import { 
-  Users, Search, Shield, ShieldAlert, ArrowLeft, 
+  Users, Search, ArrowLeft, 
   Loader2, MoreVertical, Ban, CheckCircle, Mail, Calendar, User as UserIcon
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,6 +21,7 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const ADMIN_EMAILS = ["stayflow2025@gmail.com", "kiosque.du.passage@gmail.com"];
+const ADMIN_UIDS = ["G4d04MgUW4fguFOjmhQBbWezheB2"];
 
 export default function AdminUsersPage() {
   const router = useRouter();
@@ -29,22 +29,29 @@ export default function AdminUsersPage() {
   const { user: adminUser, isUserLoading } = useUser();
   const [searchTerm, setSearchTerm] = useState("");
 
-  const isAdmin = useMemo(() => adminUser && ADMIN_EMAILS.includes(adminUser.email || ""), [adminUser]);
+  const isAdmin = useMemo(() => {
+    if (!adminUser || isUserLoading) return false;
+    const email = adminUser.email?.toLowerCase() || "";
+    return ADMIN_UIDS.includes(adminUser.uid) || ADMIN_EMAILS.includes(email);
+  }, [adminUser, isUserLoading]);
 
   const usersRef = useMemoFirebase(() => {
-    if (!isAdmin) return null;
+    if (!isAdmin || !db) return null;
     return query(collection(db, "users"), orderBy("createdAt", "desc"));
   }, [db, isAdmin]);
+  
   const { data: users, isLoading } = useCollection(usersRef);
 
   const handleStatusUpdate = async (id: string, newStatus: string) => {
     await updateDoc(doc(db, "users", id), { status: newStatus });
   };
 
-  if (isUserLoading || isLoading) return <div className="h-screen flex items-center justify-center bg-slate-900"><Loader2 className="animate-spin text-primary h-12 w-12" /></div>;
+  if (isUserLoading) return <div className="h-screen flex items-center justify-center bg-slate-900"><Loader2 className="animate-spin text-primary h-12 w-12" /></div>;
 
   if (!adminUser || !isAdmin) {
-    router.replace("/");
+    if (!isUserLoading) {
+      router.replace("/");
+    }
     return null;
   }
 
@@ -82,58 +89,62 @@ export default function AdminUsersPage() {
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredUsers.map((user: any) => (
-            <Card key={user.id} className="border-none shadow-sm rounded-3xl overflow-hidden bg-white hover:shadow-xl transition-all">
-              <CardContent className="p-0">
-                <div className="p-6 flex items-start justify-between border-b border-slate-50">
-                  <div className="flex items-center gap-4">
-                    <div className="h-14 w-14 rounded-2xl bg-slate-100 flex items-center justify-center">
-                      <UserIcon className="h-6 w-6 text-slate-400" />
+        {isLoading ? (
+          <div className="flex justify-center py-20"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredUsers.map((user: any) => (
+              <Card key={user.id} className="border-none shadow-sm rounded-3xl overflow-hidden bg-white hover:shadow-xl transition-all">
+                <CardContent className="p-0">
+                  <div className="p-6 flex items-start justify-between border-b border-slate-50">
+                    <div className="flex items-center gap-4">
+                      <div className="h-14 w-14 rounded-2xl bg-slate-100 flex items-center justify-center">
+                        <UserIcon className="h-6 w-6 text-slate-400" />
+                      </div>
+                      <div>
+                        <h3 className="font-black text-slate-900 leading-tight">{user.firstName} {user.lastName}</h3>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{user.role || 'Client'}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-black text-slate-900 leading-tight">{user.firstName} {user.lastName}</h3>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{user.role || 'Client'}</p>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="rounded-xl"><MoreVertical className="h-5 w-5" /></Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 border-none shadow-2xl">
+                        <DropdownMenuItem onClick={() => handleStatusUpdate(user.id, user.status === 'suspended' ? 'active' : 'suspended')} className="font-bold py-3 rounded-xl">
+                          {user.status === 'suspended' ? (
+                            <><CheckCircle className="h-4 w-4 mr-3 text-green-500" /> Réactiver le compte</>
+                          ) : (
+                            <><Ban className="h-4 w-4 mr-3 text-red-500" /> Suspendre le compte</>
+                          )}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                  <div className="p-6 space-y-4">
+                    <div className="flex items-center gap-3 text-xs font-bold text-slate-500">
+                      <Mail className="h-4 w-4 text-primary" /> {user.email}
+                    </div>
+                    <div className="flex items-center gap-3 text-xs font-bold text-slate-500">
+                      <Calendar className="h-4 w-4 text-primary" /> Inscrit le {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '...'}
+                    </div>
+                    <div className="pt-2 flex justify-between items-center">
+                      <Badge className={cn(
+                        "font-black text-[9px] uppercase",
+                        user.status === 'suspended' ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"
+                      )}>
+                        {user.status || 'Actif'}
+                      </Badge>
+                      <Button variant="ghost" className="text-[10px] font-black uppercase text-primary p-0 h-auto" onClick={() => router.push(`/admin/bookings?userId=${user.id}`)}>
+                        Voir Réservations
+                      </Button>
                     </div>
                   </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="rounded-xl"><MoreVertical className="h-5 w-5" /></Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56 rounded-2xl p-2 border-none shadow-2xl">
-                      <DropdownMenuItem onClick={() => handleStatusUpdate(user.id, user.status === 'suspended' ? 'active' : 'suspended')} className="font-bold py-3 rounded-xl">
-                        {user.status === 'suspended' ? (
-                          <><CheckCircle className="h-4 w-4 mr-3 text-green-500" /> Réactiver le compte</>
-                        ) : (
-                          <><Ban className="h-4 w-4 mr-3 text-red-500" /> Suspendre le compte</>
-                        )}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-                <div className="p-6 space-y-4">
-                  <div className="flex items-center gap-3 text-xs font-bold text-slate-500">
-                    <Mail className="h-4 w-4 text-primary" /> {user.email}
-                  </div>
-                  <div className="flex items-center gap-3 text-xs font-bold text-slate-500">
-                    <Calendar className="h-4 w-4 text-primary" /> Inscrit le {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '...'}
-                  </div>
-                  <div className="pt-2 flex justify-between items-center">
-                    <Badge className={cn(
-                      "font-black text-[9px] uppercase",
-                      user.status === 'suspended' ? "bg-red-100 text-red-600" : "bg-green-100 text-green-600"
-                    )}>
-                      {user.status || 'Actif'}
-                    </Badge>
-                    <Button variant="ghost" className="text-[10px] font-black uppercase text-primary p-0 h-auto" onClick={() => router.push(`/admin/bookings?userId=${user.id}`)}>
-                      Voir Réservations
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );

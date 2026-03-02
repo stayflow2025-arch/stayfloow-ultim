@@ -1,12 +1,11 @@
-
 "use client";
 
 import React, { useMemo } from "react";
 import { useFirestore, useCollection, useMemoFirebase, useUser } from "@/firebase";
-import { collection, query, orderBy, where } from "firebase/firestore";
+import { collection, query, orderBy } from "firebase/firestore";
 import { 
   Wallet, TrendingUp, Download, ArrowLeft, Loader2, 
-  Euro, CreditCard, ShieldCheck, Calendar, ArrowUpRight
+  Euro, CreditCard, ShieldCheck, ArrowUpRight
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,6 +16,7 @@ import { useCurrency } from "@/context/currency-context";
 import { cn } from "@/lib/utils";
 
 const ADMIN_EMAILS = ["stayflow2025@gmail.com", "kiosque.du.passage@gmail.com"];
+const ADMIN_UIDS = ["G4d04MgUW4fguFOjmhQBbWezheB2"];
 
 export default function AdminFinancePage() {
   const router = useRouter();
@@ -24,7 +24,19 @@ export default function AdminFinancePage() {
   const { user, isUserLoading } = useUser();
   const { formatPrice } = useCurrency();
 
-  const bookingsRef = useMemoFirebase(() => query(collection(db, "bookings"), orderBy("createdAt", "desc")), [db]);
+  // Détection robuste de l'administrateur
+  const isAdmin = useMemo(() => {
+    if (!user || isUserLoading) return false;
+    const email = user.email?.toLowerCase() || "";
+    return ADMIN_UIDS.includes(user.uid) || ADMIN_EMAILS.includes(email);
+  }, [user, isUserLoading]);
+
+  // Chargement sécurisé des réservations uniquement si Admin confirmé
+  const bookingsRef = useMemoFirebase(() => {
+    if (!isAdmin || !db) return null;
+    return query(collection(db, "bookings"), orderBy("createdAt", "desc"));
+  }, [db, isAdmin]);
+  
   const { data: bookings, isLoading } = useCollection(bookingsRef);
 
   const stats = useMemo(() => {
@@ -33,10 +45,12 @@ export default function AdminFinancePage() {
     return { total, commission, netPartner: total - commission };
   }, [bookings]);
 
-  if (isUserLoading || isLoading) return <div className="h-screen flex items-center justify-center bg-slate-900"><Loader2 className="animate-spin text-primary h-12 w-12" /></div>;
+  if (isUserLoading) return <div className="h-screen flex items-center justify-center bg-slate-900"><Loader2 className="animate-spin text-primary h-12 w-12" /></div>;
 
-  if (!user || !ADMIN_EMAILS.includes(user.email || "")) {
-    router.replace("/");
+  if (!user || !isAdmin) {
+    if (!isUserLoading) {
+      router.replace("/");
+    }
     return null;
   }
 
@@ -60,64 +74,68 @@ export default function AdminFinancePage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-8 py-12 space-y-10">
-        {/* KPI FINANCE */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <FinanceKpiCard title="Volume Total" value={formatPrice(stats.total)} desc="Ventes brutes enregistrées" icon={<Wallet/>} color="blue" />
-          <FinanceKpiCard title="Commissions StayFloow" value={formatPrice(stats.commission)} desc="15% de frais plateforme" icon={<ArrowUpRight/>} color="green" highlight />
-          <FinanceKpiCard title="Revenus Partenaires" value={formatPrice(stats.netPartner)} desc="À reverser aux hôtes" icon={<CreditCard/>} color="dark" />
-        </div>
+        {isLoading ? (
+          <div className="flex justify-center py-20"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <FinanceKpiCard title="Volume Total" value={formatPrice(stats.total)} desc="Ventes brutes enregistrées" icon={<Wallet/>} color="blue" />
+              <FinanceKpiCard title="Commissions StayFloow" value={formatPrice(stats.commission)} desc="15% de frais plateforme" icon={<ArrowUpRight/>} color="green" highlight />
+              <FinanceKpiCard title="Revenus Partenaires" value={formatPrice(stats.netPartner)} desc="À reverser aux hôtes" icon={<CreditCard/>} color="dark" />
+            </div>
 
-        {/* LISTE DES TRANSACTIONS */}
-        <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-white">
-          <CardHeader className="bg-slate-50 border-b p-8">
-            <CardTitle className="text-sm font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-              <ShieldCheck className="h-4 w-4 text-primary" /> Historique des Transactions
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader className="bg-slate-50/50">
-                <TableRow>
-                  <TableHead className="font-black text-[10px] uppercase pl-8 py-6">ID Transaction</TableHead>
-                  <TableHead className="font-black text-[10px] uppercase">Service</TableHead>
-                  <TableHead className="font-black text-[10px] uppercase">Montant Brut</TableHead>
-                  <TableHead className="font-black text-[10px] uppercase">Part Plateforme</TableHead>
-                  <TableHead className="font-black text-[10px] uppercase">Date</TableHead>
-                  <TableHead className="font-black text-[10px] uppercase pr-8 text-right">Statut</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {bookings?.map((b: any) => (
-                  <TableRow key={b.id} className="hover:bg-slate-50/50 transition-colors">
-                    <TableCell className="font-bold text-slate-400 pl-8">#TX-{b.id.substring(0,8)}</TableCell>
-                    <TableCell className="font-black text-slate-900">{b.itemName}</TableCell>
-                    <TableCell className="font-black text-slate-900">{formatPrice(b.totalPrice)}</TableCell>
-                    <TableCell className="font-bold text-emerald-600">+{formatPrice(b.totalPrice * 0.15)}</TableCell>
-                    <TableCell className="text-slate-500 text-xs font-bold">{new Date(b.createdAt).toLocaleDateString()}</TableCell>
-                    <TableCell className="pr-8 text-right">
-                      <Badge className={cn(
-                        "font-black text-[9px] uppercase",
-                        b.status === 'approved' ? "bg-green-600" : "bg-slate-400"
-                      )}>{b.status === 'approved' ? 'Encaissé' : b.status}</Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            {(!bookings || bookings.length === 0) && (
-              <div className="py-32 text-center">
-                <Euro className="h-12 w-12 text-slate-100 mx-auto mb-4" />
-                <p className="text-slate-400 font-bold">Aucune transaction trouvée.</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+            <Card className="border-none shadow-xl rounded-[2.5rem] overflow-hidden bg-white">
+              <CardHeader className="bg-slate-50 border-b p-8">
+                <CardTitle className="text-sm font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 text-primary" /> Historique des Transactions
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader className="bg-slate-50/50">
+                    <TableRow>
+                      <TableHead className="font-black text-[10px] uppercase pl-8 py-6">ID Transaction</TableHead>
+                      <TableHead className="font-black text-[10px] uppercase">Service</TableHead>
+                      <TableHead className="font-black text-[10px] uppercase">Montant Brut</TableHead>
+                      <TableHead className="font-black text-[10px] uppercase">Part Plateforme</TableHead>
+                      <TableHead className="font-black text-[10px] uppercase">Date</TableHead>
+                      <TableHead className="font-black text-[10px] uppercase pr-8 text-right">Statut</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {bookings?.map((b: any) => (
+                      <TableRow key={b.id} className="hover:bg-slate-50/50 transition-colors">
+                        <TableCell className="font-bold text-slate-400 pl-8">#TX-{b.id.substring(0,8)}</TableCell>
+                        <TableCell className="font-black text-slate-900">{b.itemName}</TableCell>
+                        <TableCell className="font-black text-slate-900">{formatPrice(b.totalPrice)}</TableCell>
+                        <TableCell className="font-bold text-emerald-600">+{formatPrice(b.totalPrice * 0.15)}</TableCell>
+                        <TableCell className="text-slate-500 text-xs font-bold">{new Date(b.createdAt).toLocaleDateString()}</TableCell>
+                        <TableCell className="pr-8 text-right">
+                          <Badge className={cn(
+                            "font-black text-[9px] uppercase",
+                            b.status === 'approved' ? "bg-green-600" : "bg-slate-400"
+                          )}>{b.status === 'approved' ? 'Encaissé' : b.status}</Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                {(!bookings || bookings.length === 0) && (
+                  <div className="py-32 text-center">
+                    <Euro className="h-12 w-12 text-slate-100 mx-auto mb-4" />
+                    <p className="text-slate-400 font-bold">Aucune transaction trouvée.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </>
+        )}
       </main>
     </div>
   );
 }
 
-function FinanceKpiCard({ title, value, desc, icon, color, highlight = false }: any) {
+function FinanceKpiCard({ title, value, desc, icon, highlight = false }: any) {
   return (
     <Card className={cn(
       "border-none shadow-lg rounded-3xl p-8 relative overflow-hidden",
