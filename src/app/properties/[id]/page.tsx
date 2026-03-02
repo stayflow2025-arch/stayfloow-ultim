@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { use, useState, useEffect, useRef, useMemo } from 'react';
@@ -48,6 +49,8 @@ import { fr } from 'date-fns/locale';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { properties as mockProperties } from '@/lib/data';
+import { OnboardingMap } from '@/components/onboarding-map';
+import Link from 'next/link';
 
 export default function PropertyPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -86,6 +89,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
   const overviewRef = useRef<HTMLDivElement>(null);
   const availabilityRef = useRef<HTMLDivElement>(null);
   const facilitiesRef = useRef<HTMLDivElement>(null);
+  const locationRef = useRef<HTMLDivElement>(null);
   const rulesRef = useRef<HTMLDivElement>(null);
   const reviewsRef = useRef<HTMLDivElement>(null);
 
@@ -199,6 +203,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
   const rating = property.rating || 8.5;
   const reviewsCount = property.reviewsCount || 125;
   const stars = property.details?.stars || property.stars || 4;
+  const cityName = property.location?.address ? property.location.address.split(',')[0].trim() : (typeof property.location === 'string' ? property.location.split(',')[0].trim() : "Alger");
 
   return (
     <div className="min-h-screen bg-white">
@@ -208,6 +213,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
           <TabButton active={activeTab === 'overview'} label="Vue d'ensemble" onClick={() => scrollToSection(overviewRef, 'overview')} />
           <TabButton active={activeTab === 'availability'} label="Disponibilité" onClick={() => scrollToSection(availabilityRef, 'availability')} />
           <TabButton active={activeTab === 'facilities'} label="Équipements" onClick={() => scrollToSection(facilitiesRef, 'facilities')} />
+          <TabButton active={activeTab === 'location'} label="Localisation" onClick={() => scrollToSection(locationRef, 'location')} />
           <TabButton active={activeTab === 'rules'} label="Règles de la maison" onClick={() => scrollToSection(rulesRef, 'rules')} />
           <TabButton active={activeTab === 'reviews'} label="Commentaires" onClick={() => scrollToSection(reviewsRef, 'reviews')} />
         </div>
@@ -233,7 +239,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
               <div className="flex items-center gap-2 text-[13px] text-slate-600">
                 <MapPin className="h-4 w-4 text-primary shrink-0" />
                 <span>{property.location?.address || property.location} — </span>
-                <button className="text-primary font-bold hover:underline">Excellent emplacement – voir la carte</button>
+                <button onClick={() => scrollToSection(locationRef, 'location')} className="text-primary font-bold hover:underline">Excellent emplacement – voir la carte</button>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -426,7 +432,36 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
           </div>
         </section>
 
-        {/* Section 4: Rules & Reviews (Placeholders) */}
+        {/* Section 4: Location & Map */}
+        <section ref={locationRef} className="space-y-6 pt-10 border-t">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+            <div className="space-y-2">
+              <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
+                Emplacement et environs
+                <Badge className="bg-red-600 text-white border-none font-black text-[10px] px-1.5 py-0.5 rounded-sm shadow-lg ml-2">9.8</Badge>
+              </h2>
+              <p className="text-sm text-slate-500 font-medium">Excellent emplacement selon les récents voyageurs.</p>
+            </div>
+            <Link 
+              href={`/search?dest=${encodeURIComponent(cityName)}`} 
+              className="text-primary font-bold text-sm hover:underline flex items-center gap-1 group"
+            >
+              Voir plus d'établissements à {cityName} 
+              <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+          
+          <div className="rounded-2xl overflow-hidden border-4 border-slate-50 shadow-xl h-[450px]">
+            <OnboardingMap location={property.location?.address || property.location} />
+          </div>
+
+          <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 italic text-slate-600 font-medium flex gap-4">
+            <Info className="h-6 w-6 text-primary shrink-0" />
+            <p>"L'emplacement est parfait pour explorer la ville. À quelques minutes à pied des principales attractions et des transports."</p>
+          </div>
+        </section>
+
+        {/* Section 5: Rules & Reviews (Placeholders) */}
         <section ref={rulesRef} className="space-y-6 pt-10 border-t">
           <h2 className="text-xl font-black text-slate-900">Règles de la maison</h2>
           <div className="border rounded-md">
