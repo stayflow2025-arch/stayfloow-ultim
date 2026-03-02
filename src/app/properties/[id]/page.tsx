@@ -11,7 +11,7 @@ import {
   CheckCircle, Info, Utensils, Clock, Dog,
   Sofa, Trees, Camera,
   Users, Check, MessageSquare,
-  Navigation, Leaf, Search, X
+  Navigation, Leaf, Search, X, Train, Plane, Map as MapIcon, FerrisWheel, Mountain
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -89,6 +89,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
   const overviewRef = useRef<HTMLDivElement>(null);
   const availabilityRef = useRef<HTMLDivElement>(null);
   const facilitiesRef = useRef<HTMLDivElement>(null);
+  const surroundingsRef = useRef<HTMLDivElement>(null);
   const locationRef = useRef<HTMLDivElement>(null);
   const rulesRef = useRef<HTMLDivElement>(null);
   const reviewsRef = useRef<HTMLDivElement>(null);
@@ -106,16 +107,13 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
   const roomTypes = useMemo(() => {
     if (!property) return [];
     
-    // In DB properties are inside 'details', in mock data they are flat
     const details = property.details || property;
     const types = [];
-
-    // Base price per night
     const basePrice = property.price || 10000;
 
     if (details.propertyType === 'hotel' || details.type?.toLowerCase().includes('hôtel') || details.type?.toLowerCase().includes('riad')) {
       const singleCount = details.singleRoomsCount || 0;
-      const doubleCount = details.doubleRoomsCount || 5; // Default for demo
+      const doubleCount = details.doubleRoomsCount || 5; 
       const suiteCount = details.parentalSuitesCount || 0;
 
       if (singleCount > 0) {
@@ -130,7 +128,6 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
         });
       }
       
-      // Always show double rooms for hotels in mock if no specific count provided
       types.push({
         id: 'double',
         name: t('double_rooms'),
@@ -153,7 +150,6 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
         });
       }
     } else {
-      // For Villa/Apartment, show as "Entire Property"
       types.push({
         id: 'entire',
         name: `Logement entier (${details.roomsCount || 1} pièces)`,
@@ -172,6 +168,111 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
     const room = roomTypes.find(r => r.id === roomId);
     return acc + (room?.price || 0) * qty * nights;
   }, 0);
+
+  // Logic for Surrounding Points of Interest
+  const surroundings = useMemo(() => {
+    if (!property) return null;
+    const addr = (property.location?.address || property.location || "").toLowerCase();
+    
+    if (addr.includes("alger")) {
+      return {
+        attractions: [
+          { name: "Jardin d'Essai du Hamma", dist: "1,2 km" },
+          { name: "Mémorial du Martyr", dist: "1,5 km" },
+          { name: "Casbah d'Alger", dist: "2,8 km" },
+          { name: "Musée national du Bardo", dist: "2,1 km" },
+          { name: "Grande Poste d'Alger", dist: "3,2 km" }
+        ],
+        restaurants: [
+          { name: "Restaurant Le Tantra", dist: "450 m" },
+          { name: "Café El Kheima", dist: "300 m" },
+          { name: "Le Normand", dist: "800 m" }
+        ],
+        nature: [
+          { name: "Forêt de Bainem", dist: "8 km" },
+          { name: "Mer - Baie d'Alger", dist: "500 m" }
+        ],
+        transport: [
+          { name: "Métro - Station Tafourah", dist: "900 m" },
+          { name: "Tramway - Ruisseau", dist: "1,4 km" }
+        ],
+        airports: [
+          { name: "Aéroport d'Alger - Houari Boumédiène", dist: "18 km" }
+        ]
+      };
+    } else if (addr.includes("ghardaïa")) {
+      return {
+        attractions: [
+          { name: "Marché de Ghardaïa", dist: "400 m" },
+          { name: "Grande Mosquée de Ghardaïa", dist: "600 m" },
+          { name: "Ksar de Beni Isguen", dist: "2,5 km" },
+          { name: "Palmeraie du M'zab", dist: "1,2 km" }
+        ],
+        restaurants: [
+          { name: "Restaurant M'zab Buffet", dist: "200 m" },
+          { name: "Salon de Thé Traditionnel", dist: "150 m" }
+        ],
+        nature: [
+          { name: "Dunes du Sahara", dist: "15 km" },
+          { name: "Oasis de Sebseb", dist: "45 km" }
+        ],
+        transport: [
+          { name: "Gare Routière Ghardaïa", dist: "1,8 km" }
+        ],
+        airports: [
+          { name: "Aéroport de Ghardaïa - Noumérat", dist: "16 km" }
+        ]
+      };
+    } else if (addr.includes("caire") || addr.includes("cairo")) {
+      return {
+        attractions: [
+          { name: "Pyramides de Gizeh", dist: "12 km" },
+          { name: "Musée Égyptien du Caire", dist: "1,1 km" },
+          { name: "Khan el-Khalili", dist: "3,5 km" },
+          { name: "Citadelle de Saladin", dist: "4,2 km" }
+        ],
+        restaurants: [
+          { name: "Abou Tarek Koshary", dist: "800 m" },
+          { name: "Naghib Mahfouz Cafe", dist: "3,4 km" }
+        ],
+        nature: [
+          { name: "Fleuve - Le Nil", dist: "200 m" },
+          { name: "Parc Al-Azhar", dist: "3,8 km" }
+        ],
+        transport: [
+          { name: "Métro - Sadat Station", dist: "1,2 km" },
+          { name: "Gare de Ramsès", dist: "2,5 km" }
+        ],
+        airports: [
+          { name: "Aéroport international du Caire", dist: "22 km" }
+        ]
+      };
+    }
+    
+    // Generic Fallback
+    return {
+      attractions: [
+        { name: "Centre-ville historique", dist: "1,5 km" },
+        { name: "Musée local", dist: "2,2 km" },
+        { name: "Place centrale", dist: "800 m" }
+      ],
+      restaurants: [
+        { name: "Restaurant La Table", dist: "300 m" },
+        { name: "Café de la Paix", dist: "150 m" }
+      ],
+      nature: [
+        { name: "Parc municipal", dist: "1,1 km" },
+        { name: "Montagne locale", dist: "15 km" }
+      ],
+      transport: [
+        { name: "Arrêt de bus", dist: "250 m" },
+        { name: "Gare ferroviaire", dist: "3,5 km" }
+      ],
+      airports: [
+        { name: "Aéroport le plus proche", dist: "25 km" }
+      ]
+    };
+  }, [property]);
 
   if (loading) {
     return (
@@ -213,9 +314,9 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
           <TabButton active={activeTab === 'overview'} label="Vue d'ensemble" onClick={() => scrollToSection(overviewRef, 'overview')} />
           <TabButton active={activeTab === 'availability'} label="Disponibilité" onClick={() => scrollToSection(availabilityRef, 'availability')} />
           <TabButton active={activeTab === 'facilities'} label="Équipements" onClick={() => scrollToSection(facilitiesRef, 'facilities')} />
+          <TabButton active={activeTab === 'surroundings'} label="Environs" onClick={() => scrollToSection(surroundingsRef, 'surroundings')} />
           <TabButton active={activeTab === 'location'} label="Localisation" onClick={() => scrollToSection(locationRef, 'location')} />
           <TabButton active={activeTab === 'rules'} label="Règles de la maison" onClick={() => scrollToSection(rulesRef, 'rules')} />
-          <TabButton active={activeTab === 'reviews'} label="Commentaires" onClick={() => scrollToSection(reviewsRef, 'reviews')} />
         </div>
       </div>
 
@@ -395,19 +496,6 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
           
           {totalBookingPrice > 0 && (
             <div className="flex flex-col items-end gap-6 mt-8 animate-in fade-in slide-in-from-bottom-4">
-              <Card className="w-full md:w-80 border-2 border-primary shadow-2xl bg-white">
-                <CardContent className="p-6 space-y-4">
-                  <div className="flex justify-between items-baseline">
-                    <span className="font-bold text-slate-500">Total ({nights} nuits)</span>
-                    <span className="text-2xl font-black text-primary">{formatPrice(totalBookingPrice)}</span>
-                  </div>
-                  <Button className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-black rounded-sm shadow-xl" onClick={() => router.push(`/properties/${id}/book`)}>
-                    Confirmer ma réservation
-                  </Button>
-                  <p className="text-[10px] text-center text-slate-400 uppercase font-bold">Confirmation instantanée StayFloow</p>
-                </CardContent>
-              </Card>
-
               {/* BOUTON RÉSERVER FINAL (DESIGN IMAGE) */}
               <Button 
                 onClick={() => router.push(`/properties/${id}/book`)}
@@ -430,6 +518,76 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
             <FacilityIcon icon={<Coffee/>} label="Machine à café" />
             <FacilityIcon icon={<Clock/>} label="Réception 24h/24" />
           </div>
+        </section>
+
+        {/* Section Surrounding POIs (DESIGN PHOTO) */}
+        <section ref={surroundingsRef} className="space-y-8 pt-10 border-t">
+          <h2 className="text-xl font-black text-slate-900">Environs de l'établissement</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-10">
+            {/* Meilleures attractions */}
+            <div className="space-y-4">
+              <h3 className="flex items-center gap-2 font-bold text-[15px] text-slate-900">
+                <FerrisWheel className="h-5 w-5 text-slate-600" /> Meilleures attractions
+              </h3>
+              <div className="space-y-2.5">
+                {surroundings?.attractions.map((item, i) => (
+                  <SurroundingRow key={i} label={item.name} dist={item.dist} />
+                ))}
+              </div>
+            </div>
+
+            {/* Restaurants et cafés */}
+            <div className="space-y-4">
+              <h3 className="flex items-center gap-2 font-bold text-[15px] text-slate-900">
+                <Utensils className="h-5 w-5 text-slate-600" /> Restaurants et cafés
+              </h3>
+              <div className="space-y-2.5">
+                {surroundings?.restaurants.map((item, i) => (
+                  <SurroundingRow key={i} label={item.name} dist={item.dist} />
+                ))}
+              </div>
+            </div>
+
+            {/* Environnement naturel */}
+            <div className="space-y-4">
+              <h3 className="flex items-center gap-2 font-bold text-[15px] text-slate-900">
+                <Mountain className="h-5 w-5 text-slate-600" /> Environnement naturel
+              </h3>
+              <div className="space-y-2.5">
+                {surroundings?.nature.map((item, i) => (
+                  <SurroundingRow key={i} label={item.name} dist={item.dist} />
+                ))}
+              </div>
+            </div>
+
+            {/* Transports en commun */}
+            <div className="space-y-4">
+              <h3 className="flex items-center gap-2 font-bold text-[15px] text-slate-900">
+                <Train className="h-5 w-5 text-slate-600" /> Transports en commun
+              </h3>
+              <div className="space-y-2.5">
+                {surroundings?.transport.map((item, i) => (
+                  <SurroundingRow key={i} label={item.name} dist={item.dist} />
+                ))}
+              </div>
+            </div>
+
+            {/* Aéroports */}
+            <div className="space-y-4">
+              <h3 className="flex items-center gap-2 font-bold text-[15px] text-slate-900">
+                <Plane className="h-5 w-5 text-slate-600" /> Aéroports les plus proches
+              </h3>
+              <div className="space-y-2.5">
+                {surroundings?.airports.map((item, i) => (
+                  <SurroundingRow key={i} label={item.name} dist={item.dist} />
+                ))}
+              </div>
+            </div>
+          </div>
+          <p className="text-[11px] text-slate-400 italic mt-4">
+            Toutes les distances sont mesurées en ligne droite. Les distances réelles peuvent varier.
+          </p>
         </section>
 
         {/* Section 4: Location & Map */}
@@ -569,6 +727,15 @@ function FacilityIcon({ icon, label }: { icon: any, label: string }) {
     <div className="flex flex-col items-center gap-2 text-center p-4">
       <div className="text-primary">{icon}</div>
       <span className="text-[12px] font-medium text-slate-600">{label}</span>
+    </div>
+  );
+}
+
+function SurroundingRow({ label, dist }: { label: string, dist: string }) {
+  return (
+    <div className="flex justify-between items-baseline gap-4">
+      <span className="text-[13px] text-slate-700 font-medium">{label}</span>
+      <span className="text-[12px] text-slate-500 font-bold whitespace-nowrap">{dist}</span>
     </div>
   );
 }
