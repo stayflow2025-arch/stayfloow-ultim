@@ -3,16 +3,12 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // 1. DÉTECTION ADMIN MAÎTRE (GOD MODE)
-    // Autorise TOUT si l'utilisateur est Kamel Dahane, StayFloow Admin ou Jony.
+    // 1. DÉTECTION ADMIN MAÎTRE (STRICTE)
+    // Seul stayflow2025@gmail.com peut accéder au mode administrateur.
     function isAdmin() {
       return request.auth != null && (
-        request.auth.uid == "G4d04MgUW4fguFOjmhQBbWezheB2" || 
-        request.auth.uid == "SoSElCrTcwh6UBtGjXwv4Q8dlXc2" ||
-        request.auth.uid == "MtuxkoHT0gOiII8WBpQQ5HPgXqx2" ||
         request.auth.token.email == "stayflow2025@gmail.com" ||
-        request.auth.token.email == "kiosque.du.passage@gmail.com" ||
-        request.auth.token.email == "dunordlavoix3@gmail.com"
+        request.auth.uid == "G4d04MgUW4fguFOjmhQBbWezheB2"
       );
     }
 
@@ -20,7 +16,7 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // ACCÈS PRIORITAIRE ADMIN : Pas de restriction
+    // ACCÈS PRIORITAIRE ADMIN : Pas de restriction pour le compte maître
     match /{document=**} {
       allow read, write: if isAdmin();
     }
