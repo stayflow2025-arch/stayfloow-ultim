@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, use } from "react";
@@ -76,7 +75,7 @@ export default function PropertyBookingPage({ params }: { params: Promise<{ id: 
   });
 
   const nights = Math.ceil((date.to.getTime() - date.from.getTime()) / (1000 * 60 * 60 * 24));
-  const basePrice = property?.price || 12500;
+  const basePrice = property?.price || 85;
   const totalPrice = basePrice * nights;
 
   const onSubmit = async (values: BookingValues) => {

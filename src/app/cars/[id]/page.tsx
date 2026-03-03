@@ -75,10 +75,10 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
   }, [car, pickupLocation]);
 
   const optionsList = [
-    { id: 'insurance', label: 'Protection Complète (Zéro Franchise)', price: 2500 },
-    { id: 'gps', label: 'GPS Haute Précision', price: 800 },
-    { id: 'baby_seat', label: 'Siège Bébé / Enfant', price: 1200 },
-    { id: 'additional_driver', label: 'Conducteur Additionnel', price: 1500 }
+    { id: 'insurance', label: 'Protection Complète (Zéro Franchise)', price: 15 },
+    { id: 'gps', label: 'GPS Haute Précision', price: 5 },
+    { id: 'baby_seat', label: 'Siège Bébé / Enfant', price: 8 },
+    { id: 'additional_driver', label: 'Conducteur Additionnel', price: 10 }
   ];
 
   if (loading) {
@@ -104,7 +104,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
       cancellation: "48h"
     },
     location: { address: "Aéroport d'Alger (ALG), Algérie" },
-    price: id === 'mock-car-1' ? 7500 : 12000,
+    price: id === 'mock-car-1' ? 50 : 85,
     photos: [
       "https://images.unsplash.com/photo-1761320296536-38a4e068b37d?w=1200",
       "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=1200"
@@ -131,7 +131,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
   const openEditModal = () => {
     setTempLocation(pickupLocation);
     setTempDates({ from: dateRange.from, to: dateRange.to });
-    setIsEditingOpen(true);
+    setIsEditDialogOpen(true);
   };
 
   const saveSearchChanges = () => {

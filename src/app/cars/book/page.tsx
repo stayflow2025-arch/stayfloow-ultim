@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, Suspense } from "react";
@@ -49,9 +48,9 @@ function BookCarContent() {
   const pickupLocation = searchParams.get('pickup') || "Alger, Algérie";
   const options = searchParams.get('options')?.split(',') || [];
 
-  const basePrice = carId === 'mock-car-1' ? 7500 : 12000;
+  const basePrice = carId === 'mock-car-1' ? 50 : 85;
   const days = parseInt(searchParams.get('days') || '3');
-  const optionsCost = options.length * 1500;
+  const optionsCost = options.length * 10;
   const total = (basePrice * days) + optionsCost;
 
   const handleBooking = async (e: React.FormEvent) => {
