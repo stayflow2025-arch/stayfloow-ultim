@@ -19,7 +19,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { 
   Building, Car, Compass, MapPin, Upload, CheckCircle2, 
-  Loader2, Wand2, X, Plus, Minus, Users, Bed, Bath, Sofa, Clock, Globe
+  Loader2, Wand2, X, Plus, Minus, Users, Bed, Bath, Sofa, Clock, Globe,
+  Wifi, Wind, ParkingCircle, Coffee, Utensils, Waves, Star
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { generatePartnerDescription } from '@/ai/flows/partner-description-generator';
@@ -29,9 +30,6 @@ import { useToast } from '@/hooks/use-toast';
 import { OnboardingMap } from '@/components/onboarding-map';
 import { useLanguage } from '@/context/language-context';
 
-/**
- * Taux de normalisation vers la base EURO pour le stockage
- */
 const NORMALIZATION_RATES: Record<string, number> = {
   EUR: 1,
   DZD: 145.2,
@@ -39,6 +37,33 @@ const NORMALIZATION_RATES: Record<string, number> = {
   GBP: 0.83,
   EGP: 52.5,
 };
+
+// Liste standardisée pour correspondre aux filtres de recherche
+const ACCOMMODATION_AMENITIES = [
+  { id: "Wi-Fi gratuit", icon: <Wifi className="h-4 w-4" /> },
+  { id: "Piscine", icon: <Waves className="h-4 w-4" /> },
+  { id: "Climatisation", icon: <Wind className="h-4 w-4" /> },
+  { id: "Parking gratuit", icon: <ParkingCircle className="h-4 w-4" /> },
+  { id: "Petit-déjeuner inclus", icon: <Coffee className="h-4 w-4" /> },
+  { id: "Vue mer", icon: <Waves className="h-4 w-4" /> },
+  { id: "Cuisine équipée", icon: <Utensils className="h-4 w-4" /> },
+  { id: "Restaurant sur place", icon: <Utensils className="h-4 w-4" /> },
+  { id: "Réception 24h/24", icon: <Clock className="h-4 w-4" /> },
+  { id: "Animaux domestiques acceptés", icon: <Globe className="h-4 w-4" /> },
+  { id: "Terrasse / balcon / vue", icon: <Building className="h-4 w-4" /> },
+  { id: "Salle de bain privée", icon: <Bath className="h-4 w-4" /> },
+];
+
+const PROPERTY_TYPES = [
+  { id: 'hotel_3', label: 'Hôtel ★★★', icon: <Building /> },
+  { id: 'hotel_4', label: 'Hôtel ★★★★', icon: <Building /> },
+  { id: 'hotel_5', label: 'Hôtel ★★★★★', icon: <Building /> },
+  { id: 'riad', label: 'Riad', icon: <Building /> },
+  { id: 'villa', label: 'Villa', icon: <Building /> },
+  { id: 'apartment', label: 'Appartement', icon: <Building /> },
+  { id: 'studio', label: 'Studio', icon: <Building /> },
+  { id: 'glamping', label: 'Glamping', icon: <Compass /> },
+];
 
 interface Props {
   initialCategory: 'accommodation' | 'car_rental' | 'circuit';
@@ -64,9 +89,8 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
     listingName: '',
     description: '',
     price: '',
-    listingCurrency: 'EUR', // Par défaut en Euro
-    isDiscountEnabled: false,
-    propertyType: 'hotel',
+    listingCurrency: 'EUR',
+    propertyType: 'hotel_4',
     roomsCount: 1,
     bathroomsCount: 1,
     livingRoomsCount: 0,
@@ -117,7 +141,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
 
   const handleSubmit = async () => {
     if (!user) {
-      toast({ variant: 'destructive', title: 'Connexion requise', description: 'Veuillez vous connecter pour soumettre une annonce.' });
+      toast({ variant: 'destructive', title: 'Connexion requise' });
       return;
     }
 
@@ -129,21 +153,11 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
     setIsSubmitting(true);
     try {
       const listingId = `list_${Date.now()}`;
-      
       const enteredPrice = parseFloat(formData.price) || 0;
       const rate = NORMALIZATION_RATES[formData.listingCurrency] || 1;
       const normalizedPriceEUR = enteredPrice / rate;
 
-      await updateDoc(doc(db, 'users', user.uid), {
-        role: 'partner'
-      });
-
-      await setDoc(doc(db, 'partners', user.uid), {
-        userId: user.uid,
-        companyName: `${formData.firstName} ${formData.lastName}`,
-        createdAt: new Date().toISOString(),
-        verified: false
-      });
+      await updateDoc(doc(db, 'users', user.uid), { role: 'partner' });
 
       const finalData = {
         id: listingId,
@@ -166,7 +180,8 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
             roomsCount: formData.roomsCount,
             bathroomsCount: formData.bathroomsCount,
             livingRoomsCount: formData.livingRoomsCount,
-            gardensCount: formData.gardensCount
+            gardensCount: formData.gardensCount,
+            stars: formData.propertyType.includes('hotel') ? parseInt(formData.propertyType.split('_')[1]) : undefined
           } : initialCategory === 'car_rental' ? {
             brand: formData.brand,
             model: formData.model,
@@ -183,13 +198,13 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
         price: normalizedPriceEUR, 
         currency: 'EUR', 
         photos: photos,
+        rating: 8.0,
         createdAt: new Date().toISOString()
       };
 
       await setDoc(doc(db, 'listings', listingId), finalData);
       setCurrentStep(5);
     } catch (error) {
-      console.error("Submission error:", error);
       toast({ variant: 'destructive', title: 'Erreur', description: 'Échec de la soumission.' });
     } finally {
       setIsSubmitting(false);
@@ -213,7 +228,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
     <div className="text-center py-20 bg-white rounded-3xl shadow-2xl animate-in zoom-in-95">
       <div className="bg-primary/10 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8"><CheckCircle2 className="h-16 w-16 text-primary" /></div>
       <h3 className="text-4xl font-black text-slate-900 mb-4">Profil Partenaire Activé !</h3>
-      <p className="text-xl text-slate-600 max-w-lg mx-auto">Votre annonce est en cours de validation. Vous pouvez désormais accéder à votre espace partenaire.</p>
+      <p className="text-xl text-slate-600 max-w-lg mx-auto">Votre annonce est en cours de validation. Vous recevrez un email dès qu'elle sera en ligne.</p>
       <Button size="lg" className="mt-12 bg-primary px-10 h-14 font-black text-lg rounded-xl" asChild><a href="/partners/dashboard">Accéder au Dashboard</a></Button>
     </div>
   );
@@ -250,7 +265,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
                 </div>
               </div>
             </div>
-            <div className="space-y-2"><Label className="font-bold">Nom de votre service *</Label><Input value={formData.listingName} onChange={e => setFormData({...formData, listingName: e.target.value})} className="h-12 bg-slate-50" /></div>
+            <div className="space-y-2"><Label className="font-bold">Nom de votre service *</Label><Input value={formData.listingName} onChange={e => setFormData({...formData, listingName: e.target.value})} className="h-12 bg-slate-50" placeholder="Ex: Riad El Mansour" /></div>
           </div>
         )}
 
@@ -297,9 +312,9 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
                 </Select>
               </div>
               <div className="space-y-3">
-                <Label className="font-black text-lg">Prix unitaire *</Label>
+                <Label className="font-black text-lg">Prix unitaire (en {formData.listingCurrency}) *</Label>
                 <Input type="number" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="h-14 text-xl font-black rounded-2xl bg-slate-50" placeholder="Ex: 75" />
-                <p className="text-[10px] text-slate-400 italic">Ce prix sera la base de calcul pour toutes les devises clients.</p>
+                <p className="text-[10px] text-slate-400 italic">Ce prix sera converti en Euro pour le stockage de référence.</p>
               </div>
             </div>
           </div>
@@ -317,63 +332,118 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
 }
 
 function renderStep3(formData: any, setFormData: any, category: string, onAI: any, isGen: boolean, t: any) {
-  const amenities = category === 'accommodation' 
-    ? ["Wi-Fi", "Climatisation", "Parking", "Piscine", "Cuisine"] 
-    : category === 'car_rental' 
-    ? ["GPS", "Assurance tous risques", "Climatisation", "Siège Bébé", "Kilométrage illimité"] 
-    : ["Guide certifié", "Repas inclus", "Transport inclus", "Annulation gratuite", "Assurance voyage"];
-  
+  const toggleAmenity = (id: string) => {
+    setFormData((prev: any) => ({
+      ...prev,
+      amenities: prev.amenities.includes(id) 
+        ? prev.amenities.filter((a: string) => a !== id)
+        : [...prev.amenities, id]
+    }));
+  };
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       {category === 'accommodation' && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Counter icon={<Bed/>} label="Chambres" value={formData.roomsCount} onChange={v => setFormData({...formData, roomsCount: v})} />
-          <Counter icon={<Bath/>} label="Salles de bain" value={formData.bathroomsCount} onChange={v => setFormData({...formData, bathroomsCount: v})} />
-          <Counter icon={<Sofa/>} label="Salons" value={formData.livingRoomsCount} onChange={v => setFormData({...formData, livingRoomsCount: v})} />
-          <Counter icon={<Building/>} label="Jardins" value={formData.gardensCount} onChange={v => setFormData({...formData, gardensCount: v})} />
+        <div className="space-y-8">
+          <div className="space-y-4">
+            <Label className="font-black text-lg">Type d'offre *</Label>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {PROPERTY_TYPES.map((type) => (
+                <button
+                  key={type.id}
+                  onClick={() => setFormData({...formData, propertyType: type.id})}
+                  className={cn(
+                    "flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all gap-2",
+                    formData.propertyType === type.id 
+                      ? "border-primary bg-primary/5 text-primary shadow-md" 
+                      : "border-slate-100 bg-white text-slate-500 hover:border-slate-200"
+                  )}
+                >
+                  <span className="font-black text-sm">{type.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <Label className="font-black text-lg">Composition du bien *</Label>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Counter icon={<Bed/>} label="Chambres" value={formData.roomsCount} onChange={v => setFormData({...formData, roomsCount: v})} />
+              <Counter icon={<Bath/>} label="Salles de bain" value={formData.bathroomsCount} onChange={v => setFormData({...formData, bathroomsCount: v})} />
+              <Counter icon={<Sofa/>} label="Salons" value={formData.livingRoomsCount} onChange={v => setFormData({...formData, livingRoomsCount: v})} />
+              <Counter icon={<Building/>} label="Jardins" value={formData.gardensCount} onChange={v => setFormData({...formData, gardensCount: v})} />
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <Label className="font-black text-lg">Équipements & Inclusions *</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-6 bg-slate-50 rounded-3xl border border-slate-100">
+              {ACCOMMODATION_AMENITIES.map((amenity) => (
+                <div 
+                  key={amenity.id} 
+                  onClick={() => toggleAmenity(amenity.id)}
+                  className="flex items-center space-x-3 cursor-pointer group"
+                >
+                  <div className={cn(
+                    "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all",
+                    formData.amenities.includes(amenity.id) ? "bg-primary border-primary" : "bg-white border-slate-300"
+                  )}>
+                    {formData.amenities.includes(amenity.id) && <CheckCircle2 className="h-3.5 w-3.5 text-white" />}
+                  </div>
+                  <span className={cn(
+                    "text-sm font-bold transition-colors",
+                    formData.amenities.includes(amenity.id) ? "text-primary" : "text-slate-600 group-hover:text-slate-900"
+                  )}>
+                    {amenity.id}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {category === 'car_rental' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2"><Label className="font-bold">Marque</Label><Input value={formData.brand} onChange={e => setFormData({...formData, brand: e.target.value})} placeholder="Ex: Dacia" className="bg-slate-50" /></div>
+          <div className="space-y-2"><Label className="font-bold">Modèle</Label><Input value={formData.model} onChange={e => setFormData({...formData, model: e.target.value})} placeholder="Ex: Duster" className="bg-slate-50" /></div>
+          <div className="space-y-2"><Label className="font-bold">Année</Label><Input value={formData.year} onChange={e => setFormData({...formData, year: e.target.value})} className="bg-slate-50" /></div>
+          <div className="space-y-2">
+            <Label className="font-bold">Transmission</Label>
+            <Select value={formData.transmission} onValueChange={v => setFormData({...formData, transmission: v})}>
+              <SelectTrigger className="bg-slate-50"><SelectValue /></SelectTrigger>
+              <SelectContent><SelectItem value="Manuelle">Manuelle</SelectItem><SelectItem value="Automatique">Automatique</SelectItem></SelectContent>
+            </Select>
+          </div>
         </div>
       )}
 
       {category === 'circuit' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-slate-50 p-4 rounded-2xl space-y-2">
-            <Label className="font-black text-[10px] uppercase text-slate-400 flex items-center gap-2"><Clock className="h-3 w-3 text-primary" /> Durée du circuit</Label>
-            <Input value={formData.duration} onChange={e => setFormData({...formData, duration: e.target.value})} placeholder="Ex: 3 jours, 2 nuits" className="bg-white border-slate-200" />
+            <Label className="font-black text-[10px] uppercase text-slate-400 flex items-center gap-2"><Clock className="h-3 w-3 text-primary" /> Durée</Label>
+            <Input value={formData.duration} onChange={e => setFormData({...formData, duration: e.target.value})} placeholder="Ex: 3 jours" className="bg-white" />
           </div>
           <Counter icon={<Users/>} label="Max Groupe" value={formData.maxGroupSize} onChange={v => setFormData({...formData, maxGroupSize: v})} />
           <div className="bg-slate-50 p-4 rounded-2xl space-y-2">
-            <Label className="font-black text-[10px] uppercase text-slate-400 flex items-center gap-2"><Globe className="h-3 w-3 text-primary" /> Langues parlées</Label>
-            <Input placeholder="Français, Arabe, Anglais..." className="bg-white border-slate-200" onBlur={(e) => setFormData({...formData, languages: e.target.value.split(',').map(l => l.trim())})} />
+            <Label className="font-black text-[10px] uppercase text-slate-400 flex items-center gap-2"><Globe className="h-3 w-3 text-primary" /> Langues</Label>
+            <Input placeholder="Français, Arabe..." className="bg-white" onBlur={(e) => setFormData({...formData, languages: e.target.value.split(',').map(l => l.trim())})} />
           </div>
         </div>
       )}
 
       <div className="space-y-4">
-        <Label className="font-black">Options & Équipements inclus</Label>
-        <div className="flex flex-wrap gap-3">
-          {amenities.map(a => (
-            <Badge 
-              key={a} 
-              variant={formData.amenities.includes(a) ? "default" : "outline"} 
-              onClick={() => setFormData({...formData, amenities: formData.amenities.includes(a) ? formData.amenities.filter((x:any) => x!==a) : [...formData.amenities, a]})} 
-              className="cursor-pointer px-4 py-2 rounded-xl border-slate-200 transition-all active:scale-95"
-            >
-              {a}
-            </Badge>
-          ))}
-        </div>
-      </div>
-
-      <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <Label className="font-black">Description commerciale</Label>
-          <Button variant="ghost" size="sm" onClick={onAI} disabled={isGen} className="text-primary font-bold"><Wand2 className="h-4 w-4 mr-2"/> {isGen ? 'Génération...' : 'Améliorer par IA'}</Button>
+          <Label className="font-black text-lg">Description attractive</Label>
+          <Button variant="ghost" size="sm" onClick={onAI} disabled={isGen} className="text-primary font-black border border-primary/20 rounded-lg">
+            <Wand2 className="h-4 w-4 mr-2"/> {isGen ? 'Génération...' : 'Améliorer avec l\'IA'}
+          </Button>
         </div>
         <Textarea 
           value={formData.description} 
           onChange={e => setFormData({...formData, description: e.target.value})} 
-          placeholder={category === 'circuit' ? "Décrivez l'itinéraire, les points forts et l'expérience vécue..." : "Décrivez votre offre en détails..."}
-          className="min-h-[150px] bg-slate-50 rounded-2xl border-slate-200" 
+          placeholder="Décrivez votre offre en détails pour attirer les clients..."
+          className="min-h-[150px] bg-slate-50 rounded-3xl border-slate-200" 
         />
       </div>
     </div>
@@ -382,7 +452,7 @@ function renderStep3(formData: any, setFormData: any, category: string, onAI: an
 
 function Counter({ icon, label, value, onChange }: any) {
   return (
-    <div className="bg-slate-50 p-4 rounded-2xl flex flex-col items-center gap-2">
+    <div className="bg-slate-50 p-4 rounded-2xl flex flex-col items-center gap-2 border border-slate-100">
       <div className="text-primary">{icon}</div>
       <span className="text-[10px] font-black uppercase text-slate-400">{label}</span>
       <div className="flex items-center gap-3">

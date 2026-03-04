@@ -30,11 +30,20 @@ export function FilterSidebar({
   onToggleRating
 }: FilterSidebarProps) {
   
+  // Liste identique à celle du formulaire Onboarding pour une cohérence parfaite
   const amenitiesList = [
-    "Wi-Fi gratuit", "Climatisation", "Parking gratuit", "Petit-déjeuner inclus",
-    "Piscine", "Restaurant sur place", "Réception 24h/24", "Animaux domestiques acceptés",
-    "Terrasse / balcon / vue", "Cuisine / coin cuisine", "Prises électriques près du lit",
-    "Salle de bain privée", "Lit bébé / lit supplémentaire", "Ascenseur", "Accessibilité PMR"
+    "Wi-Fi gratuit",
+    "Piscine",
+    "Climatisation",
+    "Parking gratuit",
+    "Petit-déjeuner inclus",
+    "Vue mer",
+    "Cuisine équipée",
+    "Restaurant sur place",
+    "Réception 24h/24",
+    "Animaux domestiques acceptés",
+    "Terrasse / balcon / vue",
+    "Salle de bain privée"
   ];
 
   const ratingOptions = [

@@ -3,15 +3,10 @@ import { NextResponse } from 'next/server';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { getFirestore } from '@/firebase';
 
-/**
- * Endpoint pour récupérer les statistiques des hébergements.
- * Filtre strictement par catégorie 'accommodation'.
- */
 export async function GET() {
   try {
     const db = getFirestore();
     const listingsRef = collection(db, 'listings');
-    // FIX: Filtrage par catégorie 'accommodation' pour éviter de compter voitures et circuits
     const q = query(
       listingsRef, 
       where('category', '==', 'accommodation'),
@@ -25,10 +20,18 @@ export async function GET() {
     };
 
     const targetAmenities = [
-      "Wi-Fi gratuit", "Climatisation", "Parking gratuit", "Petit-déjeuner inclus",
-      "Piscine", "Restaurant sur place", "Réception 24h/24", "Animaux domestiques acceptés",
-      "Terrasse / balcon / vue", "Cuisine / coin cuisine", "Prises électriques près du lit",
-      "Salle de bain privée", "Lit bébé / lit supplémentaire", "Ascenseur", "Accessibilité PMR"
+      "Wi-Fi gratuit",
+      "Piscine",
+      "Climatisation",
+      "Parking gratuit",
+      "Petit-déjeuner inclus",
+      "Vue mer",
+      "Cuisine équipée",
+      "Restaurant sur place",
+      "Réception 24h/24",
+      "Animaux domestiques acceptés",
+      "Terrasse / balcon / vue",
+      "Salle de bain privée"
     ];
 
     targetAmenities.forEach(a => stats.amenities[a] = 0);
