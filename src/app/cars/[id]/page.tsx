@@ -49,7 +49,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
 
   // State pour le prix dynamique et la recherche
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
-  const [isEditDialogOpen, setIsEditingOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   
   // États de recherche modifiables
   const [pickupLocation, setPickupLocation] = useState("");
@@ -139,7 +139,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
     if (tempDates.from && tempDates.to) {
       setDateRange({ from: tempDates.from, to: tempDates.to });
     }
-    setIsEditingOpen(false);
+    setIsEditDialogOpen(false);
   };
 
   return (
@@ -337,7 +337,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
       </main>
 
       {/* MODAL DE MODIFICATION DE LA RECHERCHE */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditingOpen}>
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[500px] rounded-[2rem] p-8">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black text-slate-900 flex items-center gap-3">
@@ -388,7 +388,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
           </div>
 
           <DialogFooter className="gap-3 sm:gap-0">
-            <Button variant="ghost" onClick={() => setIsEditingOpen(false)} className="font-bold text-slate-400">
+            <Button variant="ghost" onClick={() => setIsEditDialogOpen(false)} className="font-bold text-slate-400">
               Annuler
             </Button>
             <Button 
