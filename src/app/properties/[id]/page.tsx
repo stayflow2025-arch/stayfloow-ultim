@@ -11,7 +11,7 @@ import {
   CheckCircle, Info, Utensils, Clock, Dog,
   Sofa, Trees, Camera,
   Users, Check, MessageSquare,
-  Navigation, Leaf, Search, X, Train, Plane, Map as MapIcon, FerrisWheel, Mountain
+  Navigation, Leaf, Search, X, Train, Plane, Map as MapIcon, FerrisWheel, Mountain, Bed, Bath
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -111,9 +111,10 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
     const types = [];
     const basePrice = property.price || 10000;
 
+    // LOGIQUE SPÉCIFIQUE HÔTEL
     if (details.propertyType === 'hotel' || details.type?.toLowerCase().includes('hôtel') || details.type?.toLowerCase().includes('riad')) {
       const singleCount = details.singleRoomsCount || 0;
-      const doubleCount = details.doubleRoomsCount || 5; 
+      const doubleCount = details.doubleRoomsCount || 0; 
       const suiteCount = details.parentalSuitesCount || 0;
 
       if (singleCount > 0) {
@@ -128,24 +129,26 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
         });
       }
       
-      types.push({
-        id: 'double',
-        name: t('double_rooms'),
-        size: '24m²',
-        specs: ['1 grand lit double', 'WiFi gratuit', 'Climatisation'],
-        maxGuests: 2,
-        price: basePrice,
-        stock: doubleCount > 0 ? doubleCount : 10
-      });
+      if (doubleCount > 0 || (singleCount === 0 && suiteCount === 0)) {
+        types.push({
+          id: 'double',
+          name: t('double_rooms'),
+          size: '24m²',
+          specs: ['1 grand lit double', 'WiFi gratuit', 'Climatisation'],
+          maxGuests: 2,
+          price: basePrice,
+          stock: doubleCount > 0 ? doubleCount : 10
+        });
+      }
 
       if (suiteCount > 0) {
         types.push({
           id: 'suite',
-          name: t('parental_suites'),
-          size: '40m²',
-          specs: ['1 lit King Size', 'Espace salon', 'Vue panoramique'],
+          name: t('parental_suites') + ' (King Size)',
+          size: '45m²',
+          specs: ['1 lit King Size', 'Espace salon privatif', 'Vue panoramique'],
           maxGuests: 3,
-          price: basePrice * 1.5,
+          price: basePrice * 1.6,
           stock: suiteCount
         });
       }
@@ -154,7 +157,13 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
         id: 'entire',
         name: `Logement entier (${details.roomsCount || 1} pièces)`,
         size: '120m²',
-        specs: [`${details.roomsCount || 1} chambres`, `${details.bathroomsCount || 1} SDB`, 'Cuisine équipée'],
+        specs: [
+          `${details.roomsCount || 1} chambres`, 
+          `${details.bathroomsCount || 1} SDB`, 
+          details.livingRoomsCount ? `${details.livingRoomsCount} salon(s)` : null,
+          details.gardensCount ? `${details.gardensCount} jardin(s)` : null,
+          'Cuisine équipée'
+        ].filter(Boolean),
         maxGuests: (details.roomsCount || 1) * 2 || 4,
         price: basePrice,
         stock: 1
@@ -169,7 +178,6 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
     return acc + (room?.price || 0) * qty * nights;
   }, 0);
 
-  // Logic for Surrounding Points of Interest
   const surroundings = useMemo(() => {
     if (!property) return null;
     const addr = (property.location?.address || property.location || "").toLowerCase();
@@ -178,99 +186,29 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
       return {
         attractions: [
           { name: "Jardin d'Essai du Hamma", dist: "1,2 km" },
-          { name: "Mémorial du Martyr", dist: "1,5 km" },
-          { name: "Casbah d'Alger", dist: "2,8 km" },
-          { name: "Musée national du Bardo", dist: "2,1 km" },
-          { name: "Grande Poste d'Alger", dist: "3,2 km" }
+          { name: "Casbah d'Alger", dist: "2,8 km" }
         ],
         restaurants: [
-          { name: "Restaurant Le Tantra", dist: "450 m" },
-          { name: "Café El Kheima", dist: "300 m" },
-          { name: "Le Normand", dist: "800 m" }
+          { name: "Café El Kheima", dist: "300 m" }
         ],
         nature: [
-          { name: "Forêt de Bainem", dist: "8 km" },
           { name: "Mer - Baie d'Alger", dist: "500 m" }
         ],
         transport: [
-          { name: "Métro - Station Tafourah", dist: "900 m" },
-          { name: "Tramway - Ruisseau", dist: "1,4 km" }
+          { name: "Métro - Station Tafourah", dist: "900 m" }
         ],
         airports: [
-          { name: "Aéroport d'Alger - Houari Boumédiène", dist: "18 km" }
-        ]
-      };
-    } else if (addr.includes("ghardaïa")) {
-      return {
-        attractions: [
-          { name: "Marché de Ghardaïa", dist: "400 m" },
-          { name: "Grande Mosquée de Ghardaïa", dist: "600 m" },
-          { name: "Ksar de Beni Isguen", dist: "2,5 km" },
-          { name: "Palmeraie du M'zab", dist: "1,2 km" }
-        ],
-        restaurants: [
-          { name: "Restaurant M'zab Buffet", dist: "200 m" },
-          { name: "Salon de Thé Traditionnel", dist: "150 m" }
-        ],
-        nature: [
-          { name: "Dunes du Sahara", dist: "15 km" },
-          { name: "Oasis de Sebseb", dist: "45 km" }
-        ],
-        transport: [
-          { name: "Gare Routière Ghardaïa", dist: "1,8 km" }
-        ],
-        airports: [
-          { name: "Aéroport de Ghardaïa - Noumérat", dist: "16 km" }
-        ]
-      };
-    } else if (addr.includes("caire") || addr.includes("cairo")) {
-      return {
-        attractions: [
-          { name: "Pyramides de Gizeh", dist: "12 km" },
-          { name: "Musée Égyptien du Caire", dist: "1,1 km" },
-          { name: "Khan el-Khalili", dist: "3,5 km" },
-          { name: "Citadelle de Saladin", dist: "4,2 km" }
-        ],
-        restaurants: [
-          { name: "Abou Tarek Koshary", dist: "800 m" },
-          { name: "Naghib Mahfouz Cafe", dist: "3,4 km" }
-        ],
-        nature: [
-          { name: "Fleuve - Le Nil", dist: "200 m" },
-          { name: "Parc Al-Azhar", dist: "3,8 km" }
-        ],
-        transport: [
-          { name: "Métro - Sadat Station", dist: "1,2 km" },
-          { name: "Gare de Ramsès", dist: "2,5 km" }
-        ],
-        airports: [
-          { name: "Aéroport international du Caire", dist: "22 km" }
+          { name: "Aéroport d'Alger", dist: "18 km" }
         ]
       };
     }
     
-    // Generic Fallback
     return {
-      attractions: [
-        { name: "Centre-ville historique", dist: "1,5 km" },
-        { name: "Musée local", dist: "2,2 km" },
-        { name: "Place centrale", dist: "800 m" }
-      ],
-      restaurants: [
-        { name: "Restaurant La Table", dist: "300 m" },
-        { name: "Café de la Paix", dist: "150 m" }
-      ],
-      nature: [
-        { name: "Parc municipal", dist: "1,1 km" },
-        { name: "Montagne locale", dist: "15 km" }
-      ],
-      transport: [
-        { name: "Arrêt de bus", dist: "250 m" },
-        { name: "Gare ferroviaire", dist: "3,5 km" }
-      ],
-      airports: [
-        { name: "Aéroport le plus proche", dist: "25 km" }
-      ]
+      attractions: [{ name: "Centre-ville historique", dist: "1,5 km" }],
+      restaurants: [{ name: "Restaurant La Table", dist: "300 m" }],
+      nature: [{ name: "Parc municipal", dist: "1,1 km" }],
+      transport: [{ name: "Arrêt de bus", dist: "250 m" }],
+      airports: [{ name: "Aéroport le plus proche", dist: "25 km" }]
     };
   }, [property]);
 
@@ -278,23 +216,6 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!property) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-8 text-center">
-        <div className="bg-white p-12 rounded-[2rem] shadow-2xl space-y-6 max-w-md">
-          <div className="bg-red-50 text-red-500 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <X className="h-10 w-10" />
-          </div>
-          <h1 className="text-2xl font-black text-slate-900">Établissement non trouvé</h1>
-          <p className="text-slate-500 font-medium">Désolé, nous ne parvenons pas à charger les détails de cet établissement.</p>
-          <Button className="w-full h-12 bg-primary font-black rounded-xl" onClick={() => router.push('/')}>
-            Retour à l'accueil
-          </Button>
-        </div>
       </div>
     );
   }
@@ -376,9 +297,6 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
             </div>
             <div className="relative group cursor-pointer">
               <Image src={photos[3] || 'https://picsum.photos/seed/p4/800/600'} alt="Side 3" fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <Camera className="text-white h-8 w-8" />
-              </div>
             </div>
             <div className="relative group cursor-pointer bg-slate-100">
               <Image src={photos[4] || 'https://picsum.photos/seed/p5/800/600'} alt="Side 4" fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
@@ -397,7 +315,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
               <div className="bg-[#FEBA02] px-4 py-2 rounded-sm inline-flex items-center gap-2 mt-2 shadow-sm">
                 <CalendarIcon className="h-4 w-4" />
                 <span className="text-[12px] font-black uppercase">
-                  Du {format(dates.from, "dd", { locale: fr })} au {format(dates.to, "dd MMMM yyyy", { locale: fr })} ({nights} nuits) — {occupancy.adults} adultes, {occupancy.children} enfant
+                  Du {format(dates.from, "dd", { locale: fr })} au {format(dates.to, "dd MMMM yyyy", { locale: fr })} ({nights} nuits)
                 </span>
               </div>
             </div>
@@ -415,21 +333,18 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
               <TableHeader className="bg-[#4C4C4C] hover:bg-[#4C4C4C]">
                 <TableRow>
                   <TableHead className="text-white font-bold py-4">Type de logement</TableHead>
-                  <TableHead className="text-white font-bold text-center">Nombre de voyageurs</TableHead>
-                  <TableHead className="text-white font-bold">Tarif pour {nights} nuits</TableHead>
-                  <TableHead className="text-white font-bold">Vos options</TableHead>
-                  <TableHead className="text-white font-bold">Sélectionner des chambres</TableHead>
+                  <TableHead className="text-white font-bold text-center">Voyageurs</TableHead>
+                  <TableHead className="text-white font-bold">Tarif ({nights} nuits)</TableHead>
+                  <TableHead className="text-white font-bold">Options</TableHead>
+                  <TableHead className="text-white font-bold">Choix</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {roomTypes.map((room) => (
                   <TableRow key={room.id} className="hover:bg-slate-50">
-                    <TableCell className="align-top w-[35%] py-6">
+                    <TableCell className="align-top py-6">
                       <div className="space-y-3">
                         <h4 className="font-bold text-[#10B981] underline cursor-pointer text-[15px]">{room.name}</h4>
-                        <div className="flex flex-wrap gap-2 text-[11px] text-slate-500 font-medium">
-                          <span className="bg-slate-100 px-2 py-0.5 rounded">{room.size}</span>
-                        </div>
                         <ul className="space-y-1">
                           {room.specs.map(spec => (
                             <li key={spec} className="flex items-center gap-2 text-[12px] text-slate-600">
@@ -445,48 +360,24 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                       </div>
                     </TableCell>
                     <TableCell className="align-top py-6">
-                      <div className="space-y-1">
-                        <p className="font-black text-lg text-slate-900">{formatPrice(room.price * nights)}</p>
-                        <p className="text-[10px] text-slate-400">Taxes et frais compris</p>
-                        <Badge className="bg-primary/10 text-primary border-none text-[10px] h-5">Offre StayFloow</Badge>
+                      <p className="font-black text-lg text-slate-900">{formatPrice(room.price * nights)}</p>
+                      <p className="text-[10px] text-slate-400">Taxes comprises</p>
+                    </TableCell>
+                    <TableCell className="align-top py-6">
+                      <div className="text-[12px] space-y-1">
+                        <p className="text-green-600 font-bold">Petit-déjeuner inclus</p>
+                        <p className="text-green-600 font-bold">Annulation GRATUITE</p>
                       </div>
                     </TableCell>
                     <TableCell className="align-top py-6">
-                      <div className="space-y-3">
-                        <div className="text-[12px] space-y-1">
-                          <p className="text-green-600 font-bold">Petit-déjeuner inclus</p>
-                          <p className="text-green-600 font-bold">Annulation GRATUITE</p>
-                          <p className="text-slate-500 italic">Aucun prépaiement requis</p>
-                        </div>
-                        {room.stock <= 2 && (
-                          <p className="text-red-600 font-black text-[11px] uppercase animate-pulse">Dernière chance ! {room.stock} dispo</p>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="align-top py-6">
-                      <div className="space-y-4">
-                        <Select 
-                          onValueChange={(val) => setSelectedRooms({...selectedRooms, [room.id]: parseInt(val)})}
-                          defaultValue="0"
-                        >
-                          <SelectTrigger className="w-full bg-white border-slate-300 h-10">
-                            <SelectValue placeholder="0" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {Array.from({ length: Math.min(6, room.stock + 1) }).map((_, n) => (
-                              <SelectItem key={n} value={n.toString()}>{n}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        {selectedRooms[room.id] > 0 && (
-                          <Button 
-                            onClick={() => router.push(`/properties/${id}/book`)}
-                            className="w-full bg-primary hover:bg-primary/90 text-white font-black h-10 rounded-sm"
-                          >
-                            Je réserve
-                          </Button>
-                        )}
-                      </div>
+                      <Select onValueChange={(val) => setSelectedRooms({...selectedRooms, [room.id]: parseInt(val)})} defaultValue="0">
+                        <SelectTrigger className="w-full bg-white border-slate-300 h-10"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {Array.from({ length: Math.min(6, room.stock + 1) }).map((_, n) => (
+                            <SelectItem key={n} value={n.toString()}>{n}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -495,13 +386,12 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
           </div>
           
           {totalBookingPrice > 0 && (
-            <div className="flex flex-col items-end gap-6 mt-8 animate-in fade-in slide-in-from-bottom-4">
-              {/* BOUTON RÉSERVER FINAL (DESIGN IMAGE) */}
+            <div className="flex flex-col items-end gap-6 mt-8">
               <Button 
                 onClick={() => router.push(`/properties/${id}/book`)}
-                className="bg-[#10B981] hover:bg-[#0da372] text-white font-black text-xl px-16 py-8 rounded-xl shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2"
+                className="bg-[#10B981] hover:bg-[#0da372] text-white font-black text-xl px-16 py-8 rounded-xl shadow-xl transition-all"
               >
-                Réserver
+                Réserver ({formatPrice(totalBookingPrice)})
               </Button>
             </div>
           )}
@@ -520,106 +410,65 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
           </div>
         </section>
 
-        {/* Section Surrounding POIs (DESIGN PHOTO) */}
+        {/* Section 4: Composition Technique (NOUVEAU) */}
+        <section className="space-y-6 pt-10 border-t">
+          <h2 className="text-xl font-black text-slate-900">Détails de l'établissement</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="flex items-center gap-4 p-6 bg-slate-50 rounded-2xl border border-slate-100">
+              <div className="bg-primary/10 p-3 rounded-xl text-primary"><Bed className="h-6 w-6" /></div>
+              <div>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">Chambres</p>
+                <p className="text-lg font-black text-slate-900">{property.details?.roomsCount || 1}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 p-6 bg-slate-50 rounded-2xl border border-slate-100">
+              <div className="bg-primary/10 p-3 rounded-xl text-primary"><Bath className="h-6 w-6" /></div>
+              <div>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">SDB</p>
+                <p className="text-lg font-black text-slate-900">{property.details?.bathroomsCount || 1}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 p-6 bg-slate-50 rounded-2xl border border-slate-100">
+              <div className="bg-primary/10 p-3 rounded-xl text-primary"><Sofa className="h-6 w-6" /></div>
+              <div>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">Salons</p>
+                <p className="text-lg font-black text-slate-900">{property.details?.livingRoomsCount || 0}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 p-6 bg-slate-50 rounded-2xl border border-slate-100">
+              <div className="bg-primary/10 p-3 rounded-xl text-primary"><Trees className="h-6 w-6" /></div>
+              <div>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">Jardins</p>
+                <p className="text-lg font-black text-slate-900">{property.details?.gardensCount || 0}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Section Surrounding POIs */}
         <section ref={surroundingsRef} className="space-y-8 pt-10 border-t">
           <h2 className="text-xl font-black text-slate-900">Environs de l'établissement</h2>
-          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-10">
-            {/* Meilleures attractions */}
             <div className="space-y-4">
-              <h3 className="flex items-center gap-2 font-bold text-[15px] text-slate-900">
-                <FerrisWheel className="h-5 w-5 text-slate-600" /> Meilleures attractions
-              </h3>
-              <div className="space-y-2.5">
-                {surroundings?.attractions.map((item, i) => (
-                  <SurroundingRow key={i} label={item.name} dist={item.dist} />
-                ))}
-              </div>
+              <h3 className="flex items-center gap-2 font-bold text-[15px] text-slate-900"><FerrisWheel className="h-5 w-5 text-slate-600" /> Attractions</h3>
+              {surroundings?.attractions.map((item, i) => <SurroundingRow key={i} label={item.name} dist={item.dist} />)}
             </div>
-
-            {/* Restaurants et cafés */}
             <div className="space-y-4">
-              <h3 className="flex items-center gap-2 font-bold text-[15px] text-slate-900">
-                <Utensils className="h-5 w-5 text-slate-600" /> Restaurants et cafés
-              </h3>
-              <div className="space-y-2.5">
-                {surroundings?.restaurants.map((item, i) => (
-                  <SurroundingRow key={i} label={item.name} dist={item.dist} />
-                ))}
-              </div>
-            </div>
-
-            {/* Environnement naturel */}
-            <div className="space-y-4">
-              <h3 className="flex items-center gap-2 font-bold text-[15px] text-slate-900">
-                <Mountain className="h-5 w-5 text-slate-600" /> Environnement naturel
-              </h3>
-              <div className="space-y-2.5">
-                {surroundings?.nature.map((item, i) => (
-                  <SurroundingRow key={i} label={item.name} dist={item.dist} />
-                ))}
-              </div>
-            </div>
-
-            {/* Transports en commun */}
-            <div className="space-y-4">
-              <h3 className="flex items-center gap-2 font-bold text-[15px] text-slate-900">
-                <Train className="h-5 w-5 text-slate-600" /> Transports en commun
-              </h3>
-              <div className="space-y-2.5">
-                {surroundings?.transport.map((item, i) => (
-                  <SurroundingRow key={i} label={item.name} dist={item.dist} />
-                ))}
-              </div>
-            </div>
-
-            {/* Aéroports */}
-            <div className="space-y-4">
-              <h3 className="flex items-center gap-2 font-bold text-[15px] text-slate-900">
-                <Plane className="h-5 w-5 text-slate-600" /> Aéroports les plus proches
-              </h3>
-              <div className="space-y-2.5">
-                {surroundings?.airports.map((item, i) => (
-                  <SurroundingRow key={i} label={item.name} dist={item.dist} />
-                ))}
-              </div>
+              <h3 className="flex items-center gap-2 font-bold text-[15px] text-slate-900"><Plane className="h-5 w-5 text-slate-600" /> Aéroports</h3>
+              {surroundings?.airports.map((item, i) => <SurroundingRow key={i} label={item.name} dist={item.dist} />)}
             </div>
           </div>
-          <p className="text-[11px] text-slate-400 italic mt-4">
-            Toutes les distances sont mesurées en ligne droite. Les distances réelles peuvent varier.
-          </p>
         </section>
 
-        {/* Section 4: Location & Map */}
+        {/* Section Location & Map */}
         <section ref={locationRef} className="space-y-6 pt-10 border-t">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-            <div className="space-y-2">
-              <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
-                Emplacement et environs
-                <Badge className="bg-red-600 text-white border-none font-black text-[10px] px-1.5 py-0.5 rounded-sm shadow-lg ml-2">9.8</Badge>
-              </h2>
-              <p className="text-sm text-slate-500 font-medium">Excellent emplacement selon les récents voyageurs.</p>
-            </div>
-            <Link 
-              href={`/search?dest=${encodeURIComponent(cityName)}`} 
-              className="text-primary font-bold text-sm hover:underline flex items-center gap-1 group"
-            >
-              Voir plus d'établissements à {cityName} 
-              <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </div>
-          
-          <div className="rounded-2xl overflow-hidden border-4 border-slate-50 shadow-xl h-[450px]">
+          <h2 className="text-xl font-black text-slate-900">Emplacement</h2>
+          <div className="rounded-2xl overflow-hidden border-4 border-slate-50 shadow-xl h-[400px]">
             <OnboardingMap location={property.location?.address || property.location} />
           </div>
-
-          <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 italic text-slate-600 font-medium flex gap-4">
-            <Info className="h-6 w-6 text-primary shrink-0" />
-            <p>"L'emplacement est parfait pour explorer la ville. À quelques minutes à pied des principales attractions et des transports."</p>
-          </div>
         </section>
 
-        {/* Section 5: Rules & Reviews (Placeholders) */}
+        {/* Section Rules */}
         <section ref={rulesRef} className="space-y-6 pt-10 border-t">
           <h2 className="text-xl font-black text-slate-900">Règles de la maison</h2>
           <div className="border rounded-md">
@@ -633,72 +482,26 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
       {/* SEARCH MODIFIER DIALOG */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
         <DialogContent className="sm:max-w-[500px] rounded-2xl p-8">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-black text-slate-900 flex items-center gap-3">
-              <Search className="h-6 w-6 text-primary" /> Modifier votre recherche
-            </DialogTitle>
-          </DialogHeader>
-          
+          <DialogHeader><DialogTitle className="text-2xl font-black text-slate-900">Modifier votre recherche</DialogTitle></DialogHeader>
           <div className="space-y-6 py-6">
             <div className="space-y-2">
-              <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Dates de séjour</span>
+              <span className="text-[10px] font-black text-slate-400 uppercase">Dates de séjour</span>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full h-14 justify-start font-black text-lg border-slate-200 rounded-xl bg-slate-50">
                     <CalendarIcon className="mr-3 h-5 w-5 text-primary" />
-                    {dates.from ? (
-                      dates.to ? `${format(dates.from, "dd MMM")} — ${format(dates.to, "dd MMM")}` : format(dates.from, "dd MMM")
-                    ) : "Choisir les dates"}
+                    {dates.from ? `${format(dates.from, "dd MMM")} — ${format(dates.to, "dd MMM")}` : "Choisir les dates"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0 border-none shadow-2xl" align="center">
-                  <Calendar 
-                    mode="range" 
-                    selected={dates} 
-                    onSelect={(range: any) => range && setDates(range)} 
-                    locale={fr} 
-                    disabled={{ before: new Date() }}
-                  />
+                  <Calendar mode="range" selected={dates} onSelect={(range: any) => range && setDates(range)} locale={fr} disabled={{ before: new Date() }} />
                 </PopoverContent>
               </Popover>
             </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Adultes</span>
-                <Input 
-                  type="number" 
-                  value={occupancy.adults.toString()} 
-                  onChange={e => {
-                    const val = parseInt(e.target.value);
-                    setOccupancy({...occupancy, adults: isNaN(val) ? 0 : val});
-                  }}
-                  className="h-12 rounded-xl bg-slate-50 font-black"
-                />
-              </div>
-              <div className="space-y-2">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Enfants</span>
-                <Input 
-                  type="number" 
-                  value={occupancy.children.toString()} 
-                  onChange={e => {
-                    const val = parseInt(e.target.value);
-                    setOccupancy({...occupancy, children: isNaN(val) ? 0 : val});
-                  }}
-                  className="h-12 rounded-xl bg-slate-50 font-black"
-                />
-              </div>
-            </div>
           </div>
-
           <div className="flex justify-end gap-3 border-t pt-6">
-            <Button variant="ghost" onClick={() => setIsEditModalOpen(false)} className="font-bold text-slate-400">Annuler</Button>
-            <Button 
-              onClick={() => setIsEditModalOpen(false)}
-              className="bg-primary hover:bg-primary/90 text-white font-black px-8 h-12 rounded-xl shadow-lg"
-            >
-              Mettre à jour
-            </Button>
+            <Button variant="ghost" onClick={() => setIsEditModalOpen(false)}>Annuler</Button>
+            <Button onClick={() => setIsEditModalOpen(false)} className="bg-primary text-white font-black px-8 h-12 rounded-xl">Mettre à jour</Button>
           </div>
         </DialogContent>
       </Dialog>
@@ -708,17 +511,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
 
 function TabButton({ active, label, onClick }: { active: boolean, label: string, onClick: () => void }) {
   return (
-    <button 
-      onClick={onClick}
-      className={cn(
-        "px-6 py-4 text-[13px] font-bold transition-all border-b-4",
-        active 
-          ? "border-primary text-primary bg-primary/5" 
-          : "border-transparent text-slate-500 hover:text-primary hover:bg-slate-50"
-      )}
-    >
-      {label}
-    </button>
+    <button onClick={onClick} className={cn("px-6 py-4 text-[13px] font-bold transition-all border-b-4", active ? "border-primary text-primary bg-primary/5" : "border-transparent text-slate-500 hover:text-primary hover:bg-slate-50")}>{label}</button>
   );
 }
 

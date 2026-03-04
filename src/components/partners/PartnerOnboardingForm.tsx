@@ -20,7 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { 
   Building, Car, Compass, MapPin, Upload, CheckCircle2, 
   Loader2, Wand2, X, Plus, Minus, Users, Bed, Bath, Sofa, Clock, Globe,
-  Wifi, Wind, ParkingCircle, Coffee, Utensils, Waves, Star
+  Wifi, Wind, ParkingCircle, Coffee, Utensils, Waves, Star, Home, Layout
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { generatePartnerDescription } from '@/ai/flows/partner-description-generator';
@@ -38,7 +38,6 @@ const NORMALIZATION_RATES: Record<string, number> = {
   EGP: 52.5,
 };
 
-// Liste standardisée pour correspondre aux filtres de recherche
 const ACCOMMODATION_AMENITIES = [
   { id: "Wi-Fi gratuit", icon: <Wifi className="h-4 w-4" /> },
   { id: "Piscine", icon: <Waves className="h-4 w-4" /> },
@@ -55,14 +54,10 @@ const ACCOMMODATION_AMENITIES = [
 ];
 
 const PROPERTY_TYPES = [
-  { id: 'hotel_3', label: 'Hôtel ★★★', icon: <Building /> },
-  { id: 'hotel_4', label: 'Hôtel ★★★★', icon: <Building /> },
-  { id: 'hotel_5', label: 'Hôtel ★★★★★', icon: <Building /> },
-  { id: 'riad', label: 'Riad', icon: <Building /> },
-  { id: 'villa', label: 'Villa', icon: <Building /> },
-  { id: 'apartment', label: 'Appartement', icon: <Building /> },
-  { id: 'studio', label: 'Studio', icon: <Building /> },
-  { id: 'glamping', label: 'Glamping', icon: <Compass /> },
+  { id: 'hotel', label: 'Hôtel', icon: <Building className="h-8 w-8" /> },
+  { id: 'villa', label: 'Villa', icon: <Home className="h-8 w-8" /> },
+  { id: 'apartment', label: 'Appartement', icon: <Layout className="h-8 w-8" /> },
+  { id: 'studio', label: 'Studio', icon: <Building className="h-8 w-8" /> },
 ];
 
 interface Props {
@@ -90,11 +85,15 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
     description: '',
     price: '',
     listingCurrency: 'EUR',
-    propertyType: 'hotel_4',
+    propertyType: 'hotel',
     roomsCount: 1,
     bathroomsCount: 1,
     livingRoomsCount: 0,
     gardensCount: 0,
+    // Specifiques Hotel
+    singleRoomsCount: 0,
+    doubleRoomsCount: 0,
+    parentalSuitesCount: 0,
     brand: '',
     model: '',
     year: '2023',
@@ -181,7 +180,10 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
             bathroomsCount: formData.bathroomsCount,
             livingRoomsCount: formData.livingRoomsCount,
             gardensCount: formData.gardensCount,
-            stars: formData.propertyType.includes('hotel') ? parseInt(formData.propertyType.split('_')[1]) : undefined
+            singleRoomsCount: formData.singleRoomsCount,
+            doubleRoomsCount: formData.doubleRoomsCount,
+            parentalSuitesCount: formData.parentalSuitesCount,
+            stars: 4
           } : initialCategory === 'car_rental' ? {
             brand: formData.brand,
             model: formData.model,
@@ -344,58 +346,83 @@ function renderStep3(formData: any, setFormData: any, category: string, onAI: an
   return (
     <div className="space-y-10">
       {category === 'accommodation' && (
-        <div className="space-y-8">
-          <div className="space-y-4">
-            <Label className="font-black text-lg">Type d'offre *</Label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="space-y-12">
+          {/* TYPE DE BIEN - STYLE IMAGE */}
+          <div className="space-y-6">
+            <Label className="font-black text-xl text-slate-900">Quel type de bien proposez-vous ? *</Label>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {PROPERTY_TYPES.map((type) => (
                 <button
                   key={type.id}
                   onClick={() => setFormData({...formData, propertyType: type.id})}
                   className={cn(
-                    "flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all gap-2",
+                    "flex flex-col items-center justify-center p-8 rounded-3xl border-2 transition-all gap-4 h-40 shadow-sm",
                     formData.propertyType === type.id 
-                      ? "border-primary bg-primary/5 text-primary shadow-md" 
-                      : "border-slate-100 bg-white text-slate-500 hover:border-slate-200"
+                      ? "border-primary bg-primary/5 text-primary scale-[1.02] shadow-lg ring-1 ring-primary/20" 
+                      : "border-slate-100 bg-white text-slate-400 hover:border-slate-200"
                   )}
                 >
-                  <span className="font-black text-sm">{type.label}</span>
+                  <div className={cn("transition-transform", formData.propertyType === type.id ? "scale-110" : "")}>
+                    {type.icon}
+                  </div>
+                  <span className="font-black text-sm uppercase tracking-tight">{type.label}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          <div className="space-y-4">
-            <Label className="font-black text-lg">Composition du bien *</Label>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Counter icon={<Bed/>} label="Chambres" value={formData.roomsCount} onChange={v => setFormData({...formData, roomsCount: v})} />
-              <Counter icon={<Bath/>} label="Salles de bain" value={formData.bathroomsCount} onChange={v => setFormData({...formData, bathroomsCount: v})} />
-              <Counter icon={<Sofa/>} label="Salons" value={formData.livingRoomsCount} onChange={v => setFormData({...formData, livingRoomsCount: v})} />
-              <Counter icon={<Building/>} label="Jardins" value={formData.gardensCount} onChange={v => setFormData({...formData, gardensCount: v})} />
+          {/* COMPOSITION - STYLE IMAGE */}
+          <div className="space-y-6">
+            <div className="p-10 bg-slate-50/50 rounded-[3rem] border border-slate-100">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+                <Counter icon={<Bed className="h-5 w-5"/>} label="Chambres" value={formData.roomsCount} onChange={v => setFormData({...formData, roomsCount: v})} />
+                <Counter icon={<Bath className="h-5 w-5"/>} label="SDB" value={formData.bathroomsCount} onChange={v => setFormData({...formData, bathroomsCount: v})} />
+                <Counter icon={<Utensils className="h-5 w-5"/>} label="Cuisines" value={0} onChange={() => {}} /> {/* Placeholder matching image */}
+                <Counter icon={<Users className="h-5 w-5"/>} label="Toilettes" value={1} onChange={() => {}} /> {/* Placeholder matching image */}
+                <Counter icon={<Sofa className="h-5 w-5"/>} label="Salons" value={formData.livingRoomsCount} onChange={v => setFormData({...formData, livingRoomsCount: v})} />
+                <Counter icon={<Trees className="h-5 w-5"/>} label="Jardins" value={formData.gardensCount} onChange={v => setFormData({...formData, gardensCount: v})} />
+              </div>
             </div>
           </div>
 
+          {/* OPTIONS SPÉCIFIQUES HÔTEL */}
+          {formData.propertyType === 'hotel' && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500 bg-primary/5 p-8 rounded-[2.5rem] border border-primary/10">
+              <h4 className="font-black text-lg text-primary flex items-center gap-2">
+                <Star className="h-5 w-5 fill-primary" /> Configuration des chambres de l'hôtel
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Counter icon={<Bed/>} label="Chambres Seules" value={formData.singleRoomsCount} onChange={v => setFormData({...formData, singleRoomsCount: v})} light />
+                <Counter icon={<Users/>} label="Chambres Doubles" value={formData.doubleRoomsCount} onChange={v => setFormData({...formData, doubleRoomsCount: v})} light />
+                <Counter icon={<Star/>} label="Suites Parentales (King)" value={formData.parentalSuitesCount} onChange={v => setFormData({...formData, parentalSuitesCount: v})} light />
+              </div>
+            </div>
+          )}
+
           <div className="space-y-4">
             <Label className="font-black text-lg">Équipements & Inclusions *</Label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-6 bg-slate-50 rounded-3xl border border-slate-100">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-8 bg-white rounded-3xl border border-slate-100 shadow-inner">
               {ACCOMMODATION_AMENITIES.map((amenity) => (
                 <div 
                   key={amenity.id} 
                   onClick={() => toggleAmenity(amenity.id)}
-                  className="flex items-center space-x-3 cursor-pointer group"
+                  className="flex items-center space-x-3 cursor-pointer group p-2 rounded-xl hover:bg-slate-50 transition-colors"
                 >
                   <div className={cn(
-                    "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all",
-                    formData.amenities.includes(amenity.id) ? "bg-primary border-primary" : "bg-white border-slate-300"
+                    "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all",
+                    formData.amenities.includes(amenity.id) ? "bg-primary border-primary text-white" : "bg-white border-slate-300 text-transparent"
                   )}>
-                    {formData.amenities.includes(amenity.id) && <CheckCircle2 className="h-3.5 w-3.5 text-white" />}
+                    <CheckCircle2 className="h-4 w-4" />
                   </div>
-                  <span className={cn(
-                    "text-sm font-bold transition-colors",
-                    formData.amenities.includes(amenity.id) ? "text-primary" : "text-slate-600 group-hover:text-slate-900"
-                  )}>
-                    {amenity.id}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-slate-400 group-hover:text-primary transition-colors">{amenity.icon}</span>
+                    <span className={cn(
+                      "text-sm font-bold transition-colors",
+                      formData.amenities.includes(amenity.id) ? "text-primary" : "text-slate-600 group-hover:text-slate-900"
+                    )}>
+                      {amenity.id}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -403,6 +430,7 @@ function renderStep3(formData: any, setFormData: any, category: string, onAI: an
         </div>
       )}
 
+      {/* Reste du formulaire (Voitures / Circuits) inchangé ou adapté */}
       {category === 'car_rental' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2"><Label className="font-bold">Marque</Label><Input value={formData.brand} onChange={e => setFormData({...formData, brand: e.target.value})} placeholder="Ex: Dacia" className="bg-slate-50" /></div>
@@ -450,15 +478,28 @@ function renderStep3(formData: any, setFormData: any, category: string, onAI: an
   );
 }
 
-function Counter({ icon, label, value, onChange }: any) {
+function Counter({ icon, label, value, onChange, light = false }: any) {
   return (
-    <div className="bg-slate-50 p-4 rounded-2xl flex flex-col items-center gap-2 border border-slate-100">
-      <div className="text-primary">{icon}</div>
-      <span className="text-[10px] font-black uppercase text-slate-400">{label}</span>
-      <div className="flex items-center gap-3">
-        <button onClick={() => onChange(Math.max(0, value-1))} className="h-8 w-8 rounded-full bg-white shadow-sm border border-slate-100 flex items-center justify-center text-primary transition-all active:scale-90"><Minus className="h-4 w-4"/></button>
-        <span className="font-black text-lg">{value}</span>
-        <button onClick={() => onChange(value+1)} className="h-8 w-8 rounded-full bg-white shadow-sm border border-slate-100 flex items-center justify-center text-primary transition-all active:scale-90"><Plus className="h-4 w-4"/></button>
+    <div className={cn(
+      "p-5 rounded-3xl flex flex-col items-center gap-3 border transition-all hover:shadow-md group",
+      light ? "bg-white border-primary/10" : "bg-white border-slate-100 shadow-sm"
+    )}>
+      <div className="text-primary opacity-40 group-hover:opacity-100 transition-opacity">{icon}</div>
+      <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest text-center">{label}</span>
+      <div className="flex items-center gap-4 bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
+        <button 
+          onClick={() => onChange(Math.max(0, value-1))} 
+          className="h-8 w-8 rounded-xl bg-white shadow-sm border border-slate-200 flex items-center justify-center text-primary transition-all active:scale-90 hover:bg-primary hover:text-white"
+        >
+          <Minus className="h-4 w-4"/>
+        </button>
+        <span className="font-black text-lg min-w-[20px] text-center text-slate-900">{value}</span>
+        <button 
+          onClick={() => onChange(value+1)} 
+          className="h-8 w-8 rounded-xl bg-white shadow-sm border border-slate-200 flex items-center justify-center text-primary transition-all active:scale-90 hover:bg-primary hover:text-white"
+        >
+          <Plus className="h-4 w-4"/>
+        </button>
       </div>
     </div>
   );
