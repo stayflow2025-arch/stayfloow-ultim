@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -22,16 +23,16 @@ function Calendar({
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
         month: "space-y-4",
-        month_caption: "flex justify-center pt-1 relative items-center",
+        month_caption: "flex justify-center pt-1 relative items-center mb-4",
         caption_label: "text-sm font-black text-slate-900 uppercase tracking-widest",
-        nav: "space-x-1 flex items-center",
+        nav: "flex items-center",
         button_previous: cn(
           buttonVariants({ variant: "outline" }),
-          "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 absolute left-1 z-10 border-none"
+          "h-7 w-7 bg-white p-0 opacity-100 hover:opacity-100 absolute left-1 z-20 border border-slate-200 shadow-sm rounded-full"
         ),
         button_next: cn(
           buttonVariants({ variant: "outline" }),
-          "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 absolute right-1 z-10 border-none"
+          "h-7 w-7 bg-white p-0 opacity-100 hover:opacity-100 absolute right-1 z-20 border border-slate-200 shadow-sm rounded-full"
         ),
         month_grid: "w-full border-collapse space-y-1",
         weekdays: "flex mb-2",
@@ -45,10 +46,10 @@ function Calendar({
         ),
         selected:
           "bg-primary text-white hover:bg-primary hover:text-white focus:bg-primary focus:text-white rounded-full shadow-lg",
-        today: "bg-slate-100 text-slate-900",
+        today: "bg-slate-100 text-slate-900 font-black",
         outside:
           "day-outside text-slate-300 opacity-50 aria-selected:bg-primary/5 aria-selected:text-slate-300 aria-selected:opacity-30",
-        disabled: "text-slate-300 opacity-50",
+        disabled: "text-slate-200 opacity-50",
         range_middle:
           "aria-selected:bg-accent aria-selected:text-accent-foreground",
         hidden: "invisible",
