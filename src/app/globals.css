@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -38,14 +37,11 @@
 }
 
 /* FIX CRITIQUE NAVIGATION : Empêche le blocage des événements de clic par des overlays invisibles */
-body * {
-  pointer-events: auto !important;
-}
-
-/* Sauf pour les conteneurs de toast ou de chat qui ne doivent pas bloquer le fond */
-.fixed.inset-0:not(.bg-black\/80) {
+/* On cible spécifiquement les conteneurs Radix/Shadcn qui peuvent devenir bloquants sans fond visible */
+.fixed.inset-0:not(.bg-black\/80):not(.bg-background\/80) {
   pointer-events: none !important;
 }
+
 .fixed.inset-0 > * {
   pointer-events: auto !important;
 }

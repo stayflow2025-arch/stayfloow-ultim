@@ -31,6 +31,10 @@ const nextConfig: NextConfig = {
     ],
     formats: ['image/webp'],
   },
+  swcMinify: true,
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
 };
 
 export default nextConfig;
