@@ -183,6 +183,34 @@ export const cars = [
     luggage: 2,
     category: "Luxe",
     reviewsCount: 156
+  },
+  { 
+    id: "car-3", 
+    brand: "Mercedes-Benz", 
+    name: "Classe C", 
+    rating: 9.5, 
+    image: "https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=800", 
+    pricePerDay: 120, 
+    transmission: "Automatique", 
+    fuel: "Diesel", 
+    seats: 5, 
+    luggage: 3,
+    category: "Berline",
+    reviewsCount: 89
+  },
+  { 
+    id: "car-4", 
+    brand: "Renault", 
+    name: "Clio 5", 
+    rating: 8.9, 
+    image: "https://images.unsplash.com/photo-1590362891991-f776e747a588?w=800", 
+    pricePerDay: 35, 
+    transmission: "Manuelle", 
+    fuel: "Essence", 
+    seats: 5, 
+    luggage: 2,
+    category: "Économique",
+    reviewsCount: 210
   }
 ];
 
