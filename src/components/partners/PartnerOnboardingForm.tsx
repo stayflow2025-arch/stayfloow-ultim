@@ -448,12 +448,26 @@ function renderStep3(formData: any, setFormData: any, category: string, onAI: an
             <div className="space-y-2"><Label className="font-bold">Marque</Label><Input value={formData.brand} onChange={e => setFormData({...formData, brand: e.target.value})} placeholder="Ex: Dacia" className="bg-slate-50 h-12" /></div>
             <div className="space-y-2"><Label className="font-bold">Modèle</Label><Input value={formData.model} onChange={e => setFormData({...formData, model: e.target.value})} placeholder="Ex: Duster" className="bg-slate-50 h-12" /></div>
             <div className="space-y-2"><Label className="font-bold">Année</Label><Input value={formData.year} onChange={e => setFormData({...formData, year: e.target.value})} className="bg-slate-50 h-12" /></div>
-            <div className="space-y-2">
-              <Label className="font-bold">Transmission</Label>
-              <Select value={formData.transmission} onValueChange={v => setFormData({...formData, transmission: v})}>
-                <SelectTrigger className="bg-slate-50 h-12"><SelectValue /></SelectTrigger>
-                <SelectContent><SelectItem value="Manuelle">Manuelle</SelectItem><SelectItem value="Automatique">Automatique</SelectItem></SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="font-bold">Transmission</Label>
+                <Select value={formData.transmission} onValueChange={v => setFormData({...formData, transmission: v})}>
+                  <SelectTrigger className="bg-slate-50 h-12"><SelectValue /></SelectTrigger>
+                  <SelectContent><SelectItem value="Manuelle">Manuelle</SelectItem><SelectItem value="Automatique">Automatique</SelectItem></SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label className="font-bold">Carburant</Label>
+                <Select value={formData.fuel} onValueChange={v => setFormData({...formData, fuel: v})}>
+                  <SelectTrigger className="bg-slate-50 h-12"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Essence">Essence</SelectItem>
+                    <SelectItem value="Diesel">Diesel</SelectItem>
+                    <SelectItem value="Électrique">Électrique</SelectItem>
+                    <SelectItem value="Hybride">Hybride</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
