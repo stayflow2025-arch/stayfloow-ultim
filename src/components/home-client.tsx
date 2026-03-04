@@ -9,9 +9,10 @@ import { Button } from '@/components/ui/button';
 import AdvancedSearchBar from '@/components/search/AdvancedSearchBar';
 import { useLanguage } from '@/context/language-context';
 import { useCurrency } from '@/context/currency-context';
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { properties } from '@/lib/data';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 // Chargement différé strict pour les composants non critiques au LCP
 const AiRecommender = dynamic(() => import('@/components/ai-recommender').then(mod => mod.AiRecommender), {
@@ -33,11 +34,43 @@ export function HomeClient() {
     setIsClient(true);
   }, []);
 
+  // Calcul dynamique des hébergements par type
+  const counts = useMemo(() => {
+    return {
+      hotel: properties.filter(p => p.type.toLowerCase().includes('hôtel') || p.type.toLowerCase().includes('riad')).length,
+      apartment: properties.filter(p => p.type.toLowerCase().includes('appartement')).length,
+      resort: properties.filter(p => p.type.toLowerCase().includes('complexe') || p.type.toLowerCase().includes('resort') || p.type.toLowerCase().includes('glamping')).length,
+      villa: properties.filter(p => p.type.toLowerCase().includes('villa')).length,
+    };
+  }, []);
+
+  const getImage = (id: string) => PlaceHolderImages.find(img => img.id === id)?.imageUrl || '';
+
   const propertyTypes = [
-    { name: t('Hôtels'), image: 'https://picsum.photos/seed/hotel/400/300', count: '820,412', slug: 'hotel' },
-    { name: t('Appartements'), image: 'https://picsum.photos/seed/apt/400/300', count: '915,234', slug: 'apartment' },
-    { name: t('Complexes hôteliers'), image: 'https://picsum.photos/seed/resort/400/300', count: '145,098', slug: 'resort' },
-    { name: t('Villas'), image: 'https://picsum.photos/seed/villa/400/300', count: '450,123', slug: 'villa' },
+    { 
+      name: t('Hôtels'), 
+      image: getImage('cat-hotel'), 
+      count: counts.hotel, 
+      slug: 'hotel' 
+    },
+    { 
+      name: t('Appartements'), 
+      image: getImage('cat-apartment'), 
+      count: counts.apartment, 
+      slug: 'apartment' 
+    },
+    { 
+      name: t('Complexes hôteliers'), 
+      image: getImage('cat-resort'), 
+      count: counts.resort, 
+      slug: 'resort' 
+    },
+    { 
+      name: t('Villas'), 
+      image: getImage('cat-villa'), 
+      count: counts.villa, 
+      slug: 'villa' 
+    },
   ];
 
   const uniqueStays = properties.slice(0, 4);

@@ -22,7 +22,7 @@ import {
   Loader2, Wand2, X, Plus, Minus, Users, Bed, Bath, Sofa, Clock, Globe,
   Wifi, Wind, ParkingCircle, Coffee, Utensils, Waves, Star, Home, Layout, Trees,
   Gauge, Fuel, Route, ShieldCheck, Wallet, Baby, User, Mountain, Plane, Calendar as CalendarIcon,
-  Info
+  Info, Landmark
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { generatePartnerDescription } from '@/ai/flows/partner-description-generator';
@@ -88,7 +88,7 @@ const PROPERTY_TYPES = [
   { id: 'hotel', label: 'Hôtel', icon: <Building className="h-8 w-8" /> },
   { id: 'villa', label: 'Villa', icon: <Home className="h-8 w-8" /> },
   { id: 'apartment', label: 'Appartement', icon: <Layout className="h-8 w-8" /> },
-  { id: 'studio', label: 'Studio', icon: <Building className="h-8 w-8" /> },
+  { id: 'resort', label: 'Complexe hôtelier', icon: <Landmark className="h-8 w-8" /> },
 ];
 
 interface Props {
