@@ -20,7 +20,7 @@ import {
   Building, Car, Compass, MapPin, Upload, CheckCircle2, 
   Loader2, Wand2, X, Plus, Minus, Users, Bed, Bath, Sofa, Clock, Globe,
   Wifi, Wind, ParkingCircle, Coffee, Utensils, Waves, Star, Home, Layout, Trees,
-  Gauge, Fuel, Route, ShieldCheck, Wallet, Baby
+  Gauge, Fuel, Route, ShieldCheck, Wallet, Baby, User, Mountain, Plane
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { generatePartnerDescription } from '@/ai/flows/partner-description-generator';
@@ -63,6 +63,18 @@ const CAR_AMENITIES = [
   { id: "4x4 / SUV", icon: <Car className="h-4 w-4" /> },
   { id: "Annulation gratuite", icon: <Clock className="h-4 w-4" /> },
   { id: "Payez sur place", icon: <Wallet className="h-4 w-4" /> },
+];
+
+const CIRCUIT_AMENITIES = [
+  { id: "Guide inclus (local arabe/français)", icon: <User className="h-4 w-4" /> },
+  { id: "Repas inclus (halal)", icon: <Utensils className="h-4 w-4" /> },
+  { id: "Transport 4x4 (désert)", icon: <Car className="h-4 w-4" /> },
+  { id: "Annulation gratuite", icon: <Clock className="h-4 w-4" /> },
+  { id: "Assurance incluse", icon: <ShieldCheck className="h-4 w-4" /> },
+  { id: "Thème désert/Sahara", icon: <Mountain className="h-4 w-4" /> },
+  { id: "Thème culturel/historique (pyramides, ruines)", icon: <Building className="h-4 w-4" /> },
+  { id: "Thème Nil/croisière", icon: <Waves className="h-4 w-4" /> },
+  { id: "Départ depuis aéroport (Alger/Caire)", icon: <Plane className="h-4 w-4" /> },
 ];
 
 const PROPERTY_TYPES = [
@@ -503,15 +515,46 @@ function renderStep3(formData: any, setFormData: any, category: string, onAI: an
       )}
 
       {category === 'circuit' && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-slate-50 p-4 rounded-2xl space-y-2">
-            <Label className="font-black text-[10px] uppercase text-slate-400 flex items-center gap-2"><Clock className="h-3 w-3 text-primary" /> Durée</Label>
-            <Input value={formData.duration} onChange={e => setFormData({...formData, duration: e.target.value})} placeholder="Ex: 3 jours" className="bg-white h-12" />
+        <div className="space-y-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-slate-50 p-4 rounded-2xl space-y-2">
+              <Label className="font-black text-[10px] uppercase text-slate-400 flex items-center gap-2"><Clock className="h-3 w-3 text-primary" /> Durée</Label>
+              <Input value={formData.duration} onChange={e => setFormData({...formData, duration: e.target.value})} placeholder="Ex: 3 jours" className="bg-white h-12" />
+            </div>
+            <Counter icon={<Users/>} label="Max Groupe" value={formData.maxGroupSize} onChange={v => setFormData({...formData, maxGroupSize: v})} />
+            <div className="bg-slate-50 p-4 rounded-2xl space-y-2">
+              <Label className="font-black text-[10px] uppercase text-slate-400 flex items-center gap-2"><Globe className="h-3 w-3 text-primary" /> Langues</Label>
+              <Input placeholder="Français, Arabe..." className="bg-white h-12" onBlur={(e) => setFormData({...formData, languages: e.target.value.split(',').map(l => l.trim())})} />
+            </div>
           </div>
-          <Counter icon={<Users/>} label="Max Groupe" value={formData.maxGroupSize} onChange={v => setFormData({...formData, maxGroupSize: v})} />
-          <div className="bg-slate-50 p-4 rounded-2xl space-y-2">
-            <Label className="font-black text-[10px] uppercase text-slate-400 flex items-center gap-2"><Globe className="h-3 w-3 text-primary" /> Langues</Label>
-            <Input placeholder="Français, Arabe..." className="bg-white h-12" onBlur={(e) => setFormData({...formData, languages: e.target.value.split(',').map(l => l.trim())})} />
+
+          <div className="space-y-4">
+            <Label className="font-black text-lg">Services inclus & Thématiques *</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-8 bg-white rounded-3xl border border-slate-100 shadow-inner">
+              {CIRCUIT_AMENITIES.map((amenity) => (
+                <div 
+                  key={amenity.id} 
+                  onClick={() => toggleAmenity(amenity.id)}
+                  className="flex items-center space-x-3 cursor-pointer group p-2 rounded-xl hover:bg-slate-50 transition-colors"
+                >
+                  <div className={cn(
+                    "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all",
+                    formData.amenities.includes(amenity.id) ? "bg-primary border-primary text-white" : "bg-white border-slate-300 text-transparent"
+                  )}>
+                    <CheckCircle2 className="h-4 w-4" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-slate-400 group-hover:text-primary transition-colors">{amenity.icon}</span>
+                    <span className={cn(
+                      "text-sm font-bold transition-colors",
+                      formData.amenities.includes(amenity.id) ? "text-primary" : "text-slate-600 group-hover:text-slate-900"
+                    )}>
+                      {amenity.id}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
