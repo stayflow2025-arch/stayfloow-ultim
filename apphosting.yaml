@@ -4,7 +4,7 @@
 runConfig:
   # Augmentez cette valeur si vous souhaitez augmenter automatiquement le nombre d'instances
   # en réponse à un trafic accru.
-  maxInstances: 2
+  maxInstances: 5
   minInstances: 0
   memory: 512Mi
 
