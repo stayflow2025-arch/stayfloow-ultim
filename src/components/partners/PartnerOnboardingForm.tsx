@@ -539,33 +539,37 @@ function renderStep3(formData: any, setFormData: any, category: string, onAI: an
             <Label className="font-black text-xl text-slate-900 flex items-center gap-2">
               <CalendarIcon className="h-6 w-6 text-primary" /> Dates de disponibilité *
             </Label>
-            <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-slate-50 p-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="space-y-4">
+            <Card className="border-none shadow-sm rounded-[2rem] overflow-hidden bg-slate-50 p-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div className="space-y-6">
                   <p className="text-sm text-slate-500 font-medium leading-relaxed">
-                    Sélectionnez les jours où ce circuit est ouvert à la réservation. Vous pouvez choisir plusieurs dates individuelles.
+                    Sélectionnez les jours où ce circuit est ouvert à la réservation. Vos clients ne pourront choisir que parmi ces dates.
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {formData.availableDates.length > 0 ? (
                       formData.availableDates.sort((a, b) => a.getTime() - b.getTime()).map((date, idx) => (
-                        <Badge key={idx} variant="secondary" className="bg-white border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-bold">
+                        <Badge key={idx} variant="secondary" className="bg-white border-slate-200 text-slate-700 px-3 py-2 rounded-xl font-bold flex items-center gap-2 shadow-sm animate-in fade-in zoom-in-95">
                           {format(date, "dd MMM yyyy", { locale: fr })}
-                          <X className="h-3 w-3 ml-2 cursor-pointer text-red-400" onClick={() => setFormData({...formData, availableDates: formData.availableDates.filter((_, i) => i !== idx)})} />
+                          <X className="h-3.5 w-3.5 cursor-pointer text-red-400 hover:text-red-600 transition-colors" onClick={() => setFormData({...formData, availableDates: formData.availableDates.filter((_, i) => i !== idx)})} />
                         </Badge>
                       ))
                     ) : (
-                      <p className="text-xs font-bold text-amber-600 italic">Aucune date sélectionnée pour le moment.</p>
+                      <div className="p-4 bg-amber-50 border border-amber-100 rounded-xl">
+                        <p className="text-xs font-bold text-amber-600 flex items-center gap-2">
+                          <Info className="h-4 w-4" /> Aucune date sélectionnée
+                        </p>
+                      </div>
                     )}
                   </div>
                 </div>
-                <div className="bg-white rounded-2xl p-4 shadow-inner border border-slate-100 flex justify-center">
+                <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-white flex justify-center">
                   <Calendar
                     mode="multiple"
                     selected={formData.availableDates}
                     onSelect={(dates) => setFormData({...formData, availableDates: dates || []})}
                     locale={fr}
                     disabled={{ before: new Date() }}
-                    className="border-none"
+                    className="border-none p-0"
                   />
                 </div>
               </div>
