@@ -42,7 +42,12 @@ function SearchResultsContent() {
       setLoading(true);
       try {
         const listingsRef = collection(db, 'listings');
-        const q = query(listingsRef, where('status', '==', 'approved'));
+        // FIX: Ajout du filtre de catégorie 'accommodation' pour éviter le mélange avec voitures/circuits
+        const q = query(
+          listingsRef, 
+          where('category', '==', 'accommodation'),
+          where('status', '==', 'approved')
+        );
         const querySnapshot = await getDocs(q);
         
         const dbListings = querySnapshot.docs.map(doc => {

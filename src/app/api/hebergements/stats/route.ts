@@ -4,15 +4,19 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import { getFirestore } from '@/firebase';
 
 /**
- * Endpoint exemple pour récupérer les statistiques globales des hébergements.
- * Note: En production avec Firestore, on préférera souvent calculer cela côté client 
- * ou via des fonctions d'agrégation/compteurs pré-calculés pour de gros volumes.
+ * Endpoint pour récupérer les statistiques des hébergements.
+ * Filtre strictement par catégorie 'accommodation'.
  */
 export async function GET() {
   try {
     const db = getFirestore();
     const listingsRef = collection(db, 'listings');
-    const q = query(listingsRef, where('status', '==', 'approved'));
+    // FIX: Filtrage par catégorie 'accommodation' pour éviter de compter voitures et circuits
+    const q = query(
+      listingsRef, 
+      where('category', '==', 'accommodation'),
+      where('status', '==', 'approved')
+    );
     const snapshot = await getDocs(q);
     
     const stats = {
@@ -46,6 +50,7 @@ export async function GET() {
 
     return NextResponse.json(stats);
   } catch (error) {
+    console.error("Stats Error:", error);
     return NextResponse.json({ error: "Erreur lors du calcul des stats" }, { status: 500 });
   }
 }
