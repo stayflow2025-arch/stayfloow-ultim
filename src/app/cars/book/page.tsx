@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, Suspense, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { format, addDays } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   ArrowLeft, Calendar as CalendarIcon, ShieldCheck, 
   Info, CreditCard, Users, Briefcase, Settings2, Fuel, 
-  CheckCircle, Loader2, Globe, Phone, Mail, User as UserIcon
+  CheckCircle, Loader2, Globe, Phone, Mail, User as UserIcon, MapPin
 } from "lucide-react";
 import Image from "next/image";
 import { useCurrency } from "@/context/currency-context";
@@ -19,8 +19,8 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CrossSellCard } from "@/components/cross-sell-card";
-import { useFirestore, useUser } from "@/firebase";
-import { collection, addDoc } from "firebase/firestore";
+import { useFirestore, useUser, useDoc } from "@/firebase";
+import { collection, addDoc, doc } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import { sendBookingConfirmationEmail } from "@/lib/mail";
 
@@ -35,23 +35,46 @@ function BookCarContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
+  // Params from URL
+  const carId = searchParams.get('id') || 'mock';
+  const pickupLocation = searchParams.get('pickup') || "Alger, Algérie";
+  const options = searchParams.get('options')?.split(',').filter(o => o) || [];
+  const fromParam = searchParams.get('from');
+  const toParam = searchParams.get('to');
+  const totalParam = searchParams.get('total');
+  const days = parseInt(searchParams.get('days') || '3');
+
+  // Fetch real car data if available
+  const { data: dbCar, loading: carLoading } = useDoc(carId.startsWith('mock') ? null : doc(db, 'listings', carId));
+
   // Form states
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
+    firstName: user?.displayName?.split(' ')[0] || "",
+    lastName: user?.displayName?.split(' ').slice(1).join(' ') || "",
+    email: user?.email || "",
     phone: "",
     dialCode: "+213"
   });
 
-  const carId = searchParams.get('id') || 'mock';
-  const pickupLocation = searchParams.get('pickup') || "Alger, Algérie";
-  const options = searchParams.get('options')?.split(',') || [];
+  const displayCar = useMemo(() => {
+    if (dbCar) return {
+      name: dbCar.details?.brand + " " + (dbCar.details?.model || dbCar.details?.name),
+      image: dbCar.photos?.[0] || "https://placehold.co/800x600?text=Car+StayFloow",
+      price: dbCar.price || 85
+    };
+    // Mock fallbacks
+    return {
+      name: carId === 'mock-car-1' ? 'Dacia Duster 4x4' : 'VW Golf 8 GTI',
+      image: carId === 'mock-car-1' ? "https://images.unsplash.com/photo-1761320296536-38a4e068b37d?w=800" : "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=800",
+      price: carId === 'mock-car-1' ? 50 : 85
+    };
+  }, [dbCar, carId]);
 
-  const basePrice = carId === 'mock-car-1' ? 50 : 85;
-  const days = parseInt(searchParams.get('days') || '3');
-  const optionsCost = options.length * 10;
-  const total = (basePrice * days) + optionsCost;
+  const total = useMemo(() => {
+    if (totalParam) return parseFloat(totalParam);
+    const optionsCost = options.length * 10;
+    return (displayCar.price * days) + optionsCost;
+  }, [totalParam, displayCar.price, days, options.length]);
 
   const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,31 +91,36 @@ function BookCarContent() {
       // Enregistrer dans Firestore
       await addDoc(collection(db, "bookings"), {
         userId: user.uid,
-        partnerId: "stayfloow_fleet",
+        partnerId: dbCar?.ownerId || "stayfloow_fleet",
         listingId: carId,
-        itemName: carId === 'mock-car-1' ? 'Dacia Duster 4x4' : 'VW Golf 8 GTI',
+        itemName: displayCar.name,
         itemType: 'car_rental',
-        itemImage: carId === 'mock-car-1' ? "https://images.unsplash.com/photo-1761320296536-38a4e068b37d?w=800" : "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=800",
+        itemImage: displayCar.image,
         customerName: `${formData.firstName} ${formData.lastName}`,
         customerEmail: formData.email,
         totalPrice: total,
         status: 'approved',
-        startDate: new Date().toISOString(),
-        endDate: addDays(new Date(), days).toISOString(),
+        startDate: fromParam || new Date().toISOString(),
+        endDate: toParam || addDays(new Date(), days).toISOString(),
         createdAt: new Date().toISOString(),
-        reservationNumber: resNum
+        reservationNumber: resNum,
+        pickupLocation
       });
 
       await sendBookingConfirmationEmail({
         customerName: `${formData.firstName} ${formData.lastName}`,
         customerEmail: formData.email,
         reservationNumber: resNum,
-        itemName: carId === 'mock-car-1' ? 'Dacia Duster 4x4' : 'VW Golf 8 GTI',
+        itemName: displayCar.name,
         itemType: 'location de voiture',
         hostName: "StayFloow Fleet",
         hostEmail: "fleet@stayfloow.com",
         hostPhone: "+213 550 00 00 00",
-        bookingDetails: { startDate: new Date().toISOString(), totalPrice: total }
+        bookingDetails: { 
+          startDate: fromParam || new Date().toISOString(), 
+          endDate: toParam || addDays(new Date(), days).toISOString(),
+          totalPrice: total 
+        }
       });
 
       setIsSuccess(true);
@@ -104,6 +132,8 @@ function BookCarContent() {
       setIsSubmitting(false);
     }
   };
+
+  if (carLoading) return <div className="h-screen flex items-center justify-center bg-slate-50"><Loader2 className="animate-spin text-primary h-12 w-12" /></div>;
 
   if (isSuccess) {
     return (
@@ -222,13 +252,25 @@ function BookCarContent() {
             <div className="sticky top-28 space-y-6">
               <Card className="overflow-hidden shadow-2xl border-none rounded-[2.5rem] bg-white">
                 <div className="relative h-56 w-full">
-                  <Image src={carId === 'mock-car-1' ? "https://images.unsplash.com/photo-1761320296536-38a4e068b37d?w=800" : "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=800"} alt="Vehicle" fill className="object-cover" />
+                  <Image src={displayCar.image} alt="Vehicle" fill className="object-cover" />
                 </div>
                 <CardContent className="p-8 space-y-6">
-                  <h3 className="text-2xl font-black text-slate-900 leading-tight">{carId === 'mock-car-1' ? 'Dacia Duster 4x4' : 'VW Golf 8 GTI'}</h3>
+                  <h3 className="text-2xl font-black text-slate-900 leading-tight">{displayCar.name}</h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
+                      <CalendarIcon className="h-4 w-4 text-primary" /> 
+                      {fromParam ? format(new Date(fromParam), "dd MMM") : "..."} — {toParam ? format(new Date(toParam), "dd MMM yyyy") : "..."}
+                    </div>
+                    <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
+                      <MapPin className="h-4 w-4 text-primary" /> {pickupLocation}
+                    </div>
+                  </div>
                   <Separator />
                   <div className="flex justify-between items-end pt-2">
-                    <div><p className="text-[10px] font-black text-slate-400 uppercase mb-1">Total TTC</p><p className="text-4xl font-black text-primary tracking-tighter">{formatPrice(total)}</p></div>
+                    <div>
+                      <p className="text-[10px] font-black text-slate-400 uppercase mb-1">Total TTC ({days}j)</p>
+                      <p className="text-4xl font-black text-primary tracking-tighter">{formatPrice(total)}</p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

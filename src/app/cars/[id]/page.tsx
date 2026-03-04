@@ -316,7 +316,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                 </div>
 
                 <Button className="w-full h-16 text-xl font-black bg-primary hover:bg-primary/90 shadow-xl rounded-2xl" asChild>
-                  <Link href={`/cars/book?id=${id}&options=${selectedOptions.join(',')}&days=${daysCount}&pickup=${pickupLocation}`}>
+                  <Link href={`/cars/book?id=${id}&options=${selectedOptions.join(',')}&days=${daysCount}&pickup=${encodeURIComponent(pickupLocation)}&from=${dateRange.from.toISOString()}&to=${dateRange.to.toISOString()}&total=${totalPrice}`}>
                     Suivant <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
