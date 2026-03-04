@@ -20,7 +20,8 @@ import {
   Building, Car, Compass, MapPin, Upload, CheckCircle2, 
   Loader2, Wand2, X, Plus, Minus, Users, Bed, Bath, Sofa, Clock, Globe,
   Wifi, Wind, ParkingCircle, Coffee, Utensils, Waves, Star, Home, Layout, Trees,
-  Gauge, Fuel, Route, ShieldCheck, Wallet, Baby, User, Mountain, Plane, Calendar as CalendarIcon
+  Gauge, Fuel, Route, ShieldCheck, Wallet, Baby, User, Mountain, Plane, Calendar as CalendarIcon,
+  Info
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { generatePartnerDescription } from '@/ai/flows/partner-description-generator';
@@ -30,7 +31,6 @@ import { useToast } from '@/hooks/use-toast';
 import { OnboardingMap } from '@/components/onboarding-map';
 import { useLanguage } from '@/context/language-context';
 import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -67,6 +67,8 @@ const CAR_AMENITIES = [
   { id: "4x4 / SUV", icon: <Car className="h-4 w-4" /> },
   { id: "Annulation gratuite", icon: <Clock className="h-4 w-4" /> },
   { id: "Payez sur place", icon: <Wallet className="h-4 w-4" /> },
+  { id: "Essence", icon: <Fuel className="h-4 w-4" /> },
+  { id: "Diesel", icon: <Fuel className="h-4 w-4" /> },
 ];
 
 const CIRCUIT_AMENITIES = [
