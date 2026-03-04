@@ -1,9 +1,12 @@
 # Configuration StayFloow pour Firebase App Hosting (Région Europe)
 runConfig:
-  maxInstances: 5
+  maxInstances: 10
   minInstances: 0
   memory: 512Mi
 
 env:
   - variable: NEXT_PUBLIC_BASE_URL
     value: "https://stayfloow-ultim--studio-6933176808-a0512.europe-west4.hosted.app"
+    availability:
+      - BUILD
+      - RUNTIME

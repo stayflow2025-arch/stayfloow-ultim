@@ -16,7 +16,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://www.stayfloow.com'),
+  metadataBase: new URL('https://stayfloow-ultim--studio-6933176808-a0512.europe-west4.hosted.app'),
   title: {
     default: 'StayFloow.com | Réservez Hébergements, Voitures & Circuits en Afrique',
     template: '%s | StayFloow.com'
