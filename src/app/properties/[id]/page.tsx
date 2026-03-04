@@ -212,6 +212,16 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
     };
   }, [property]);
 
+  const handleBookingClick = () => {
+    const query = new URLSearchParams({
+      from: dates.from.toISOString(),
+      to: dates.to.toISOString(),
+      total: totalBookingPrice.toString(),
+      rooms: JSON.stringify(selectedRooms)
+    }).toString();
+    router.push(`/properties/${id}/book?${query}`);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -225,13 +235,12 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
   const rating = property.rating || 8.5;
   const reviewsCount = property.reviewsCount || 125;
   const stars = property.details?.stars || property.stars || 4;
-  const cityName = property.location?.address ? property.location.address.split(',')[0].trim() : (typeof property.location === 'string' ? property.location.split(',')[0].trim() : "Alger");
 
   return (
     <div className="min-h-screen bg-white">
       {/* Header Tabs Navigation */}
       <div className="sticky top-16 z-40 bg-white border-b shadow-sm hidden md:block">
-        <div className="max-w-[1100px] mx-auto px-4 flex">
+        <div className="max-w-[1100px] auto px-4 flex">
           <TabButton active={activeTab === 'overview'} label="Vue d'ensemble" onClick={() => scrollToSection(overviewRef, 'overview')} />
           <TabButton active={activeTab === 'availability'} label="Disponibilité" onClick={() => scrollToSection(availabilityRef, 'availability')} />
           <TabButton active={activeTab === 'facilities'} label="Équipements" onClick={() => scrollToSection(facilitiesRef, 'facilities')} />
@@ -388,7 +397,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
           {totalBookingPrice > 0 && (
             <div className="flex flex-col items-end gap-6 mt-8">
               <Button 
-                onClick={() => router.push(`/properties/${id}/book`)}
+                onClick={handleBookingClick}
                 className="bg-[#10B981] hover:bg-[#0da372] text-white font-black text-xl px-16 py-8 rounded-xl shadow-xl transition-all"
               >
                 Réserver ({formatPrice(totalBookingPrice)})
@@ -410,7 +419,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
           </div>
         </section>
 
-        {/* Section 4: Composition Technique (NOUVEAU) */}
+        {/* Section 4: Composition Technique */}
         <section className="space-y-6 pt-10 border-t">
           <h2 className="text-xl font-black text-slate-900">Détails de l'établissement</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">

@@ -1,7 +1,8 @@
+
 "use client";
 
-import React, { useState, use } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, use, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useDoc, useFirestore, useUser } from "@/firebase";
 import { doc, collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { useForm } from "react-hook-form";
@@ -17,7 +18,7 @@ import {
   CheckCircle,
   Users
 } from "lucide-react";
-import { format, addDays } from "date-fns";
+import { format, addDays, differenceInDays } from "date-fns";
 import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -45,18 +46,23 @@ const bookingSchema = z.object({
 
 type BookingValues = z.infer<typeof bookingSchema>;
 
-export default function PropertyBookingPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+function PropertyBookingContent({ id }: { id: string }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const { formatPrice } = useCurrency();
   const db = useFirestore();
   const { user } = useUser();
   
+  const fromParam = searchParams.get('from');
+  const toParam = searchParams.get('to');
+  const totalParam = searchParams.get('total');
+
   const [date] = useState<{ from: Date; to: Date }>({
-    from: new Date(),
-    to: addDays(new Date(), 3),
+    from: fromParam ? new Date(fromParam) : new Date(),
+    to: toParam ? new Date(toParam) : addDays(new Date(), 3),
   });
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -66,17 +72,16 @@ export default function PropertyBookingPage({ params }: { params: Promise<{ id: 
   const form = useForm<BookingValues>({
     resolver: zodResolver(bookingSchema),
     defaultValues: {
-      fullName: "",
-      email: "",
+      fullName: user?.displayName || "",
+      email: user?.email || "",
       phone: "",
       dialCode: "+213",
       paymentMethod: "card",
     },
   });
 
-  const nights = Math.ceil((date.to.getTime() - date.from.getTime()) / (1000 * 60 * 60 * 24));
-  const basePrice = property?.price || 85;
-  const totalPrice = basePrice * nights;
+  const nights = Math.max(1, differenceInDays(date.to, date.from));
+  const totalPrice = totalParam ? parseFloat(totalParam) : (property?.price || 85) * nights;
 
   const onSubmit = async (values: BookingValues) => {
     if (!user) {
@@ -100,14 +105,14 @@ export default function PropertyBookingPage({ params }: { params: Promise<{ id: 
         customerName: values.fullName,
         customerEmail: values.email,
         totalPrice: totalPrice,
-        status: 'approved', // Simulation approbation auto
+        status: 'approved',
         startDate: date.from.toISOString(),
         endDate: date.to.toISOString(),
         createdAt: new Date().toISOString(),
         reservationNumber
       });
 
-      // 2. Envoyer l'email (Simulation)
+      // 2. Envoyer l'email
       await sendBookingConfirmationEmail({
         customerName: values.fullName,
         customerEmail: values.email,
@@ -162,17 +167,17 @@ export default function PropertyBookingPage({ params }: { params: Promise<{ id: 
               Votre demande de réservation a été enregistrée avec succès. Vous pouvez la retrouver dans votre espace client.
             </p>
             <div className="space-y-3">
-              <Button className="w-full h-14 bg-primary text-white font-black rounded-xl" asChild>
-                <Link href="/profile/bookings">Voir mes réservations</Link>
+              <Button className="w-full h-14 bg-primary text-white font-black rounded-xl" onClick={() => router.push('/profile/bookings')}>
+                Voir mes réservations
               </Button>
-              <Button variant="ghost" className="w-full font-bold text-slate-400" asChild>
-                <Link href="/">Retour à l'accueil</Link>
+              <Button variant="ghost" className="w-full font-bold text-slate-400" onClick={() => router.push('/')}>
+                Retour à l'accueil
               </Button>
             </div>
           </Card>
 
           <CrossSellCard 
-            location={property?.location?.address?.split(',').pop()?.trim() || "Alger"} 
+            location={property?.location?.address?.split(',')[0].trim() || "Alger"} 
             bookedItemType="property" 
           />
         </div>
@@ -372,7 +377,7 @@ export default function PropertyBookingPage({ params }: { params: Promise<{ id: 
 
                   <div className="space-y-3">
                     <div className="flex justify-between items-center text-sm">
-                      <span className="text-slate-500 font-medium">{formatPrice(basePrice)} x {nights} nuits</span>
+                      <span className="text-slate-500 font-medium">{formatPrice(totalPrice / nights)} x {nights} nuits</span>
                       <span className="font-bold">{formatPrice(totalPrice)}</span>
                     </div>
                     <div className="flex justify-between items-center text-sm">
@@ -413,5 +418,14 @@ export default function PropertyBookingPage({ params }: { params: Promise<{ id: 
         </div>
       </main>
     </div>
+  );
+}
+
+export default function PropertyBookingPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  return (
+    <Suspense fallback={<div className="h-screen flex items-center justify-center bg-slate-50"><Loader2 className="animate-spin text-primary h-12 w-12" /></div>}>
+      <PropertyBookingContent id={id} />
+    </Suspense>
   );
 }
