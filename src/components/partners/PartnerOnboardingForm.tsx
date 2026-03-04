@@ -20,7 +20,7 @@ import {
   Building, Car, Compass, MapPin, Upload, CheckCircle2, 
   Loader2, Wand2, X, Plus, Minus, Users, Bed, Bath, Sofa, Clock, Globe,
   Wifi, Wind, ParkingCircle, Coffee, Utensils, Waves, Star, Home, Layout, Trees,
-  Gauge, Fuel, Route, ShieldCheck, Wallet, Baby, User, Mountain, Plane
+  Gauge, Fuel, Route, ShieldCheck, Wallet, Baby, User, Mountain, Plane, Calendar as CalendarIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { generatePartnerDescription } from '@/ai/flows/partner-description-generator';
@@ -29,6 +29,10 @@ import { useFirestore, useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { OnboardingMap } from '@/components/onboarding-map';
 import { useLanguage } from '@/context/language-context';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
 
 const NORMALIZATION_RATES: Record<string, number> = {
   EUR: 1,
@@ -128,6 +132,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
     maxGroupSize: 10,
     languages: [] as string[],
     amenities: [] as string[],
+    availableDates: [] as Date[],
   });
 
   const steps = [
@@ -198,6 +203,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
           name: formData.listingName,
           description: formData.description,
           amenities: formData.amenities,
+          availableDates: formData.availableDates.map(d => d.toISOString()),
           ...(initialCategory === 'accommodation' ? {
             propertyType: formData.propertyType,
             roomsCount: formData.roomsCount,
@@ -526,6 +532,44 @@ function renderStep3(formData: any, setFormData: any, category: string, onAI: an
               <Label className="font-black text-[10px] uppercase text-slate-400 flex items-center gap-2"><Globe className="h-3 w-3 text-primary" /> Langues</Label>
               <Input placeholder="Français, Arabe..." className="bg-white h-12" onBlur={(e) => setFormData({...formData, languages: e.target.value.split(',').map(l => l.trim())})} />
             </div>
+          </div>
+
+          {/* CALENDRIER DE DISPONIBILITÉ POUR LE GUIDE */}
+          <div className="space-y-4">
+            <Label className="font-black text-xl text-slate-900 flex items-center gap-2">
+              <CalendarIcon className="h-6 w-6 text-primary" /> Dates de disponibilité *
+            </Label>
+            <Card className="border-none shadow-sm rounded-3xl overflow-hidden bg-slate-50 p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <p className="text-sm text-slate-500 font-medium leading-relaxed">
+                    Sélectionnez les jours où ce circuit est ouvert à la réservation. Vous pouvez choisir plusieurs dates individuelles.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {formData.availableDates.length > 0 ? (
+                      formData.availableDates.sort((a, b) => a.getTime() - b.getTime()).map((date, idx) => (
+                        <Badge key={idx} variant="secondary" className="bg-white border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-bold">
+                          {format(date, "dd MMM yyyy", { locale: fr })}
+                          <X className="h-3 w-3 ml-2 cursor-pointer text-red-400" onClick={() => setFormData({...formData, availableDates: formData.availableDates.filter((_, i) => i !== idx)})} />
+                        </Badge>
+                      ))
+                    ) : (
+                      <p className="text-xs font-bold text-amber-600 italic">Aucune date sélectionnée pour le moment.</p>
+                    )}
+                  </div>
+                </div>
+                <div className="bg-white rounded-2xl p-4 shadow-inner border border-slate-100 flex justify-center">
+                  <Calendar
+                    mode="multiple"
+                    selected={formData.availableDates}
+                    onSelect={(dates) => setFormData({...formData, availableDates: dates || []})}
+                    locale={fr}
+                    disabled={{ before: new Date() }}
+                    className="border-none"
+                  />
+                </div>
+              </div>
+            </Card>
           </div>
 
           <div className="space-y-4">

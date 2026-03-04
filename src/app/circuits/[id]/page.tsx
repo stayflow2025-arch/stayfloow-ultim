@@ -1,7 +1,6 @@
-
 "use client";
 
-import React, { use, useState, useEffect } from 'react';
+import React, { use, useState, useEffect, useMemo } from 'react';
 import { useDoc, useFirestore } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { 
@@ -18,7 +17,7 @@ import { useCurrency } from '@/context/currency-context';
 import { useLanguage } from '@/context/language-context';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { format } from 'date-fns';
+import { format, isSameDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { circuits as mockCircuits } from '@/lib/data';
@@ -33,13 +32,26 @@ export default function CircuitDetailsPage({ params }: { params: Promise<{ id: s
   const docRef = doc(db, 'listings', id);
   const { data: dbCircuit, loading } = useDoc(docRef);
 
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [ticketCounts, setTicketCounts] = useState<Record<string, number>>({
     adult: 1, child: 0, infant: 0
   });
 
   // Fallback sur les données mockées si Firestore ne renvoie rien
   const circuit = dbCircuit || mockCircuits.find(c => c.id === id);
+
+  // Dates autorisées par le guide
+  const allowedDates = useMemo(() => {
+    const datesStr = circuit?.details?.availableDates || circuit?.availableDates || [];
+    return datesStr.map((d: string) => new Date(d));
+  }, [circuit]);
+
+  useEffect(() => {
+    // Sélectionner la première date disponible par défaut
+    if (allowedDates.length > 0 && !selectedDate) {
+      setSelectedDate(allowedDates[0]);
+    }
+  }, [allowedDates, selectedDate]);
 
   useEffect(() => {
     // Initialiser les compteurs si le circuit a des types de tickets spécifiques
@@ -198,20 +210,38 @@ export default function CircuitDetailsPage({ params }: { params: Promise<{ id: s
                 <CardTitle className="text-xl font-black uppercase tracking-tight">Vérifier disponibilités</CardTitle>
               </CardHeader>
               <CardContent className="p-8 space-y-8">
-                {/* Date Selection */}
+                {/* Date Selection - Restricted to Allowed Dates */}
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">1. Choisir une date</label>
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button variant="outline" className="w-full h-14 justify-start font-black text-lg border-slate-200 rounded-2xl">
                         <CalendarIcon className="mr-3 h-5 w-5 text-primary" />
-                        {selectedDate ? format(selectedDate, "dd MMMM yyyy", { locale: fr }) : "Sélectionner"}
+                        {selectedDate ? format(selectedDate, "dd MMMM yyyy", { locale: fr }) : "Choisir parmi dates dispo"}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0 border-none shadow-2xl" align="start">
-                      <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} locale={fr} disabled={{ before: new Date() }} />
+                      <Calendar 
+                        mode="single" 
+                        selected={selectedDate} 
+                        onSelect={setSelectedDate} 
+                        locale={fr} 
+                        disabled={(date) => {
+                          // Désactiver si avant aujourd'hui OU si pas dans la liste allowedDates
+                          if (date < new Date(new Date().setHours(0,0,0,0))) return true;
+                          if (allowedDates.length > 0) {
+                            return !allowedDates.some(allowed => isSameDay(allowed, date));
+                          }
+                          return false;
+                        }} 
+                      />
                     </PopoverContent>
                   </Popover>
+                  {allowedDates.length > 0 && (
+                    <p className="text-[9px] text-primary font-black uppercase tracking-widest text-center mt-2">
+                      {allowedDates.length} dates ouvertes par le guide
+                    </p>
+                  )}
                 </div>
 
                 {/* Ticket Selection */}
@@ -244,7 +274,7 @@ export default function CircuitDetailsPage({ params }: { params: Promise<{ id: s
 
                 <Button 
                   onClick={handleBooking}
-                  disabled={calculateTotal() === 0}
+                  disabled={calculateTotal() === 0 || !selectedDate}
                   className="w-full h-16 bg-primary hover:bg-primary/90 text-white font-black text-xl rounded-2xl shadow-xl shadow-primary/20 transition-all active:scale-95"
                 >
                   Suivant
