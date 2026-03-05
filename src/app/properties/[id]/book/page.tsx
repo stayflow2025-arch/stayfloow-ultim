@@ -84,19 +84,14 @@ function PropertyBookingContent({ id }: { id: string }) {
   const totalPrice = totalParam ? parseFloat(totalParam) : (property?.price || 85) * nights;
 
   const onSubmit = async (values: BookingValues) => {
-    if (!user) {
-      toast({ variant: "destructive", title: "Connexion requise", description: "Veuillez vous connecter pour réserver." });
-      router.push("/auth/login");
-      return;
-    }
-
     setIsSubmitting(true);
     const reservationNumber = `ST-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    const finalUserId = user?.uid || `guest_${Date.now()}`;
 
     try {
-      // 1. Enregistrer la réservation dans Firestore
+      // 1. Enregistrer la réservation dans Firestore (Mode invité autorisé)
       await addDoc(collection(db, "bookings"), {
-        userId: user.uid,
+        userId: finalUserId,
         partnerId: property?.ownerId || "admin",
         listingId: id,
         itemName: property?.details?.name || "Hébergement StayFloow",

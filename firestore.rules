@@ -4,7 +4,6 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // 1. DÉTECTION ADMIN MAÎTRE (STRICTE)
-    // Seul stayflow2025@gmail.com peut accéder au mode administrateur.
     function isAdmin() {
       return request.auth != null && (
         request.auth.token.email == "stayflow2025@gmail.com" ||
@@ -16,12 +15,12 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // ACCÈS PRIORITAIRE ADMIN : Pas de restriction pour le compte maître
+    // ACCÈS PRIORITAIRE ADMIN
     match /{document=**} {
       allow read, write: if isAdmin();
     }
 
-    // 2. RÈGLES UTILISATEURS STANDARDS
+    // 2. RÈGLES UTILISATEURS
     
     match /users/{userId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
@@ -40,7 +39,8 @@ service cloud.firestore {
         resource.data.userId == request.auth.uid || 
         resource.data.partnerId == request.auth.uid
       );
-      allow create: if isSignedIn();
+      // Correction : Autoriser n'importe quel visiteur (invité) à créer une réservation
+      allow create: if true; 
       allow update: if isSignedIn() && (
         isAdmin() ||
         resource.data.userId == request.auth.uid || 

@@ -56,22 +56,18 @@ function CircuitBookingContent() {
 
     const form = useForm({
         resolver: zodResolver(bookingSchema),
-        defaultValues: { fullName: "", email: "", phone: "", dialCode: "+213", paymentMethod: 'card', agreeToTerms: false },
+        defaultValues: { fullName: user?.displayName || "", email: user?.email || "", phone: "", dialCode: "+213", paymentMethod: 'card', agreeToTerms: false },
     });
 
     const onSubmit = async (values: any) => {
-        if (!user) {
-          toast({ variant: "destructive", title: "Connexion requise" });
-          router.push("/auth/login");
-          return;
-        }
-
         setIsSubmitting(true);
         const resNum = `ST-TOUR-${Math.floor(1000 + Math.random() * 8999)}`;
+        const finalUserId = user?.uid || `guest_${Date.now()}`;
+
         try {
-            // Enregistrer dans Firestore
+            // Enregistrer dans Firestore (Mode invité autorisé)
             await addDoc(collection(db, "bookings"), {
-              userId: user.uid,
+              userId: finalUserId,
               partnerId: circuit?.ownerId || "guide_stayfloow",
               listingId: tourId,
               itemName: circuit?.details?.name || circuit?.title || "Circuit",

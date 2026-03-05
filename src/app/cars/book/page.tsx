@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, Suspense, useMemo } from "react";
@@ -78,19 +79,14 @@ function BookCarContent() {
 
   const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) {
-      toast({ variant: "destructive", title: "Connexion requise", description: "Veuillez vous connecter pour réserver." });
-      router.push("/auth/login");
-      return;
-    }
-
     setIsSubmitting(true);
     const resNum = `ST-CAR-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    const finalUserId = user?.uid || `guest_${Date.now()}`;
 
     try {
-      // Enregistrer dans Firestore
+      // Enregistrer dans Firestore (Mode invité autorisé)
       await addDoc(collection(db, "bookings"), {
-        userId: user.uid,
+        userId: finalUserId,
         partnerId: dbCar?.ownerId || "stayfloow_fleet",
         listingId: carId,
         itemName: displayCar.name,
