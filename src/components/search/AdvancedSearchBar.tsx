@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { MapPin, Calendar as CalendarIcon, Building, Car, Compass, Users, Plus, Minus, ChevronDown } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { MapPin, Calendar as CalendarIcon, Building, Car, Compass, Users, Plus, Minus, ChevronDown, Loader2 } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
@@ -31,6 +31,12 @@ export default function AdvancedSearchBar() {
     to: undefined,
   });
 
+  // Autocomplete States
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
+
   const [occupancy, setOccupancy] = useState({
     adults: 2,
     children: 0,
@@ -51,6 +57,63 @@ export default function AdvancedSearchBar() {
       setActiveCategory('accommodations');
     }
   }, [pathname]);
+
+  // Handle outside click for suggestions
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (suggestionsRef.current && !suggestionsRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Autocomplete logic
+  useEffect(() => {
+    if (destination.length < 2) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    const fetchCities = async () => {
+      setIsLoadingSuggestions(true);
+      try {
+        // Query Nominatim restricted to Algeria (DZ) and Egypt (EG)
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(destination)}&countrycodes=dz,eg&addressdetails=1&limit=6&featuretype=city`
+        );
+        const data = await response.json();
+        
+        const formatted = data.map((item: any) => {
+          const addr = item.address;
+          const cityName = addr.city || addr.town || addr.village || addr.suburb || addr.municipality || item.name;
+          const stateName = addr.state || addr.province || addr.county || "";
+          const countryName = addr.country || "";
+          
+          return {
+            full: item.display_name,
+            main: cityName,
+            sub: stateName ? `${stateName}, ${countryName}` : countryName
+          };
+        });
+
+        // Filter duplicates by main name
+        const unique = formatted.filter((v: any, i: number, a: any[]) => a.findIndex(t => t.main === v.main) === i);
+        
+        setSuggestions(unique);
+        setShowSuggestions(unique.length > 0);
+      } catch (e) {
+        console.error("Autocomplete fetch error", e);
+      } finally {
+        setIsLoadingSuggestions(false);
+      }
+    };
+
+    const timer = setTimeout(fetchCities, 400);
+    return () => clearTimeout(timer);
+  }, [destination]);
 
   const getDateLocale = useCallback(() => {
     switch (locale) {
@@ -139,9 +202,46 @@ export default function AdvancedSearchBar() {
               className="w-full bg-transparent border-none focus:ring-0 p-0 text-lg font-black text-slate-800 placeholder:text-slate-300 outline-none"
               placeholder={activeCategory === 'cars' ? t('pickup_location') : t('where_to')}
               value={destination}
+              autoComplete="off"
               onChange={(e) => setDestination(e.target.value)}
+              onFocus={() => destination.length >= 2 && setShowSuggestions(true)}
             />
+            {isLoadingSuggestions && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
           </div>
+
+          {/* Suggestions Dropdown */}
+          {showSuggestions && suggestions.length > 0 && (
+            <div 
+              ref={suggestionsRef}
+              className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-[0_15px_50px_rgba(0,0,0,0.15)] border border-slate-100 overflow-hidden z-[100] animate-in fade-in slide-in-from-top-2 duration-300"
+            >
+              <div className="p-2">
+                {suggestions.map((s, idx) => (
+                  <div 
+                    key={idx} 
+                    onClick={() => {
+                      setDestination(s.main);
+                      setShowSuggestions(false);
+                    }}
+                    className="flex items-center gap-4 p-4 hover:bg-primary/5 cursor-pointer rounded-xl transition-colors group"
+                  >
+                    <div className="bg-slate-50 p-2.5 rounded-xl group-hover:bg-primary/10 transition-colors">
+                      <MapPin className="h-5 w-5 text-slate-400 group-hover:text-primary" />
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="font-black text-slate-900 group-hover:text-primary transition-colors truncate">{s.main}</span>
+                      <span className="text-[11px] font-bold text-slate-400 truncate uppercase tracking-tighter">{s.sub}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="bg-slate-50 p-3 text-center border-t">
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                  Villes certifiées StayFloow en Afrique
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         <Popover>
