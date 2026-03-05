@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -73,6 +74,7 @@ export function useCollection<T = any>(
         },
         async (serverError: FirestoreError) => {
           if (!isMounted) return;
+          
           const path: string =
             memoizedTargetRefOrQuery.type === 'collection'
               ? (memoizedTargetRefOrQuery as CollectionReference).path
@@ -87,6 +89,7 @@ export function useCollection<T = any>(
           setData(null);
           setIsLoading(false);
 
+          // On n'émet l'erreur que si on n'est pas en train de démonter
           errorEmitter.emit('permission-error', contextualError);
         }
       );
@@ -96,12 +99,14 @@ export function useCollection<T = any>(
         try {
           unsubscribe();
         } catch (e) {
-          // Silent cleanup failure during HMR
+          // Silent cleanup failure during HMR or instance termination
         }
       };
     } catch (e: any) {
-      console.warn("Firestore listener failed initialization:", e.message);
-      setIsLoading(false);
+      if (isMounted) {
+        console.warn("Firestore listener failed initialization:", e.message);
+        setIsLoading(false);
+      }
     }
   }, [memoizedTargetRefOrQuery]);
 

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { firebaseConfig } from '@/firebase/config';
@@ -28,7 +29,11 @@ export function initializeFirebase() {
   // CLIENT : Singleton strict pour éviter les erreurs d'état interne Firestore (ca9)
   if (!cachedApp) {
     const apps = getApps();
-    cachedApp = apps.length > 0 ? apps[0] : initializeApp(firebaseConfig);
+    if (apps.length > 0) {
+      cachedApp = apps[0];
+    } else {
+      cachedApp = initializeApp(firebaseConfig);
+    }
   }
 
   if (!cachedAuth) {

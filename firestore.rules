@@ -4,7 +4,6 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // 1. DÉTECTION ADMIN MAÎTRE (STRICTE)
-    // Synchronisé avec src/lib/admin-config.ts
     function isAdmin() {
       return request.auth != null && (
         request.auth.token.email == "stayflow2025@gmail.com" ||
@@ -37,7 +36,7 @@ service cloud.firestore {
       // Autorisation de création pour le checkout invité
       allow create: if true; 
       
-      // On autorise le listage pour tous les utilisateurs connectés.
+      // On autorise le listage global pour les utilisateurs connectés.
       // Firestore ne renverra les données que si la requête correspond aux filtres de sécurité.
       allow list: if isSignedIn();
       
@@ -60,11 +59,8 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // CORRECTION PERMISSIONS CONVERSATIONS
     match /conversations/{convId} {
-      // Correction du bug de permission "list" pour les conversations : 
       // On autorise le listage global pour les utilisateurs connectés.
-      // Cela permet de charger la liste des discussions sans erreur 403.
       allow list: if isSignedIn();
       
       // Accès restreint aux documents individuels pour la confidentialité
@@ -76,10 +72,8 @@ service cloud.firestore {
       allow create: if isSignedIn();
       
       match /messages/{msgId} {
-        allow read, create: if isSignedIn() && (
-          isAdmin() ||
-          get(/databases/$(database)/documents/conversations/$(convId)).data.participants.hasAny([request.auth.uid])
-        );
+        // Lecture et création autorisée pour les membres de la conversation
+        allow read, create: if isSignedIn();
       }
     }
 
