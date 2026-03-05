@@ -43,7 +43,8 @@
   z-index: 9999 !important;
 }
 
-.fixed.inset-0:not(.bg-black\/80):not(.bg-background\/80) {
+/* Empêche les overlays invisibles de bloquer la navigation locale */
+.fixed.inset-0:not(.bg-black\/80):not(.bg-background\/80):not([data-radix-portal]) {
   pointer-events: none !important;
 }
 
