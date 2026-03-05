@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Input } from "@/components/ui/input";
@@ -140,7 +139,7 @@ export default function ContactPageContent({ t, toast }: ContactPageContentProps
                 <div className="py-2 flex justify-center md:justify-start">
                   <ReCAPTCHA
                     ref={recaptchaRef}
-                    sitekey="6LdOYoAsAAAAAF1eYAyKCtwfjaBfhOZAWO3jJPWO"
+                    sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
                     onChange={onCaptchaChange}
                   />
                 </div>

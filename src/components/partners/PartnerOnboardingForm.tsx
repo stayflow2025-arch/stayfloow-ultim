@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useRef } from 'react';
@@ -363,7 +362,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
             <div className="py-4 border-t flex justify-center">
               <ReCAPTCHA
                 ref={recaptchaRef}
-                sitekey="6LdOYoAsAAAAAF1eYAyKCtwfjaBfhOZAWO3jJPWO"
+                sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
                 onChange={(t) => setCaptchaToken(t)}
               />
             </div>
@@ -656,6 +655,7 @@ function Counter({ icon, label, value, onChange, light = false }: any) {
       <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest text-center">{label}</span>
       <div className="flex items-center gap-4 bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
         <button 
+          type="button"
           onClick={() => onChange(Math.max(0, value-1))} 
           className="h-8 w-8 rounded-xl bg-white shadow-sm border border-slate-200 flex items-center justify-center text-primary transition-all active:scale-90 hover:bg-primary hover:text-white"
         >
@@ -663,6 +663,7 @@ function Counter({ icon, label, value, onChange, light = false }: any) {
         </button>
         <span className="font-black text-lg min-w-[20px] text-center text-slate-900">{value}</span>
         <button 
+          type="button"
           onClick={() => onChange(value+1)} 
           className="h-8 w-8 rounded-xl bg-white shadow-sm border border-slate-200 flex items-center justify-center text-primary transition-all active:scale-90 hover:bg-primary hover:text-white"
         >

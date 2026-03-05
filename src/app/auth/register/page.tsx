@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useRef } from "react";
@@ -166,7 +165,7 @@ export default function RegisterPage() {
                 <div className="py-2 flex justify-center">
                   <ReCAPTCHA
                     ref={recaptchaRef}
-                    sitekey="6LdOYoAsAAAAAF1eYAyKCtwfjaBfhOZAWO3jJPWO"
+                    sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
                     onChange={(t) => setCaptchaToken(t)}
                   />
                 </div>
