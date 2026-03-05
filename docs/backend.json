@@ -71,6 +71,8 @@
     "/bookings/{bookingId}": { "schema": { "$ref": "#/backend/entities/Booking" }, "description": "Reservations" },
     "/settings/siteConfig": { "schema": { "type": "object" }, "description": "Platform configuration" },
     "/adminLogs/{logId}": { "schema": { "type": "object" }, "description": "Admin action logs" },
-    "/conversations/{convId}": { "schema": { "type": "object" }, "description": "Chat sessions" }
+    "/conversations/{convId}": { "schema": { "type": "object" }, "description": "Chat sessions" },
+    "/customers/{uid}/checkout_sessions/{id}": { "schema": { "type": "object" }, "description": "Stripe Checkout Sessions (Extension)" },
+    "/products/{id}": { "schema": { "type": "object" }, "description": "Stripe Products (Extension)" }
   }
 }
