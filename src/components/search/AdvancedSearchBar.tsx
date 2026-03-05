@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
@@ -315,20 +316,25 @@ export default function AdvancedSearchBar() {
                 </div>
                 
                 {occupancy.children > 0 && (
-                  <div className="grid grid-cols-2 gap-3 animate-in fade-in slide-in-from-top-2">
+                  <div className="space-y-3 animate-in fade-in slide-in-from-top-2">
                     {occupancy.childrenAges.map((age, idx) => (
-                      <Select key={idx} value={age.toString()} onValueChange={(val) => updateChildAge(idx, val)}>
-                        <SelectTrigger className="h-11 font-medium border-slate-400 rounded-md focus:ring-0">
-                          <SelectValue placeholder="Âge" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Array.from({ length: 18 }).map((_, i) => (
-                            <SelectItem key={i} value={i.toString()}>
-                              {i} {t('age_label')} {i < 2 && " (Gratuit)"}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div key={idx} className="flex flex-col gap-1.5">
+                        <Label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">
+                          Âge de l'enfant {idx + 1}
+                        </Label>
+                        <Select value={age.toString()} onValueChange={(val) => updateChildAge(idx, val)}>
+                          <SelectTrigger className="h-12 font-bold border-slate-300 rounded-md focus:ring-primary/20 transition-all">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-[300px]">
+                            {Array.from({ length: 18 }).map((_, i) => (
+                              <SelectItem key={i} value={i.toString()} className="font-medium cursor-pointer">
+                                {i} {i < 2 ? "an" : "ans"} {i < 2 && "(Gratuit)"}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     ))}
                   </div>
                 )}
