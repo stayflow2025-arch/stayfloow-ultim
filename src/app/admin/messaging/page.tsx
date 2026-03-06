@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo, useRef, Suspense } from "react";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection, query, orderBy, limit, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, query, orderBy, limit, addDoc, serverTimestamp } from "firebase/firestore";
 import { 
   MessageSquare, Search, ArrowLeft, Loader2, 
   Send, ShieldCheck, Info
@@ -15,8 +15,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
 import { checkIsAdmin } from "@/lib/admin-config";
 
 function AdminMessagingContent() {
@@ -44,32 +42,21 @@ function AdminMessagingContent() {
   }, [db, isAdmin, isUserLoading, user]);
   const { data: conversations, isLoading: convsLoading } = useCollection(convsRef);
 
-  // Messages de la conversation sélectionnée
-  const [messages, setMessages] = useState<any[]>([]);
-  const [messagesLoading, setMessagesLoading] = useState(false);
+  // Messages de la conversation sélectionnée - Standardisé via useCollection
+  const messagesRef = useMemoFirebase(() => {
+    if (!activeId || !isAdmin || !db || !user) return null;
+    return query(collection(db, "conversations", activeId, "messages"), orderBy("createdAt", "asc"), limit(100));
+  }, [db, activeId, isAdmin, user]);
+  
+  const { data: messages, isLoading: messagesLoading } = useCollection(messagesRef);
+
   const [replyText, setReplyText] = useState("");
 
   useEffect(() => {
-    if (!activeId || !isAdmin || !db || !user) return;
-    setMessagesLoading(true);
-    const q = query(collection(db, "conversations", activeId, "messages"), orderBy("createdAt", "asc"), limit(100));
-    
-    const unsubscribe = onSnapshot(q, (snap) => {
-      setMessages(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-      setMessagesLoading(false);
+    if (messages && scrollRef.current) {
       setTimeout(() => scrollRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
-    }, async (err) => {
-      if (isAdmin) {
-        const permissionError = new FirestorePermissionError({
-          path: `conversations/${activeId}/messages`,
-          operation: 'list',
-        });
-        errorEmitter.emit('permission-error', permissionError);
-      }
-      setMessagesLoading(false);
-    });
-    return () => unsubscribe();
-  }, [activeId, isAdmin, db, user]);
+    }
+  }, [messages]);
 
   const handleSendAdminMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,13 +70,6 @@ function AdminMessagingContent() {
       text: `[SUPPORT ADMIN] ${msg}`,
       createdAt: serverTimestamp(),
       isAdminMessage: true
-    }).catch(async (err) => {
-      const permissionError = new FirestorePermissionError({
-        path: `conversations/${activeId}/messages`,
-        operation: 'create',
-        requestResourceData: { text: msg, isAdminMessage: true }
-      });
-      errorEmitter.emit('permission-error', permissionError);
     });
   };
 
@@ -192,7 +172,7 @@ function AdminMessagingContent() {
                 {messagesLoading ? (
                   <div className="h-full flex items-center justify-center"><Loader2 className="animate-spin text-primary/20 h-10 w-10" /></div>
                 ) : (
-                  messages.map((msg) => (
+                  messages?.map((msg: any) => (
                     <div key={msg.id} className={cn(
                       "flex flex-col max-w-[70%] space-y-1.5",
                       msg.isAdminMessage ? "mx-auto items-center w-full" : (msg.senderId === user?.uid ? "ml-auto items-end" : "mr-auto items-start")

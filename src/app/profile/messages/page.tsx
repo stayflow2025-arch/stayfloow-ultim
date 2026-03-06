@@ -1,17 +1,17 @@
-
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { collection, query, where, orderBy, doc, addDoc, serverTimestamp, onSnapshot, limit } from "firebase/firestore";
+import { collection, query, where, orderBy, addDoc, serverTimestamp, limit } from "firebase/firestore";
 import { 
   Send, ArrowLeft, Loader2, MessageCircle, 
-  User as UserIcon, Calendar, Info, Phone, 
-  CheckCircle2, ShieldCheck, LayoutDashboard
+  User as UserIcon, Phone, Info, 
+  ShieldCheck, LayoutDashboard
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -29,7 +29,7 @@ export default function MessagesPage() {
 
   // 1. Liste des conversations réelles
   const convsRef = useMemoFirebase(() => {
-    if (!user) return null;
+    if (!user || !db) return null;
     return query(
       collection(db, "conversations"),
       where("participants", "array-contains", user.uid),
@@ -39,25 +39,23 @@ export default function MessagesPage() {
 
   const { data: conversations, isLoading: convsLoading } = useCollection(convsRef);
 
-  // 2. Messages de la conversation active en temps réel
-  const [messages, setMessages] = useState<any[]>([]);
-  const [messagesLoading, setMessagesLoading] = useState(false);
-
-  useEffect(() => {
-    if (!activeConvId || !db) return;
-    setMessagesLoading(true);
-    const q = query(
+  // 2. Messages de la conversation active - Standardisé
+  const messagesRef = useMemoFirebase(() => {
+    if (!activeConvId || !db) return null;
+    return query(
       collection(db, "conversations", activeConvId, "messages"),
       orderBy("createdAt", "asc"),
       limit(100)
     );
-    const unsubscribe = onSnapshot(q, (snap) => {
-      setMessages(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-      setMessagesLoading(false);
+  }, [db, activeConvId]);
+
+  const { data: messages, isLoading: messagesLoading } = useCollection(messagesRef);
+
+  useEffect(() => {
+    if (messages && scrollRef.current) {
       setTimeout(() => scrollRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
-    });
-    return () => unsubscribe();
-  }, [activeConvId, db]);
+    }
+  }, [messages]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,15 +64,11 @@ export default function MessagesPage() {
     const msg = newMessage;
     setNewMessage("");
 
-    // Ajouter le message
     await addDoc(collection(db, "conversations", activeConvId, "messages"), {
       senderId: user.uid,
       text: msg,
       createdAt: serverTimestamp(),
     });
-
-    // Mettre à jour la métadonnée de la conversation
-    // updateDoc(doc(db, "conversations", activeConvId), { lastMessage: msg, lastAt: new Date().toISOString() });
   };
 
   if (isUserLoading) return <div className="h-screen flex items-center justify-center bg-slate-900"><Loader2 className="animate-spin text-primary h-12 w-12" /></div>;
@@ -169,7 +163,7 @@ export default function MessagesPage() {
                 {messagesLoading ? (
                   <div className="h-full flex items-center justify-center"><Loader2 className="animate-spin text-primary/20" /></div>
                 ) : (
-                  messages.map((msg) => (
+                  messages?.map((msg: any) => (
                     <div key={msg.id} className={cn(
                       "flex flex-col max-w-[75%] space-y-1.5",
                       msg.senderId === user?.uid ? "ml-auto items-end" : "mr-auto items-start"

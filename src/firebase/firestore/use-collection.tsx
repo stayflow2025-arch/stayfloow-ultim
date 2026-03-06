@@ -35,7 +35,7 @@ export interface InternalQuery extends Query<DocumentData> {
 
 /**
  * React hook to subscribe to a Firestore collection or query in real-time.
- * Renforcé pour éviter les erreurs d'assertion ca9.
+ * Reinforced to prevent internal assertion errors (ca9).
  */
 export function useCollection<T = any>(
     memoizedTargetRefOrQuery: ((CollectionReference<DocumentData> | Query<DocumentData>) & {__memo?: boolean})  | null | undefined,
@@ -47,7 +47,6 @@ export function useCollection<T = any>(
   useEffect(() => {
     let isMounted = true;
 
-    // Protection contre les références nulles ou non mémoïsées
     if (!memoizedTargetRefOrQuery) {
       setData(null);
       setIsLoading(false);
@@ -56,8 +55,7 @@ export function useCollection<T = any>(
     }
 
     if (!memoizedTargetRefOrQuery.__memo) {
-      console.error('Firebase Reference was not properly memoized using useMemoFirebase. Rendering blocked to prevent loop.');
-      return;
+      console.warn('Firebase Reference was not properly memoized using useMemoFirebase. This can lead to assertion errors.');
     }
 
     setIsLoading(true);
@@ -99,7 +97,6 @@ export function useCollection<T = any>(
       );
     } catch (e: any) {
       if (isMounted) {
-        console.warn("Firestore listener failed initialization (expected during HMR):", e.message);
         setIsLoading(false);
       }
     }
@@ -107,9 +104,12 @@ export function useCollection<T = any>(
     return () => {
       isMounted = false;
       try {
-        unsubscribe();
+        // Essential: Standardize the cleanup to avoid ID: ca9
+        if (typeof unsubscribe === 'function') {
+          unsubscribe();
+        }
       } catch (e) {
-        // Capture silencieuse des échecs de désabonnement lors des états instables du SDK
+        // Silent catch for internal SDK failures during component unmount
       }
     };
   }, [memoizedTargetRefOrQuery]);

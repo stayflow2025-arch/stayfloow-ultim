@@ -26,7 +26,7 @@ export interface UseDocResult<T> {
 
 /**
  * React hook to subscribe to a single Firestore document in real-time.
- * Renforcé contre les erreurs d'assertion ca9.
+ * Reinforced against internal assertion errors (ca9).
  */
 export function useDoc<T = any>(
   memoizedDocRef: (DocumentReference<DocumentData> & {__memo?: boolean}) | null | undefined,
@@ -42,11 +42,6 @@ export function useDoc<T = any>(
       setData(null);
       setIsLoading(false);
       setError(null);
-      return;
-    }
-
-    // Sécurité de mémoïsation requise pour Firestore
-    if (!memoizedDocRef.__memo) {
       return;
     }
 
@@ -83,7 +78,6 @@ export function useDoc<T = any>(
       );
     } catch (e: any) {
       if (isMounted) {
-        console.warn("Firestore doc listener failed initialization:", e.message);
         setIsLoading(false);
       }
     }
@@ -91,9 +85,11 @@ export function useDoc<T = any>(
     return () => {
       isMounted = false;
       try {
-        unsubscribe();
+        if (typeof unsubscribe === 'function') {
+          unsubscribe();
+        }
       } catch (e) {
-        // Capture silencieuse
+        // Silent catch for internal SDK failures
       }
     };
   }, [memoizedDocRef]);
