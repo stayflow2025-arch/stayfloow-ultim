@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useCollection, useFirestore, useUser, useMemoFirebase } from '@/firebase';
 import { collection, doc, updateDoc, query, orderBy } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { 
   CheckCircle, XCircle, Clock, MapPin, Phone, 
   Mail, Users, Image as ImageIcon, Loader2, ArrowLeft,
-  Bed, Bath, Utensils, Sofa, Trees, Star, Gauge, Fuel, Languages, Globe, Zap, AlertTriangle
+  Bed, Bath, Utensils, Sofa, Trees, Star
 } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -18,26 +18,34 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { checkIsAdmin } from '@/lib/admin-config';
 
 export default function AdminValidatePage() {
-  const { user, loading: authLoading } = useUser();
+  const { user, isUserLoading } = useUser();
   const db = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const initialId = searchParams.get('id');
 
-  const listingsRef = useMemoFirebase(() => query(collection(db, 'listings'), orderBy('createdAt', 'desc')), [db]);
+  const isAdmin = useMemo(() => checkIsAdmin(user), [user]);
+
+  useEffect(() => {
+    if (!isUserLoading && (!user || !isAdmin)) {
+      router.push("/");
+    }
+  }, [user, isUserLoading, isAdmin, router]);
+
+  const listingsRef = useMemoFirebase(() => {
+    if (!isAdmin || !db || isUserLoading) return null;
+    return query(collection(db, 'listings'), orderBy('createdAt', 'desc'));
+  }, [db, isAdmin, isUserLoading]);
+  
   const { data: listings, isLoading: loading } = useCollection(listingsRef);
   const [selectedId, setSelectedId] = useState<string | null>(initialId);
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      router.push("/auth/login");
-    }
-  }, [user, authLoading, router]);
-
   const handleApprove = (id: string) => {
+    if (!isAdmin) return;
     const docRef = doc(db, 'listings', id);
     updateDoc(docRef, { status: 'approved' })
       .then(() => {
@@ -50,6 +58,7 @@ export default function AdminValidatePage() {
   };
 
   const handleReject = (id: string) => {
+    if (!isAdmin) return;
     const docRef = doc(db, 'listings', id);
     updateDoc(docRef, { status: 'rejected' })
       .then(() => {
@@ -61,7 +70,7 @@ export default function AdminValidatePage() {
       });
   };
 
-  if (loading || authLoading) return <div className="flex h-screen items-center justify-center bg-slate-900 text-white"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div>;
+  if (isUserLoading || !isAdmin) return <div className="flex h-screen items-center justify-center bg-slate-900 text-white"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div>;
 
   const pending = listings?.filter(l => l.status === 'pending') || [];
   const selected = listings?.find(l => l.id === (selectedId || initialId));
@@ -131,9 +140,6 @@ export default function AdminValidatePage() {
                         <SpecItem icon={<Bath/>} label="SDB" value={selected.details?.bathroomsCount || 0} />
                         <SpecItem icon={<Sofa/>} label="Salons" value={selected.details?.livingRoomsCount || 0} />
                         <SpecItem icon={<Trees/>} label="Jardins" value={selected.details?.gardensCount || 0} />
-                        {selected.details?.singleRoomsCount > 0 && <SpecItem icon={<Bed/>} label="Simple" value={selected.details?.singleRoomsCount} />}
-                        {selected.details?.doubleRoomsCount > 0 && <SpecItem icon={<Users/>} label="Double" value={selected.details?.doubleRoomsCount} />}
-                        {selected.details?.parentalSuitesCount > 0 && <SpecItem icon={<Star/>} label="Suite King" value={selected.details?.parentalSuitesCount} />}
                       </>
                     )}
                   </div>
