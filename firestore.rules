@@ -11,7 +11,7 @@ service cloud.firestore {
       );
     }
 
-    // 2. UTILISATEUR CONNECTÉ (tous les autres)
+    // 2. UTILISATEUR CONNECTÉ
     function isSignedIn() {
       return request.auth != null;
     }
@@ -21,7 +21,7 @@ service cloud.firestore {
       allow read, write: if isAdmin();
     }
 
-    // 3. RÈGLES SPÉCIFIQUES PAR COLLECTION (pour utilisateurs normaux et partenaires)
+    // 3. RÈGLES SPÉCIFIQUES PAR COLLECTION
     
     // Users : chacun son propre profil
     match /users/{userId} {
@@ -30,31 +30,38 @@ service cloud.firestore {
 
     // Listings : lecture publique, écriture par propriétaire ou admin
     match /listings/{listingId} {
-      allow read: if true;  // tout le monde peut voir les annonces
-      allow create: if true; // Permettre à n'importe qui de soumettre une offre (onboarding invité)
+      allow read: if true; 
+      allow create: if true; // Permettre la soumission par les invités
       allow update, delete: if isSignedIn() && (
         isAdmin() || resource.data.ownerId == request.auth.uid
       );
     }
 
-    // Bookings : lecture/écriture seulement par l'utilisateur ou le partenaire concerné
+    // Bookings : Accès filtré par userId ou partnerId
     match /bookings/{bookingId} {
-      allow read: if isSignedIn() && (
-        isAdmin() ||
+      // Pour le listage (useCollection), Firestore exige que la requête soit filtrée
+      allow list: if isSignedIn() && (
+        isAdmin() || 
+        request.query.filters.userId == request.auth.uid || 
+        request.query.filters.partnerId == request.auth.uid
+      );
+      // Pour la lecture directe d'un document
+      allow get: if isSignedIn() && (
+        isAdmin() || 
         resource.data.userId == request.auth.uid || 
         resource.data.partnerId == request.auth.uid
       );
-      allow create: if true;  // permet la création même si invité
+      allow create: if true; // Autoriser la création même en mode invité
       allow update, delete: if isAdmin() || (isSignedIn() && (resource.data.userId == request.auth.uid || resource.data.partnerId == request.auth.uid));
     }
 
     // Conversations : lecture/écriture seulement par les participants ou admin
     match /conversations/{convId} {
-      allow read: if isSignedIn() && (
+      allow list: if isSignedIn();
+      allow get: if isSignedIn() && (
         isAdmin() || 
         request.auth.uid in resource.data.participants
       );
-      allow list: if isSignedIn();
       allow create: if isSignedIn();
       allow update: if isSignedIn() && (isAdmin() || request.auth.uid in resource.data.participants);
       
