@@ -6,7 +6,7 @@ runConfig:
 
 env:
   - variable: NEXT_PUBLIC_BASE_URL
-    value: "https://stayfloow-ultim--studio-6933176808-a0512.europe-west4.hosted.app"
+    value: "https://www.stayfloow.com"
     availability:
       - BUILD
       - RUNTIME
