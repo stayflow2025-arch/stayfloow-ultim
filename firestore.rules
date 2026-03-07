@@ -24,48 +24,56 @@ service cloud.firestore {
       allow read, write: if isAdmin() || (isSignedIn() && request.auth.uid == partnerId);
     }
 
-    // LISTINGS : Lecture publique, création connecté, modification propriétaire
+    // LISTINGS : Lecture publique, création pour tous (Onboarding), modification propriétaire
     match /listings/{listingId} {
       allow read: if true;
-      allow create: if isSignedIn();
+      allow create: if true;
       allow update, delete: if isAdmin() || (isSignedIn() && resource.data.ownerId == request.auth.uid);
     }
 
-    // BOOKINGS : Autorise le listing pour les dashboards, restreint le get individuel
+    // BOOKINGS : Autorise la création pour tous (Guest booking) et le filtrage pour les dashboards
     match /bookings/{bookingId} {
-      // Autoriser le listage global pour les utilisateurs connectés (le filtrage se fait via les queries)
-      allow list: if isSignedIn();
-      
-      // Lecture individuelle réservée aux parties concernées
+      // lecture d'un booking spécifique
       allow get: if isAdmin() || (isSignedIn() && (
         resource.data.userId == request.auth.uid || 
         resource.data.partnerId == request.auth.uid
       ));
 
-      allow create: if isSignedIn();
-      
+      // autoriser la liste pour les dashboards (le filtrage se fait via les queries)
+      allow list: if isSignedIn();
+
+      // création réservation (autorise le mode invité lors de la validation du paiement)
+      allow create: if true;
+
+      // modification
       allow update: if isAdmin() || (isSignedIn() && (
         resource.data.userId == request.auth.uid || 
         resource.data.partnerId == request.auth.uid
       ));
 
+      // suppression seulement admin
       allow delete: if isAdmin();
     }
 
     // CONVERSATIONS : Autorise le listing, restreint l'accès au contenu
     match /conversations/{convId} {
+      // autoriser la liste pour les dashboards
       allow list: if isSignedIn();
       
+      // lecture d'une conversation spécifique
       allow get: if isAdmin() || (isSignedIn() && request.auth.uid in resource.data.participants);
       
+      // création conversation
       allow create: if isSignedIn();
       
+      // modification
       allow update: if isAdmin() || (isSignedIn() && request.auth.uid in resource.data.participants);
 
       allow delete: if isAdmin();
 
       match /messages/{msgId} {
-        allow read, create: if isSignedIn();
+        allow list, get: if isSignedIn();
+        allow create: if isSignedIn();
         allow update, delete: if false;
       }
     }
@@ -74,6 +82,11 @@ service cloud.firestore {
     match /settings/{doc} {
       allow read: if true;
       allow write: if isAdmin();
+    }
+
+    // STRIPE EXTENSION PATHS
+    match /customers/{uid}/checkout_sessions/{id} {
+      allow read, write: if isSignedIn() && request.auth.uid == uid;
     }
 
     // ADMIN PRIORITAIRE (Accès global)
