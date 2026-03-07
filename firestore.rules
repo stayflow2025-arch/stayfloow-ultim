@@ -9,14 +9,23 @@ service cloud.firestore {
 
     function isAdmin() {
       return isSignedIn() && (
-        (request.auth.token.keys().contains('email') && request.auth.token.email == "stayflow2025@gmail.com") ||
+        request.auth.token.email == "stayflow2025@gmail.com" ||
         request.auth.uid == "G4d04MgUW4fguFOjmhQBbWezheB2"
       );
     }
 
     // USERS : Accès restreint au propriétaire ou admin
     match /users/{userId} {
-      allow read, write: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
+      // Seul l'admin peut lister tous les utilisateurs
+      allow list: if isAdmin();
+      // Lecture individuelle pour l'admin ou le propriétaire
+      allow get: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
+      // Création autorisée pour les nouveaux inscrits
+      allow create: if isSignedIn();
+      // Mise à jour pour l'admin ou le propriétaire
+      allow update: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
+      // Suppression réservée à l'admin
+      allow delete: if isAdmin();
     }
 
     // PARTNERS : Accès restreint au partenaire ou admin
