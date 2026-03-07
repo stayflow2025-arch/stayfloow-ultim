@@ -1,7 +1,7 @@
 "use client";
 
 import React, { use, useState, useEffect, useMemo } from 'react';
-import { useDoc, useFirestore } from '@/firebase';
+import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { 
   ChevronLeft, Star, Clock, MapPin, Share2, Heart, 
@@ -29,32 +29,28 @@ export default function CircuitDetailsPage({ params }: { params: Promise<{ id: s
   const { formatPrice } = useCurrency();
   const { t } = useLanguage();
 
-  const docRef = doc(db, 'listings', id);
-  const { data: dbCircuit, loading } = useDoc(docRef);
+  const circuitRef = useMemoFirebase(() => doc(db, 'listings', id), [db, id]);
+  const { data: dbCircuit, loading } = useDoc(circuitRef);
 
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [ticketCounts, setTicketCounts] = useState<Record<string, number>>({
     adult: 1, child: 0, infant: 0
   });
 
-  // Fallback sur les données mockées si Firestore ne renvoie rien
   const circuit = dbCircuit || mockCircuits.find(c => c.id === id);
 
-  // Dates autorisées par le guide
   const allowedDates = useMemo(() => {
     const datesStr = circuit?.details?.availableDates || circuit?.availableDates || [];
     return datesStr.map((d: string) => new Date(d));
   }, [circuit]);
 
   useEffect(() => {
-    // Sélectionner la première date disponible par défaut
     if (allowedDates.length > 0 && !selectedDate) {
       setSelectedDate(allowedDates[0]);
     }
   }, [allowedDates, selectedDate]);
 
   useEffect(() => {
-    // Initialiser les compteurs si le circuit a des types de tickets spécifiques
     if (circuit?.details?.ticketTypes) {
       const initialCounts: Record<string, number> = {};
       circuit.details.ticketTypes.forEach((t: any) => {
@@ -104,7 +100,6 @@ export default function CircuitDetailsPage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
-      {/* Header Sticky */}
       <div className="bg-white/80 backdrop-blur-md border-b sticky top-16 z-40 py-3 px-6">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <Button variant="ghost" onClick={() => router.back()} className="font-bold text-slate-600 hover:text-primary">
@@ -119,7 +114,6 @@ export default function CircuitDetailsPage({ params }: { params: Promise<{ id: s
 
       <main className="max-w-7xl mx-auto px-4 py-8 grid grid-cols-1 lg:grid-cols-3 gap-12">
         <div className="lg:col-span-2 space-y-10">
-          {/* Main Info */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Badge className="bg-primary/10 text-primary font-black px-3">CERTIFIÉ STAYFLOOW</Badge>
@@ -132,14 +126,11 @@ export default function CircuitDetailsPage({ params }: { params: Promise<{ id: s
             </div>
           </div>
 
-          {/* Photo Gallery */}
           <div className="relative aspect-video rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
             <Image src={photos[0]} alt="Hero" fill className="object-cover" />
           </div>
 
-          {/* Details */}
           <div className="space-y-12 bg-white p-10 rounded-[2.5rem] shadow-xl border border-slate-100">
-            {/* Free Cancellation */}
             <div className="flex items-start gap-4 p-6 bg-green-50 rounded-3xl border border-green-100">
               <div className="bg-green-600 p-2 rounded-full text-white"><Check className="h-5 w-5" /></div>
               <div>
@@ -150,7 +141,6 @@ export default function CircuitDetailsPage({ params }: { params: Promise<{ id: s
 
             <Separator />
 
-            {/* Languages */}
             <div className="space-y-4">
               <h4 className="font-black text-xl flex items-center gap-2"><Globe className="h-6 w-6 text-primary" /> Langues disponibles</h4>
               <div className="flex flex-wrap gap-3">
@@ -162,7 +152,6 @@ export default function CircuitDetailsPage({ params }: { params: Promise<{ id: s
               </div>
             </div>
 
-            {/* Inclusions */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
               <div className="space-y-6">
                 <h4 className="font-black text-xl">Points forts & Services inclus</h4>
@@ -192,7 +181,6 @@ export default function CircuitDetailsPage({ params }: { params: Promise<{ id: s
 
             <Separator />
 
-            {/* Long Description */}
             <div className="space-y-6">
               <h4 className="font-black text-2xl">Description du circuit</h4>
               <p className="text-slate-600 leading-relaxed text-lg font-medium italic border-l-4 border-primary/20 pl-6">
@@ -202,7 +190,6 @@ export default function CircuitDetailsPage({ params }: { params: Promise<{ id: s
           </div>
         </div>
 
-        {/* Sidebar - Ticket Selection */}
         <div className="lg:col-span-1">
           <div className="sticky top-28 space-y-6">
             <Card className="border-none shadow-2xl rounded-3xl overflow-hidden bg-white">
@@ -210,7 +197,6 @@ export default function CircuitDetailsPage({ params }: { params: Promise<{ id: s
                 <CardTitle className="text-xl font-black uppercase tracking-tight">Vérifier disponibilités</CardTitle>
               </CardHeader>
               <CardContent className="p-8 space-y-8">
-                {/* Date Selection - Restricted to Allowed Dates */}
                 <div className="space-y-3">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">1. Choisir une date</label>
                   <Popover>
@@ -227,7 +213,6 @@ export default function CircuitDetailsPage({ params }: { params: Promise<{ id: s
                         onSelect={setSelectedDate} 
                         locale={fr} 
                         disabled={(date) => {
-                          // Désactiver si avant aujourd'hui OU si pas dans la liste allowedDates
                           if (date < new Date(new Date().setHours(0,0,0,0))) return true;
                           if (allowedDates.length > 0) {
                             return !allowedDates.some(allowed => isSameDay(allowed, date));
@@ -244,7 +229,6 @@ export default function CircuitDetailsPage({ params }: { params: Promise<{ id: s
                   )}
                 </div>
 
-                {/* Ticket Selection */}
                 <div className="space-y-6">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">2. Nombre de participants</label>
                   <div className="space-y-4">

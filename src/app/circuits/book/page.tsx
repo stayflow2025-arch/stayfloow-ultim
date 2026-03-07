@@ -1,10 +1,9 @@
-
 "use client";
 
 import React, { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { useDoc, useFirestore, useUser } from '@/firebase';
+import { useDoc, useFirestore, useUser, useMemoFirebase } from '@/firebase';
 import { doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -48,7 +47,8 @@ function CircuitBookingContent() {
     const tickets = searchParams.get('tickets') ? JSON.parse(searchParams.get('tickets')!) : {};
     const totalAmount = Number(searchParams.get('total')) || 0;
 
-    const { data: dbCircuit, loading } = useDoc(tourId ? doc(db, 'listings', tourId) : null);
+    const circuitRef = useMemoFirebase(() => tourId ? doc(db, 'listings', tourId) : null, [db, tourId]);
+    const { data: dbCircuit, loading } = useDoc(circuitRef);
     const circuit = dbCircuit || mockCircuits.find(c => c.id === tourId);
 
     const [isConfirmed, setIsConfirmed] = useState(false);
@@ -65,7 +65,6 @@ function CircuitBookingContent() {
         const finalUserId = user?.uid || `guest_${Date.now()}`;
 
         try {
-            // Enregistrer dans Firestore (Mode invité autorisé)
             await addDoc(collection(db, "bookings"), {
               userId: finalUserId,
               partnerId: circuit?.ownerId || "guide_stayfloow",

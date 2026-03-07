@@ -1,7 +1,7 @@
 'use client';
 
 import React, { use, useState, useMemo, useEffect } from 'react';
-import { useDoc, useFirestore } from '@/firebase';
+import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { 
   MapPin, Star, Share2, Heart, ShieldCheck, 
@@ -47,26 +47,23 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
 
-  // State pour le prix dynamique et la recherche
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   
-  // États de recherche modifiables
   const [pickupLocation, setPickupLocation] = useState("");
   const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
     from: new Date(),
     to: addDays(new Date(), 3),
   });
 
-  // États temporaires pour le formulaire de modification
   const [tempLocation, setTempLocation] = useState("");
   const [tempDates, setTempDates] = useState<{ from: Date | undefined; to: Date | undefined }>({
     from: undefined,
     to: undefined,
   });
 
-  const docRef = doc(db, 'listings', id);
-  const { data: car, loading } = useDoc(docRef);
+  const carRef = useMemoFirebase(() => doc(db, 'listings', id), [db, id]);
+  const { data: car, loading } = useDoc(carRef);
 
   useEffect(() => {
     if (car && !pickupLocation) {
@@ -144,7 +141,6 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
 
   return (
     <div className="min-h-screen bg-[#f5f5f5] flex flex-col">
-      {/* Header Dates/Lieux Modifiable */}
       <div className="bg-slate-900 text-white py-4 px-6 sticky top-16 z-40 shadow-xl border-b border-white/10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-6 overflow-x-auto no-scrollbar w-full md:w-auto">
@@ -174,7 +170,6 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           <div className="lg:col-span-2 space-y-8">
-            {/* Titre & Rating */}
             <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
@@ -205,7 +200,6 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
               </div>
             </div>
 
-            {/* Photos */}
             <div className="rounded-[2.5rem] overflow-hidden shadow-2xl bg-slate-200 aspect-video relative group border-4 border-white">
               <Carousel className="w-full h-full">
                 <CarouselContent>
@@ -222,7 +216,6 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
               </Carousel>
             </div>
 
-            {/* Specs Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <SpecBox icon={<Users className="h-5 w-5"/>} label="Places" value={`${displayData.details?.seats || 5} Adultes`} />
               <SpecBox icon={<Briefcase className="h-5 w-5"/>} label="Bagages" value={`${displayData.details?.luggage || 2} Valises`} />
@@ -230,7 +223,6 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
               <SpecBox icon={<Fuel className="h-5 w-5"/>} label="Énergie" value={displayData.details?.fuel || 'Diesel'} />
             </div>
 
-            {/* Instructions Prise en Charge */}
             <Card className="border-none shadow-xl rounded-3xl overflow-hidden bg-white">
               <CardContent className="p-8 space-y-6">
                 <h2 className="text-xl font-black text-slate-900 flex items-center gap-3">
@@ -242,7 +234,6 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
               </CardContent>
             </Card>
 
-            {/* Options Supplémentaires */}
             <div className="space-y-6">
               <h2 className="text-2xl font-black text-slate-900">Options supplémentaires</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -265,7 +256,6 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
               </div>
             </div>
 
-            {/* Avis Clients */}
             <div className="space-y-6">
               <h2 className="text-2xl font-black text-slate-900 flex items-center gap-3">
                 <MessageSquare className="h-6 w-6 text-primary" /> Ce que disent les voyageurs
@@ -277,7 +267,6 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
             </div>
           </div>
 
-          {/* Sidebar de Réservation */}
           <div className="lg:col-span-1">
             <Card className="sticky top-40 shadow-2xl border-none overflow-hidden rounded-[2.5rem] bg-white">
               <div className="bg-primary p-8 text-white">
@@ -336,7 +325,6 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
         </div>
       </main>
 
-      {/* MODAL DE MODIFICATION DE LA RECHERCHE */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="sm:max-w-[500px] rounded-[2rem] p-8">
           <DialogHeader>

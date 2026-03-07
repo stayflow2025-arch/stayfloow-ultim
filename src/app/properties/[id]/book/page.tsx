@@ -2,7 +2,7 @@
 
 import React, { useState, use, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useDoc, useFirestore, useUser } from "@/firebase";
+import { useDoc, useFirestore, useUser, useMemoFirebase } from "@/firebase";
 import { doc, collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -65,7 +65,7 @@ function PropertyBookingContent({ id }: { id: string }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const docRef = doc(db, 'listings', id);
+  const docRef = useMemoFirebase(() => doc(db, 'listings', id), [db, id]);
   const { data: property, loading } = useDoc(docRef);
 
   const form = useForm<BookingValues>({
@@ -84,13 +84,10 @@ function PropertyBookingContent({ id }: { id: string }) {
 
   const onSubmit = async (values: BookingValues) => {
     setIsSubmitting(true);
-    // On génère un UID propre pour le document afin de satisfaire les règles de sécurité
-    // Si l'utilisateur est connecté, on utilise son UID réel
     const finalUserId = user?.uid || `guest_${Date.now()}`;
     const reservationNumber = `ST-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
     try {
-      // 1. Enregistrer la réservation dans Firestore
       await addDoc(collection(db, "bookings"), {
         userId: finalUserId,
         partnerId: property?.ownerId || "admin",
@@ -108,7 +105,6 @@ function PropertyBookingContent({ id }: { id: string }) {
         reservationNumber
       });
 
-      // 2. Envoyer l'email
       await sendBookingConfirmationEmail({
         customerName: values.fullName,
         customerEmail: values.email,

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, Suspense, useMemo } from "react";
@@ -20,7 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CrossSellCard } from "@/components/cross-sell-card";
-import { useFirestore, useUser, useDoc } from "@/firebase";
+import { useFirestore, useUser, useDoc, useMemoFirebase } from "@/firebase";
 import { collection, addDoc, doc } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import { sendBookingConfirmationEmail } from "@/lib/mail";
@@ -36,7 +35,6 @@ function BookCarContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  // Params from URL
   const carId = searchParams.get('id') || 'mock';
   const pickupLocation = searchParams.get('pickup') || "Alger, Algérie";
   const options = searchParams.get('options')?.split(',').filter(o => o) || [];
@@ -45,10 +43,9 @@ function BookCarContent() {
   const totalParam = searchParams.get('total');
   const days = parseInt(searchParams.get('days') || '3');
 
-  // Fetch real car data if available
-  const { data: dbCar, loading: carLoading } = useDoc(carId.startsWith('mock') ? null : doc(db, 'listings', carId));
+  const carRef = useMemoFirebase(() => carId.startsWith('mock') ? null : doc(db, 'listings', carId), [db, carId]);
+  const { data: dbCar, loading: carLoading } = useDoc(carRef);
 
-  // Form states
   const [formData, setFormData] = useState({
     firstName: user?.displayName?.split(' ')[0] || "",
     lastName: user?.displayName?.split(' ').slice(1).join(' ') || "",
@@ -63,7 +60,6 @@ function BookCarContent() {
       image: dbCar.photos?.[0] || "https://placehold.co/800x600?text=Car+StayFloow",
       price: dbCar.price || 85
     };
-    // Mock fallbacks
     return {
       name: carId === 'mock-car-1' ? 'Dacia Duster 4x4' : 'VW Golf 8 GTI',
       image: carId === 'mock-car-1' ? "https://images.unsplash.com/photo-1761320296536-38a4e068b37d?w=800" : "https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=800",
@@ -84,7 +80,6 @@ function BookCarContent() {
     const finalUserId = user?.uid || `guest_${Date.now()}`;
 
     try {
-      // Enregistrer dans Firestore (Mode invité autorisé)
       await addDoc(collection(db, "bookings"), {
         userId: finalUserId,
         partnerId: dbCar?.ownerId || "stayfloow_fleet",
