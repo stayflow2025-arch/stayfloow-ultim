@@ -80,6 +80,24 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://images.unsplash.com" />
         <link rel="preconnect" href="https://picsum.photos" />
+        {/* Script de récupération automatique pour ChunkLoadError */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.addEventListener('error', (event) => {
+                const isChunkError = event.message && (
+                  event.message.includes('ChunkLoadError') || 
+                  event.message.includes('Loading chunk') ||
+                  event.message.includes('Failed to fetch dynamically imported module')
+                );
+                if (isChunkError) {
+                  console.warn('StayFloow Error Recovery: Chunk load error detected, reloading page...');
+                  window.location.reload();
+                }
+              }, true);
+            `,
+          }}
+        />
       </head>
       <body className="font-body antialiased bg-background min-h-screen flex flex-col overflow-x-hidden">
         <FirebaseClientProvider>

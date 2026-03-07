@@ -35,6 +35,10 @@ const nextConfig: NextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
+  // Optimisation du chargement des chunks
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'recharts', 'date-fns'],
+  }
 };
 
 export default nextConfig;
