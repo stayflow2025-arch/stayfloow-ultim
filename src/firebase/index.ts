@@ -7,17 +7,15 @@ import { getFirestore as getFirestoreInstance, Firestore } from 'firebase/firest
 
 /**
  * @fileOverview Initialisation Firebase Singleton ultra-résiliente.
- * Cette structure empêche la création d'instances multiples des services, 
- * ce qui est la cause principale de l'erreur "INTERNAL ASSERTION FAILED (ID: ca9)".
+ * Utilise globalThis pour s'assurer que les instances persistent entre les cycles HMR
+ * en développement, évitant l'erreur "INTERNAL ASSERTION FAILED (ID: ca9)".
  */
 
-let memoApp: FirebaseApp | undefined;
-let memoAuth: Auth | undefined;
-let memoFirestore: Firestore | undefined;
+const _global = (typeof window !== 'undefined' ? window : global) as any;
 
 export function initializeFirebase() {
+  // Côté serveur : on retourne des instances fraîches ou l'app existante
   if (typeof window === 'undefined') {
-    // Côté serveur, on retourne des instances fraîches ou null
     const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     return {
       firebaseApp: app,
@@ -26,27 +24,27 @@ export function initializeFirebase() {
     };
   }
 
-  // Côté client (Navigateur), on utilise un cache strict
-  if (!memoApp) {
+  // Côté client : Gestion du singleton via l'objet global
+  if (!_global.__FIREBASE_APP__) {
     if (getApps().length > 0) {
-      memoApp = getApp();
+      _global.__FIREBASE_APP__ = getApp();
     } else {
-      memoApp = initializeApp(firebaseConfig);
+      _global.__FIREBASE_APP__ = initializeApp(firebaseConfig);
     }
   }
 
-  if (!memoAuth) {
-    memoAuth = getAuthInstance(memoApp);
+  if (!_global.__FIREBASE_AUTH__) {
+    _global.__FIREBASE_AUTH__ = getAuthInstance(_global.__FIREBASE_APP__);
   }
 
-  if (!memoFirestore) {
-    memoFirestore = getFirestoreInstance(memoApp);
+  if (!_global.__FIREBASE_FIRESTORE__) {
+    _global.__FIREBASE_FIRESTORE__ = getFirestoreInstance(_global.__FIREBASE_APP__);
   }
 
   return {
-    firebaseApp: memoApp,
-    auth: memoAuth,
-    firestore: memoFirestore,
+    firebaseApp: _global.__FIREBASE_APP__ as FirebaseApp,
+    auth: _global.__FIREBASE_AUTH__ as Auth,
+    firestore: _global.__FIREBASE_FIRESTORE__ as Firestore,
   };
 }
 
