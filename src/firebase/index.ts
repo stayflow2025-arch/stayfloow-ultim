@@ -6,15 +6,16 @@ import { getAuth as getAuthInstance, Auth } from 'firebase/auth';
 import { getFirestore as getFirestoreInstance, Firestore } from 'firebase/firestore';
 
 /**
- * @fileOverview Initialisation Firebase Singleton ultra-résiliente.
- * Utilise globalThis pour s'assurer que les instances persistent entre les cycles HMR
- * en développement, évitant l'erreur "INTERNAL ASSERTION FAILED (ID: ca9)".
+ * @fileOverview Initialisation Firebase Singleton résiliente.
+ * Utilise une approche de mise en cache pour éviter les erreurs d'assertion interne (ca9)
+ * courantes dans les environnements de développement Next.js avec HMR.
  */
 
-const _global = (typeof window !== 'undefined' ? window : global) as any;
+let cachedApp: FirebaseApp | undefined;
+let cachedAuth: Auth | undefined;
+let cachedFirestore: Firestore | undefined;
 
 export function initializeFirebase() {
-  // Côté serveur : on retourne des instances fraîches ou l'app existante
   if (typeof window === 'undefined') {
     const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     return {
@@ -24,27 +25,26 @@ export function initializeFirebase() {
     };
   }
 
-  // Côté client : Gestion du singleton via l'objet global
-  if (!_global.__FIREBASE_APP__) {
+  if (!cachedApp) {
     if (getApps().length > 0) {
-      _global.__FIREBASE_APP__ = getApp();
+      cachedApp = getApp();
     } else {
-      _global.__FIREBASE_APP__ = initializeApp(firebaseConfig);
+      cachedApp = initializeApp(firebaseConfig);
     }
   }
 
-  if (!_global.__FIREBASE_AUTH__) {
-    _global.__FIREBASE_AUTH__ = getAuthInstance(_global.__FIREBASE_APP__);
+  if (!cachedAuth) {
+    cachedAuth = getAuthInstance(cachedApp);
   }
 
-  if (!_global.__FIREBASE_FIRESTORE__) {
-    _global.__FIREBASE_FIRESTORE__ = getFirestoreInstance(_global.__FIREBASE_APP__);
+  if (!cachedFirestore) {
+    cachedFirestore = getFirestoreInstance(cachedApp);
   }
 
   return {
-    firebaseApp: _global.__FIREBASE_APP__ as FirebaseApp,
-    auth: _global.__FIREBASE_AUTH__ as Auth,
-    firestore: _global.__FIREBASE_FIRESTORE__ as Firestore,
+    firebaseApp: cachedApp,
+    auth: cachedAuth,
+    firestore: cachedFirestore,
   };
 }
 

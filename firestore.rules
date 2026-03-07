@@ -33,14 +33,14 @@ service cloud.firestore {
 
     // BOOKINGS : Séparation GET et LIST pour éviter les erreurs dashboard
     match /bookings/{bookingId} {
+      // autoriser la liste pour les dashboards (le filtrage réel se fait par la query .where())
+      allow list: if isSignedIn();
+
       // lecture d'un booking spécifique : propriétaire, partenaire ou admin uniquement
       allow get: if isAdmin() || (isSignedIn() && (
         resource.data.userId == request.auth.uid || 
         resource.data.partnerId == request.auth.uid
       ));
-
-      // autoriser la liste pour les dashboards (le filtrage réel se fait par la query .where())
-      allow list: if isSignedIn();
 
       // création réservation (autorise le mode invité lors de la validation du paiement)
       allow create: if true;
