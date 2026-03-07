@@ -63,28 +63,33 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // CONVERSATIONS : Accès restreint aux participants
+    // CONVERSATIONS : Correction des permissions list/get pour les dashboards
     match /conversations/{convId} {
+      // autoriser la liste pour les dashboards
+      allow list: if isSignedIn();
+
+      // lecture d'une conversation spécifique
       allow get: if isSignedIn() && (
         isAdmin() ||
         request.auth.uid in resource.data.participants
       );
       
-      // autoriser la liste pour les dashboards
-      allow list: if isSignedIn();
-      
+      // création conversation
       allow create: if isSignedIn();
 
+      // modification
       allow update: if isSignedIn() && (
         isAdmin() ||
         request.auth.uid in resource.data.participants
       );
 
+      allow delete: if isAdmin();
+
       match /messages/{msgId} {
-        allow read, create: if isSignedIn() && (
-          isAdmin() ||
-          request.auth.uid in get(/databases/$(database)/documents/conversations/$(convId)).data.participants
-        );
+        allow list, get: if isSignedIn();
+        allow create: if isSignedIn();
+        allow update: if false;
+        allow delete: if false;
       }
     }
 
