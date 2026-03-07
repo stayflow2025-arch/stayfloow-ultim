@@ -9,7 +9,8 @@ import {
   Loader2, Utensils, Clock, 
   Sofa, Trees,
   Users, Check,
-  Leaf, Info, Train, Plane, FerrisWheel, Bed, Bath
+  Leaf, Info, Train, Plane, FerrisWheel, Bed, Bath,
+  Calendar as CalendarIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
