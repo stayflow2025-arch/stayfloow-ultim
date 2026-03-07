@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, use, Suspense } from "react";
@@ -85,11 +84,13 @@ function PropertyBookingContent({ id }: { id: string }) {
 
   const onSubmit = async (values: BookingValues) => {
     setIsSubmitting(true);
-    const reservationNumber = `ST-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+    // On génère un UID propre pour le document afin de satisfaire les règles de sécurité
+    // Si l'utilisateur est connecté, on utilise son UID réel
     const finalUserId = user?.uid || `guest_${Date.now()}`;
+    const reservationNumber = `ST-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
     try {
-      // 1. Enregistrer la réservation dans Firestore (Mode invité autorisé)
+      // 1. Enregistrer la réservation dans Firestore
       await addDoc(collection(db, "bookings"), {
         userId: finalUserId,
         partnerId: property?.ownerId || "admin",
@@ -131,6 +132,7 @@ function PropertyBookingContent({ id }: { id: string }) {
         description: `Un email a été envoyé à ${values.email}`,
       });
     } catch (error) {
+      console.error("Booking submission failed:", error);
       toast({
         variant: "destructive",
         title: "Erreur",
