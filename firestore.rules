@@ -31,21 +31,21 @@ service cloud.firestore {
       allow update, delete: if isAdmin() || (isSignedIn() && resource.data.ownerId == request.auth.uid);
     }
 
-    // BOOKINGS : Autorise la création pour tous (Guest booking) et le filtrage pour les dashboards
+    // BOOKINGS : Séparation GET et LIST pour éviter les erreurs dashboard
     match /bookings/{bookingId} {
-      // lecture d'un booking spécifique
+      // lecture d'un booking spécifique : propriétaire, partenaire ou admin uniquement
       allow get: if isAdmin() || (isSignedIn() && (
         resource.data.userId == request.auth.uid || 
         resource.data.partnerId == request.auth.uid
       ));
 
-      // autoriser la liste pour les dashboards (le filtrage se fait via les queries)
+      // autoriser la liste pour les dashboards (le filtrage réel se fait par la query .where())
       allow list: if isSignedIn();
 
       // création réservation (autorise le mode invité lors de la validation du paiement)
       allow create: if true;
 
-      // modification
+      // modification : propriétaire, partenaire ou admin
       allow update: if isAdmin() || (isSignedIn() && (
         resource.data.userId == request.auth.uid || 
         resource.data.partnerId == request.auth.uid
@@ -55,12 +55,12 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // CONVERSATIONS : Autorise le listing, restreint l'accès au contenu
+    // CONVERSATIONS : Séparation GET et LIST
     match /conversations/{convId} {
-      // autoriser la liste pour les dashboards
+      // autoriser la liste pour charger les dashboards
       allow list: if isSignedIn();
       
-      // lecture d'une conversation spécifique
+      // lecture d'une conversation spécifique : uniquement les participants ou admin
       allow get: if isAdmin() || (isSignedIn() && request.auth.uid in resource.data.participants);
       
       // création conversation
