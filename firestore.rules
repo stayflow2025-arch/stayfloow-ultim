@@ -35,20 +35,20 @@ service cloud.firestore {
 
     // BOOKINGS - Gestion des réservations
     match /bookings/{bookingId} {
-      // IMPORTANT : autoriser les dashboards (Correction de l'erreur Permission Denied)
+      // autoriser les dashboards à lister les réservations (Correction Erreur Permission Denied)
       allow list: if isSignedIn();
 
-      // Lecture d'une réservation spécifique
+      // lecture d'une réservation spécifique
       allow get: if isSignedIn() && (
         resource.data.userId == request.auth.uid ||
         resource.data.partnerId == request.auth.uid ||
         isAdmin()
       );
 
-      // Création autorisée (Mode Invité supporté via backend logic)
-      allow create: if true; 
+      // création réservation
+      allow create: if isSignedIn(); 
 
-      // Mise à jour par les parties concernées
+      // modification réservation
       allow update: if isSignedIn() && (
         resource.data.userId == request.auth.uid ||
         resource.data.partnerId == request.auth.uid ||
