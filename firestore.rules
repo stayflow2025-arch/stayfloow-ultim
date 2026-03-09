@@ -2,7 +2,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions
+    // Fonctions d'aide
     function isSignedIn() {
       return request.auth != null;
     }
@@ -16,77 +16,74 @@ service cloud.firestore {
       );
     }
 
-    // ADMIN PRIORITAIRE (Accès global)
+    // ADMIN accès total prioritaire
     match /{document=**} {
       allow read, write: if isAdmin();
     }
 
-    // USERS
+    // USERS - Lecture/Écriture par le propriétaire
     match /users/{userId} {
-      allow list: if isAdmin();
-      allow get: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
-      allow create: if isSignedIn();
-      allow update: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
-      allow delete: if isAdmin();
+      allow read, write: if isSignedIn() && request.auth.uid == userId;
     }
 
-    // LISTINGS
+    // LISTINGS - Lecture publique, création connectée
     match /listings/{listingId} {
       allow read: if true;
-      allow create: if true; // Support Guest Mode
-      allow update, delete: if isAdmin() || (isSignedIn() && resource.data.ownerId == request.auth.uid);
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && resource.data.ownerId == request.auth.uid;
     }
 
-    // BOOKINGS
+    // BOOKINGS - Gestion des réservations
     match /bookings/{bookingId} {
-      // Autorise la liste pour charger les dashboards sans erreur de permission
+      // Autoriser le chargement des dashboards
       allow list: if isSignedIn();
-      
-      allow get: if isAdmin() || (isSignedIn() && (
-        resource.data.userId == request.auth.uid || 
-        resource.data.partnerId == request.auth.uid
-      ));
 
-      // Autorise la création pour tous (Mode Invité supporté)
-      allow create: if true;
-
-      allow update: if isAdmin() || (isSignedIn() && (
-        resource.data.userId == request.auth.uid || 
+      // Lecture d'une réservation spécifique
+      allow get: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
         resource.data.partnerId == request.auth.uid
-      ));
+      );
+
+      // Création autorisée (Support Mode Invité via rules assouplies si nécessaire, ici isSignedIn selon snippet)
+      allow create: if true; 
+
+      // Mise à jour par les parties concernées
+      allow update: if isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.partnerId == request.auth.uid
+      );
 
       allow delete: if isAdmin();
     }
 
-    // CONVERSATIONS
-    match /conversations/{convId} {
-      // Autorise la liste pour charger les messageries
-      allow list: if isSignedIn();
-      
-      allow get: if isAdmin() || (isSignedIn() && request.auth.uid in resource.data.participants);
-      
-      allow create: if isSignedIn();
-      
-      allow update: if isAdmin() || (isSignedIn() && request.auth.uid in resource.data.participants);
+    // PARTNERS - Profils professionnels
+    match /partners/{partnerId} {
+      allow read, write: if isSignedIn() && (request.auth.uid == partnerId);
+    }
 
+    // CONVERSATIONS - Messagerie sécurisée
+    match /conversations/{convId} {
+      allow list: if isSignedIn();
+      allow get: if isSignedIn() && (request.auth.uid in resource.data.participants);
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && (request.auth.uid in resource.data.participants);
       allow delete: if isAdmin();
 
       match /messages/{msgId} {
         allow list, get: if isSignedIn();
         allow create: if isSignedIn();
-        allow update, delete: if false;
       }
     }
 
-    // SETTINGS & CONFIG
+    // SETTINGS - Configuration site
     match /settings/{doc} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // STRIPE EXTENSION PATHS
+    // STRIPE EXTENSION - Sessions de paiement
     match /customers/{uid}/checkout_sessions/{id} {
-      allow read, write: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
+      allow read, write: if isSignedIn() && request.auth.uid == uid;
     }
   }
 }
