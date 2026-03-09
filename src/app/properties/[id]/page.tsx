@@ -151,11 +151,12 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
         specs: [
           `${details.roomsCount || 1} chambres`, 
           `${details.bathroomsCount || 1} SDB`, 
+          details.cuisinesCount ? `${details.cuisinesCount} cuisine(s)` : null,
           details.livingRoomsCount ? `${details.livingRoomsCount} salon(s)` : null,
           details.gardensCount ? `${details.gardensCount} jardin(s)` : null,
           'Cuisine équipée premium'
         ].filter(Boolean) as string[],
-        maxGuests: (details.roomsCount || 1) * 2 || 4,
+        maxGuests: details.maxCapacity || (details.roomsCount || 1) * 2 || 4,
         price: basePrice,
         stock: 1
       });
@@ -453,17 +454,17 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
               </div>
             </div>
             <div className="flex items-center gap-4 p-6 bg-slate-50 rounded-2xl border border-slate-100">
+              <div className="bg-primary/10 p-3 rounded-xl text-primary"><Users className="h-6 w-6" /></div>
+              <div>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">Capacité</p>
+                <p className="text-lg font-black text-slate-900">{property.details?.maxCapacity || 2} Pers.</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 p-6 bg-slate-50 rounded-2xl border border-slate-100">
               <div className="bg-primary/10 p-3 rounded-xl text-primary"><Sofa className="h-6 w-6" /></div>
               <div>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">Salons</p>
                 <p className="text-lg font-black text-slate-900">{property.details?.livingRoomsCount || 0}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-4 p-6 bg-slate-50 rounded-2xl border border-slate-100">
-              <div className="bg-primary/10 p-3 rounded-xl text-primary"><Trees className="h-6 w-6" /></div>
-              <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">Jardins</p>
-                <p className="text-lg font-black text-slate-900">{property.details?.gardensCount || 0}</p>
               </div>
             </div>
           </div>

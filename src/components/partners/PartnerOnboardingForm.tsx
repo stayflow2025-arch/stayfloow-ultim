@@ -121,6 +121,9 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
     propertyType: 'hotel',
     roomsCount: 1,
     bathroomsCount: 1,
+    cuisinesCount: 0,
+    toiletsCount: 1,
+    maxCapacity: 2,
     livingRoomsCount: 0,
     gardensCount: 0,
     singleRoomsCount: 0,
@@ -216,6 +219,9 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
             propertyType: formData.propertyType,
             roomsCount: formData.roomsCount,
             bathroomsCount: formData.bathroomsCount,
+            cuisinesCount: formData.cuisinesCount,
+            toiletsCount: formData.toiletsCount,
+            maxCapacity: formData.maxCapacity,
             livingRoomsCount: formData.livingRoomsCount,
             gardensCount: formData.gardensCount,
             singleRoomsCount: formData.singleRoomsCount,
@@ -462,13 +468,14 @@ function renderStep3(formData: any, setFormData: any, category: string, onAI: an
 
           <div className="space-y-6">
             <div className="p-10 bg-slate-50/50 rounded-[3rem] border border-slate-100">
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
                 <Counter icon={<Bed className="h-5 w-5"/>} label="Chambres" value={formData.roomsCount} onChange={(v: number) => setFormData({...formData, roomsCount: v})} />
                 <Counter icon={<Bath className="h-5 w-5"/>} label="SDB" value={formData.bathroomsCount} onChange={(v: number) => setFormData({...formData, bathroomsCount: v})} />
-                <Counter icon={<Utensils className="h-5 w-5"/>} label="Cuisines" value={0} onChange={() => {}} /> 
-                <Counter icon={<Users className="h-5 w-5"/>} label="Toilettes" value={1} onChange={() => {}} /> 
+                <Counter icon={<Utensils className="h-5 w-5"/>} label="Cuisines" value={formData.cuisinesCount} onChange={(v: number) => setFormData({...formData, cuisinesCount: v})} /> 
+                <Counter icon={<Users className="h-5 w-5"/>} label="Toilettes" value={formData.toiletsCount} onChange={(v: number) => setFormData({...formData, toiletsCount: v})} /> 
                 <Counter icon={<Sofa className="h-5 w-5"/>} label="Salons" value={formData.livingRoomsCount} onChange={(v: number) => setFormData({...formData, livingRoomsCount: v})} />
                 <Counter icon={<Trees className="h-5 w-5"/>} label="Jardins" value={formData.gardensCount} onChange={(v: number) => setFormData({...formData, gardensCount: v})} />
+                <Counter icon={<Users className="h-5 w-5"/>} label="Capacité" value={formData.maxCapacity} onChange={(v: number) => setFormData({...formData, maxCapacity: v})} />
               </div>
             </div>
           </div>
