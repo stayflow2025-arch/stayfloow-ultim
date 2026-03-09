@@ -10,7 +10,8 @@ import {
   Sofa, Trees,
   Users, Check,
   Leaf, Info, Train, Plane, FerrisWheel, Bed, Bath,
-  Calendar as CalendarIcon
+  Calendar as CalendarIcon,
+  Tent
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -457,7 +458,14 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
               <div className="bg-primary/10 p-3 rounded-xl text-primary"><Users className="h-6 w-6" /></div>
               <div>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">Capacité</p>
-                <p className="text-lg font-black text-slate-900">{property.details?.maxCapacity || 2} Pers.</p>
+                <p className="text-lg font-black text-slate-900">{property.details?.maxCapacity || property.details?.maxGroupSize || 2} Pers.</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 p-6 bg-slate-50 rounded-2xl border border-slate-100">
+              <div className="bg-primary/10 p-3 rounded-xl text-primary"><Utensils className="h-6 w-6" /></div>
+              <div>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">Cuisines</p>
+                <p className="text-lg font-black text-slate-900">{property.details?.cuisinesCount || 0}</p>
               </div>
             </div>
             <div className="flex items-center gap-4 p-6 bg-slate-50 rounded-2xl border border-slate-100">
@@ -465,6 +473,20 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
               <div>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">Salons</p>
                 <p className="text-lg font-black text-slate-900">{property.details?.livingRoomsCount || 0}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 p-6 bg-slate-50 rounded-2xl border border-slate-100">
+              <div className="bg-primary/10 p-3 rounded-xl text-primary"><Trees className="h-6 w-6" /></div>
+              <div>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">Jardins</p>
+                <p className="text-lg font-black text-slate-900">{property.details?.gardensCount || 0}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4 p-6 bg-slate-50 rounded-2xl border border-slate-100">
+              <div className="bg-primary/10 p-3 rounded-xl text-primary"><Tent className="h-6 w-6" /></div>
+              <div>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-tight">Toilettes</p>
+                <p className="text-lg font-black text-slate-900">{property.details?.toiletsCount || 1}</p>
               </div>
             </div>
           </div>

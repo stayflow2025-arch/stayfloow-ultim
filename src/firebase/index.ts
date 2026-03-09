@@ -12,6 +12,8 @@ import { getFirestore as getFirestoreInstance, Firestore } from 'firebase/firest
  */
 
 export function initializeFirebase() {
+  const g = globalThis as any;
+
   if (typeof window === 'undefined') {
     const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     return {
@@ -21,10 +23,13 @@ export function initializeFirebase() {
     };
   }
 
-  const g = globalThis as any;
-
+  // Client side singleton management to prevent ca9 internal assertion failed errors
   if (!g._firebaseApp) {
-    g._firebaseApp = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    try {
+      g._firebaseApp = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    } catch (e) {
+      g._firebaseApp = initializeApp(firebaseConfig);
+    }
   }
 
   if (!g._firebaseAuth) {

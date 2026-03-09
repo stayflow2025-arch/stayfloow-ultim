@@ -10,19 +10,21 @@ service cloud.firestore {
     function isAdmin() {
       return isSignedIn() && (
         request.auth.token.email == "stayflow2025@gmail.com" ||
-        request.auth.uid == "G4d04MgUW4fguFOjmhQBbWezheB2"
+        request.auth.uid == "G4d04MgUW4fguFOjmhQBbWezheB2" ||
+        request.auth.uid == "Kb7jQGxp4pf1cjdfbMwz4HnujQi2" ||
+        request.auth.uid == "CChLqb7OxdbbSpjNRKMAt2vJNa12"
       );
     }
 
     // USERS : Accès restreint au propriétaire ou admin
     match /users/{userId} {
-      // Seul l'admin peut lister tous les utilisateurs
-      allow list: if isAdmin();
-      // Lecture individuelle pour l'admin ou le propriétaire
+      // Autoriser la liste pour l'admin ou le dash local (filtrage par UID)
+      allow list: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
+      // Lecture individuelle
       allow get: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
-      // Création autorisée pour les nouveaux inscrits
+      // Création
       allow create: if isSignedIn();
-      // Mise à jour pour l'admin ou le propriétaire
+      // Mise à jour
       allow update: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
       // Suppression réservée à l'admin
       allow delete: if isAdmin();
@@ -40,42 +42,41 @@ service cloud.firestore {
       allow update, delete: if isAdmin() || (isSignedIn() && resource.data.ownerId == request.auth.uid);
     }
 
-    // BOOKINGS : Séparation GET et LIST pour éviter les erreurs dashboard
+    // BOOKINGS : Autoriser LIST pour charger les tableaux de bord
     match /bookings/{bookingId} {
-      // autoriser la liste pour les dashboards (le filtrage réel se fait par la query .where())
+      // Liste autorisée pour les membres (la sécurité réelle est dans la query .where('userId', '=='))
       allow list: if isSignedIn();
 
-      // lecture d'un booking spécifique : propriétaire, partenaire ou admin uniquement
+      // Lecture d'un booking spécifique : propriétaire, partenaire ou admin uniquement
       allow get: if isAdmin() || (isSignedIn() && (
         resource.data.userId == request.auth.uid || 
         resource.data.partnerId == request.auth.uid
       ));
 
-      // création réservation (autorise le mode invité lors de la validation du paiement)
+      // Création réservation autorisée pour tous (Guest booking mode)
       allow create: if true;
 
-      // modification : propriétaire, partenaire ou admin
+      // Modification : propriétaire, partenaire ou admin
       allow update: if isAdmin() || (isSignedIn() && (
         resource.data.userId == request.auth.uid || 
         resource.data.partnerId == request.auth.uid
       ));
 
-      // suppression seulement admin
+      // Suppression seulement admin
       allow delete: if isAdmin();
     }
 
-    // CONVERSATIONS : Séparation GET et LIST
+    // CONVERSATIONS : Autoriser LIST pour charger les messageries
     match /conversations/{convId} {
-      // autoriser la liste pour charger les dashboards
       allow list: if isSignedIn();
       
-      // lecture d'une conversation spécifique : uniquement les participants ou admin
+      // Lecture d'une conversation spécifique : uniquement les participants ou admin
       allow get: if isAdmin() || (isSignedIn() && request.auth.uid in resource.data.participants);
       
-      // création conversation
+      // Création conversation
       allow create: if isSignedIn();
       
-      // modification
+      // Modification
       allow update: if isAdmin() || (isSignedIn() && request.auth.uid in resource.data.participants);
 
       allow delete: if isAdmin();
