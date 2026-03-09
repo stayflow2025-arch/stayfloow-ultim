@@ -478,6 +478,7 @@ function renderStep3(formData: any, setFormData: any, category: string, onAI: an
               <h4 className="font-black text-lg text-primary flex items-center gap-2">
                 <Star className="h-5 w-5 fill-primary" /> Configuration des chambres de l'hôtel
               </h4>
+              <p className="text-xs text-slate-500 font-bold uppercase tracking-tight">Précisez le nombre de chambres disponibles par catégorie :</p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <Counter icon={<Bed/>} label="Chambres Seules" value={formData.singleRoomsCount} onChange={(v: number) => setFormData({...formData, singleRoomsCount: v})} light />
                 <Counter icon={<Users/>} label="Chambres Doubles" value={formData.doubleRoomsCount} onChange={(v: number) => setFormData({...formData, doubleRoomsCount: v})} light />

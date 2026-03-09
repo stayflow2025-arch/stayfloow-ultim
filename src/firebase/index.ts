@@ -6,14 +6,13 @@ import { getAuth as getAuthInstance, Auth } from 'firebase/auth';
 import { getFirestore as getFirestoreInstance, Firestore } from 'firebase/firestore';
 
 /**
- * @fileOverview Initialisation Firebase Singleton résiliente.
- * Utilise une approche de mise en cache globale pour éviter les erreurs d'assertion interne (ca9)
- * courantes dans les environnements de développement Next.js avec HMR.
+ * @fileOverview Initialisation Firebase Singleton robuste utilisant globalThis.
+ * Empêche les erreurs d'assertion interne (ca9) dans Next.js en garantissant 
+ * qu'une seule instance de chaque service est créée par session.
  */
 
 export function initializeFirebase() {
   if (typeof window === 'undefined') {
-    // Server-side initialization
     const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     return {
       firebaseApp: app,
@@ -22,15 +21,10 @@ export function initializeFirebase() {
     };
   }
 
-  // Client-side initialization with global cache protection
   const g = globalThis as any;
 
   if (!g._firebaseApp) {
-    if (getApps().length > 0) {
-      g._firebaseApp = getApp();
-    } else {
-      g._firebaseApp = initializeApp(firebaseConfig);
-    }
+    g._firebaseApp = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
   }
 
   if (!g._firebaseAuth) {

@@ -101,6 +101,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
     const types = [];
     const basePrice = property.price || 10000;
 
+    // Si c'est un hôtel ou riad, on sépare les types de chambres
     if (details.propertyType === 'hotel' || details.type?.toLowerCase().includes('hôtel') || details.type?.toLowerCase().includes('riad')) {
       const singleCount = details.singleRoomsCount || 0;
       const doubleCount = details.doubleRoomsCount || 0; 
@@ -109,9 +110,9 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
       if (singleCount > 0) {
         types.push({
           id: 'single',
-          name: t('single_rooms'),
+          name: 'Chambre Individuelle Confort',
           size: '18m²',
-          specs: ['1 lit simple', 'WiFi gratuit', 'Salle de bain'],
+          specs: ['1 lit simple', 'WiFi haut débit', 'Salle de bain privée'],
           maxGuests: 1,
           price: basePrice * 0.8,
           stock: singleCount
@@ -121,9 +122,9 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
       if (doubleCount > 0 || (singleCount === 0 && suiteCount === 0)) {
         types.push({
           id: 'double',
-          name: t('double_rooms'),
+          name: 'Chambre Double Standard',
           size: '24m²',
-          specs: ['1 grand lit double', 'WiFi gratuit', 'Climatisation'],
+          specs: ['1 grand lit double', 'WiFi haut débit', 'Climatisation'],
           maxGuests: 2,
           price: basePrice,
           stock: doubleCount > 0 ? doubleCount : 10
@@ -133,7 +134,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
       if (suiteCount > 0) {
         types.push({
           id: 'suite',
-          name: t('parental_suites') + ' (King Size)',
+          name: 'Suite Parentale King Size',
           size: '45m²',
           specs: ['1 lit King Size', 'Espace salon privatif', 'Vue panoramique'],
           maxGuests: 3,
@@ -142,6 +143,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
         });
       }
     } else {
+      // Pour les appartements ou villas, c'est le logement entier
       types.push({
         id: 'entire',
         name: `Logement entier (${details.roomsCount || 1} pièces)`,
@@ -151,8 +153,8 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
           `${details.bathroomsCount || 1} SDB`, 
           details.livingRoomsCount ? `${details.livingRoomsCount} salon(s)` : null,
           details.gardensCount ? `${details.gardensCount} jardin(s)` : null,
-          'Cuisine équipée'
-        ].filter(Boolean),
+          'Cuisine équipée premium'
+        ].filter(Boolean) as string[],
         maxGuests: (details.roomsCount || 1) * 2 || 4,
         price: basePrice,
         stock: 1
@@ -160,7 +162,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
     }
 
     return types;
-  }, [property, t]);
+  }, [property]);
 
   const totalBookingPrice = Object.entries(selectedRooms).reduce((acc, [roomId, qty]) => {
     const room = roomTypes.find(r => r.id === roomId);
@@ -267,14 +269,14 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                   ))}
                 </div>
                 <Badge className="bg-primary/10 text-primary border-none flex items-center gap-1 h-5 text-[10px] font-bold uppercase">
-                  <Leaf className="h-3 w-3" /> Certificat de durabilité
+                  <Leaf className="h-3 w-3" /> Certificat StayFloow Pro
                 </Badge>
               </div>
               <h1 className="text-2xl font-black text-slate-900 tracking-tight">{propertyName}</h1>
               <div className="flex items-center gap-2 text-[13px] text-slate-600">
                 <MapPin className="h-4 w-4 text-primary shrink-0" />
                 <span>{property.location?.address || property.location} — </span>
-                <button onClick={() => scrollToSection(locationRef, 'location')} className="text-primary font-bold hover:underline">Excellent emplacement – voir la carte</button>
+                <button onClick={() => scrollToSection(locationRef, 'location')} className="text-primary font-bold hover:underline">Voir l'emplacement sur la carte</button>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -284,7 +286,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                 onClick={() => scrollToSection(availabilityRef, 'availability')}
                 className="bg-primary hover:bg-primary/90 text-white font-black px-8 h-10 rounded-md"
               >
-                Réserver
+                Vérifier les prix
               </Button>
             </div>
           </div>
@@ -304,7 +306,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                 </div>
                 <div className="text-center">
                   <p className="font-bold text-lg leading-none mb-1">{rating >= 9 ? "Fabuleux" : "Très bien"}</p>
-                  <p className="text-[11px] opacity-80">{reviewsCount} avis</p>
+                  <p className="text-[11px] opacity-80">{reviewsCount} avis certifiés</p>
                 </div>
               </div>
             </div>
@@ -314,21 +316,21 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
             <div className="relative group cursor-pointer bg-slate-100">
               <Image src={photos[4] || 'https://picsum.photos/seed/p5/800/600'} alt="Side 4" fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
               <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                <span className="text-white font-bold text-sm underline">+ {photos.length > 5 ? photos.length - 5 : 0} autres photos</span>
+                <span className="text-white font-bold text-sm underline">+ {photos.length > 5 ? photos.length - 5 : 0} photos</span>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Section 2: Availability Section */}
+        {/* Section 2: Availability Section - IMPROVED FOR SEPARATE ROOMS */}
         <section ref={availabilityRef} className="space-y-6 pt-10">
           <div className="flex flex-col md:flex-row justify-between items-end gap-4">
             <div className="space-y-4">
-              <h2 className="text-2xl font-black text-slate-900">Disponibilité</h2>
+              <h2 className="text-2xl font-black text-slate-900">Disponibilité de l'hébergement</h2>
               <div className="bg-[#FEBA02] px-4 py-2 rounded-sm inline-flex items-center gap-2 mt-2 shadow-sm">
                 <CalendarIcon className="h-4 w-4" />
                 <span className="text-[12px] font-black uppercase">
-                  Du {format(dates.from, "dd", { locale: fr })} au {format(dates.to, "dd MMMM yyyy", { locale: fr })} ({nights} nuits)
+                  Période : {format(dates.from, "dd MMM", { locale: fr })} — {format(dates.to, "dd MMM yyyy", { locale: fr })} ({nights} nuits)
                 </span>
               </div>
             </div>
@@ -337,7 +339,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
               variant="outline" 
               className="border-primary text-primary font-black h-12 px-8 rounded-md hover:bg-primary/5 transition-all"
             >
-              Modifier la recherche
+              Modifier mes dates
             </Button>
           </div>
 
@@ -345,11 +347,11 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
             <Table>
               <TableHeader className="bg-[#4C4C4C] hover:bg-[#4C4C4C]">
                 <TableRow>
-                  <TableHead className="text-white font-bold py-4">Type de logement</TableHead>
-                  <TableHead className="text-white font-bold text-center">Voyageurs</TableHead>
-                  <TableHead className="text-white font-bold">Tarif ({nights} nuits)</TableHead>
-                  <TableHead className="text-white font-bold">Options</TableHead>
-                  <TableHead className="text-white font-bold">Choix</TableHead>
+                  <TableHead className="text-white font-bold py-4">Option d'hébergement</TableHead>
+                  <TableHead className="text-white font-bold text-center">Capacité</TableHead>
+                  <TableHead className="text-white font-bold">Tarif total ({nights} nuits)</TableHead>
+                  <TableHead className="text-white font-bold">Conditions</TableHead>
+                  <TableHead className="text-white font-bold">Quantité</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -359,8 +361,8 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                       <div className="space-y-3">
                         <h4 className="font-bold text-[#10B981] underline cursor-pointer text-[15px]">{room.name}</h4>
                         <ul className="space-y-1">
-                          {room.specs.map(spec => (
-                            <li key={spec} className="flex items-center gap-2 text-[12px] text-slate-600">
+                          {room.specs.map((spec, i) => (
+                            <li key={i} className="flex items-center gap-2 text-[12px] text-slate-600">
                               <Check className="h-3 w-3 text-primary" /> {spec}
                             </li>
                           ))}
@@ -371,19 +373,23 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                       <div className="flex justify-center gap-0.5">
                         {[...Array(room.maxGuests)].map((_, i) => <Users key={i} className="h-4 w-4 text-slate-400" />)}
                       </div>
+                      <span className="text-[10px] text-slate-400 font-bold uppercase">Max {room.maxGuests} pers.</span>
                     </TableCell>
                     <TableCell className="align-top py-6">
                       <p className="font-black text-lg text-slate-900">{formatPrice(room.price * nights)}</p>
-                      <p className="text-[10px] text-slate-400">Taxes comprises</p>
+                      <p className="text-[10px] text-slate-400">Toutes taxes incluses</p>
                     </TableCell>
                     <TableCell className="align-top py-6">
                       <div className="text-[12px] space-y-1">
-                        <p className="text-green-600 font-bold">Petit-déjeuner inclus</p>
-                        <p className="text-green-600 font-bold">Annulation GRATUITE</p>
+                        <p className="text-green-600 font-bold flex items-center gap-1"><Check className="h-3 w-3"/> Petit-déjeuner inclus</p>
+                        <p className="text-green-600 font-bold flex items-center gap-1"><Check className="h-3 w-3"/> Annulation GRATUITE</p>
                       </div>
                     </TableCell>
                     <TableCell className="align-top py-6">
-                      <Select onValueChange={(val) => setSelectedRooms({...selectedRooms, [room.id]: parseInt(val)})} defaultValue="0">
+                      <Select 
+                        value={selectedRooms[room.id]?.toString() || "0"}
+                        onValueChange={(val) => setSelectedRooms({...selectedRooms, [room.id]: parseInt(val)})}
+                      >
                         <SelectTrigger className="w-full bg-white border-slate-300 h-10"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           {Array.from({ length: Math.min(6, room.stock + 1) }).map((_, n) => (
@@ -391,6 +397,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                           ))}
                         </SelectContent>
                       </Select>
+                      <p className="text-[9px] text-slate-400 mt-1 uppercase font-bold text-center">{room.stock} dispo(s)</p>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -399,12 +406,16 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
           </div>
           
           {totalBookingPrice > 0 && (
-            <div className="flex flex-col items-end gap-6 mt-8">
+            <div className="flex flex-col items-end gap-6 mt-8 p-8 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+              <div className="text-right">
+                <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">Total de votre sélection</p>
+                <p className="text-4xl font-black text-[#10B981] tracking-tighter">{formatPrice(totalBookingPrice)}</p>
+              </div>
               <Button 
                 onClick={handleBookingClick}
-                className="bg-[#10B981] hover:bg-[#0da372] text-white font-black text-xl px-16 py-8 rounded-xl shadow-xl transition-all"
+                className="bg-[#10B981] hover:bg-[#0da372] text-white font-black text-xl px-16 py-8 rounded-xl shadow-xl transition-all active:scale-95"
               >
-                Réserver ({formatPrice(totalBookingPrice)})
+                Je réserve mon séjour
               </Button>
             </div>
           )}
@@ -412,20 +423,20 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
 
         {/* Section 3: Facilities Grid */}
         <section ref={facilitiesRef} className="space-y-6 pt-10 border-t">
-          <h2 className="text-xl font-black text-slate-900">Équipements les plus populaires</h2>
+          <h2 className="text-xl font-black text-slate-900">Équipements de l'établissement</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             <FacilityIcon icon={<Wifi/>} label="Wi-Fi gratuit" />
             <FacilityIcon icon={<Utensils/>} label="Restaurant" />
-            <FacilityIcon icon={<Car/>} label="Parking gratuit" />
+            <FacilityIcon icon={<Car/>} label="Parking privé" />
             <FacilityIcon icon={<Wind/>} label="Climatisation" />
-            <FacilityIcon icon={<Coffee/>} label="Machine à café" />
-            <FacilityIcon icon={<Clock/>} label="Réception 24h/24" />
+            <FacilityIcon icon={<Coffee/>} label="Thé & Café" />
+            <FacilityIcon icon={<Clock/>} label="Conciergerie 24h/24" />
           </div>
         </section>
 
         {/* Section 4: Composition Technique */}
         <section className="space-y-6 pt-10 border-t">
-          <h2 className="text-xl font-black text-slate-900">Détails de l'établissement</h2>
+          <h2 className="text-xl font-black text-slate-900">Composition & Espaces</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <div className="flex items-center gap-4 p-6 bg-slate-50 rounded-2xl border border-slate-100">
               <div className="bg-primary/10 p-3 rounded-xl text-primary"><Bed className="h-6 w-6" /></div>
@@ -460,14 +471,14 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
 
         {/* Section Surrounding POIs */}
         <section ref={surroundingsRef} className="space-y-8 pt-10 border-t">
-          <h2 className="text-xl font-black text-slate-900">Environs de l'établissement</h2>
+          <h2 className="text-xl font-black text-slate-900">Aux alentours</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-10">
             <div className="space-y-4">
-              <h3 className="flex items-center gap-2 font-bold text-[15px] text-slate-900"><FerrisWheel className="h-5 w-5 text-slate-600" /> Attractions</h3>
+              <h3 className="flex items-center gap-2 font-bold text-[15px] text-slate-900"><FerrisWheel className="h-5 w-5 text-slate-600" /> Attractions touristiques</h3>
               {surroundings?.attractions.map((item, i) => <SurroundingRow key={i} label={item.name} dist={item.dist} />)}
             </div>
             <div className="space-y-4">
-              <h3 className="flex items-center gap-2 font-bold text-[15px] text-slate-900"><Plane className="h-5 w-5 text-slate-600" /> Aéroports</h3>
+              <h3 className="flex items-center gap-2 font-bold text-[15px] text-slate-900"><Plane className="h-5 w-5 text-slate-600" /> Aéroports & Transports</h3>
               {surroundings?.airports.map((item, i) => <SurroundingRow key={i} label={item.name} dist={item.dist} />)}
             </div>
           </div>
@@ -475,7 +486,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
 
         {/* Section Location & Map */}
         <section ref={locationRef} className="space-y-6 pt-10 border-t">
-          <h2 className="text-xl font-black text-slate-900">Emplacement</h2>
+          <h2 className="text-xl font-black text-slate-900">Localisation précise</h2>
           <div className="rounded-2xl overflow-hidden border-4 border-slate-50 shadow-xl h-[400px]">
             <OnboardingMap location={property.location?.address || property.location} />
           </div>
@@ -483,11 +494,11 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
 
         {/* Section Rules */}
         <section ref={rulesRef} className="space-y-6 pt-10 border-t">
-          <h2 className="text-xl font-black text-slate-900">Règles de la maison</h2>
+          <h2 className="text-xl font-black text-slate-900">Règles & Conditions</h2>
           <div className="border rounded-md">
-            <RuleRow icon={<Clock/>} label="Arrivée" value="De 14h00 à 00h00" />
-            <RuleRow icon={<Clock/>} label="Départ" value="Jusqu'à 12h00" />
-            <RuleRow icon={<Info/>} label="Annulation" value="Conditions flexibles StayFloow." />
+            <RuleRow icon={<Clock/>} label="Arrivée" value="De 14h00 à 23h00 (Arrivée tardive possible sur demande)" />
+            <RuleRow icon={<Clock/>} label="Départ" value="Avant 12h00" />
+            <RuleRow icon={<Info/>} label="Annulation" value="Annulation gratuite jusqu'à 48 heures avant l'arrivée." />
           </div>
         </section>
       </main>
@@ -495,10 +506,10 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
       {/* SEARCH MODIFIER DIALOG */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
         <DialogContent className="sm:max-w-[500px] rounded-2xl p-8">
-          <DialogHeader><DialogTitle className="text-2xl font-black text-slate-900">Modifier votre recherche</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="text-2xl font-black text-slate-900">Sélectionnez vos dates</DialogTitle></DialogHeader>
           <div className="space-y-6 py-6">
             <div className="space-y-2">
-              <span className="text-[10px] font-black text-slate-400 uppercase">Dates de séjour</span>
+              <span className="text-[10px] font-black text-slate-400 uppercase">Dates de votre voyage</span>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full h-14 justify-start font-black text-lg border-slate-200 rounded-xl bg-slate-50">
@@ -514,7 +525,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
           </div>
           <div className="flex justify-end gap-3 border-t pt-6">
             <Button variant="ghost" onClick={() => setIsEditModalOpen(false)}>Annuler</Button>
-            <Button onClick={() => setIsEditModalOpen(false)} className="bg-primary text-white font-black px-8 h-12 rounded-xl">Mettre à jour</Button>
+            <Button onClick={() => setIsEditModalOpen(false)} className="bg-primary text-white font-black px-8 h-12 rounded-xl">Rechercher</Button>
           </div>
         </DialogContent>
       </Dialog>

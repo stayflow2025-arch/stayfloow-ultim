@@ -80,7 +80,6 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://images.unsplash.com" />
         <link rel="preconnect" href="https://picsum.photos" />
-        {/* Script de récupération automatique pour ChunkLoadError */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -91,7 +90,7 @@ export default function RootLayout({
                   event.message.includes('Failed to fetch dynamically imported module')
                 );
                 if (isChunkError) {
-                  console.warn('StayFloow Error Recovery: Chunk load error detected, reloading page...');
+                  console.warn('StayFloow Recovery: Reloading due to chunk error...');
                   window.location.reload();
                 }
               }, true);
