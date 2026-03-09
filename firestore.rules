@@ -2,7 +2,6 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Fonctions d'aide
     function isSignedIn() {
       return request.auth != null;
     }
@@ -24,6 +23,7 @@ service cloud.firestore {
     // USERS - Lecture/Écriture par le propriétaire
     match /users/{userId} {
       allow read, write: if isSignedIn() && request.auth.uid == userId;
+      allow list: if isAdmin();
     }
 
     // LISTINGS - Lecture publique, création connectée
@@ -35,22 +35,24 @@ service cloud.firestore {
 
     // BOOKINGS - Gestion des réservations
     match /bookings/{bookingId} {
-      // Autoriser le chargement des dashboards
+      // IMPORTANT : autoriser les dashboards (Correction de l'erreur Permission Denied)
       allow list: if isSignedIn();
 
       // Lecture d'une réservation spécifique
       allow get: if isSignedIn() && (
         resource.data.userId == request.auth.uid ||
-        resource.data.partnerId == request.auth.uid
+        resource.data.partnerId == request.auth.uid ||
+        isAdmin()
       );
 
-      // Création autorisée (Support Mode Invité via rules assouplies si nécessaire, ici isSignedIn selon snippet)
+      // Création autorisée (Mode Invité supporté via backend logic)
       allow create: if true; 
 
       // Mise à jour par les parties concernées
       allow update: if isSignedIn() && (
         resource.data.userId == request.auth.uid ||
-        resource.data.partnerId == request.auth.uid
+        resource.data.partnerId == request.auth.uid ||
+        isAdmin()
       );
 
       allow delete: if isAdmin();
@@ -58,13 +60,16 @@ service cloud.firestore {
 
     // PARTNERS - Profils professionnels
     match /partners/{partnerId} {
-      allow read, write: if isSignedIn() && (request.auth.uid == partnerId);
+      allow read, write: if isSignedIn() && (request.auth.uid == partnerId || isAdmin());
     }
 
     // CONVERSATIONS - Messagerie sécurisée
     match /conversations/{convId} {
       allow list: if isSignedIn();
-      allow get: if isSignedIn() && (request.auth.uid in resource.data.participants);
+      allow get: if isSignedIn() && (
+        request.auth.uid in resource.data.participants || 
+        isAdmin()
+      );
       allow create: if isSignedIn();
       allow update: if isSignedIn() && (request.auth.uid in resource.data.participants);
       allow delete: if isAdmin();
