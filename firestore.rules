@@ -12,7 +12,8 @@ service cloud.firestore {
         request.auth.token.email == "stayflow2025@gmail.com" ||
         request.auth.uid == "G4d04MgUW4fguFOjmhQBbWezheB2" ||
         request.auth.uid == "Kb7jQGxp4pf1cjdfbMwz4HnujQi2" ||
-        request.auth.uid == "CChLqb7OxdbbSpjNRKMAt2vJNa12"
+        request.auth.uid == "CChLqb7OxdbbSpjNRKMAt2vJNa12" ||
+        request.auth.uid == "3rixbVLeMaUARuODthz3ds80WeS2"
       );
     }
 
@@ -36,7 +37,7 @@ service cloud.firestore {
 
     // BOOKINGS - Gestion des réservations
     match /bookings/{bookingId} {
-      // autoriser les dashboards à lister les réservations
+      // autoriser les dashboards à lister les réservations (Correction demandée)
       allow list: if isSignedIn();
 
       // lecture d'une réservation spécifique

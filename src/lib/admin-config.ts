@@ -1,3 +1,4 @@
+
 /**
  * @fileOverview Configuration centralisée des accès administrateur pour StayFloow.com
  */
@@ -9,7 +10,8 @@ export const ADMIN_EMAILS = [
 export const ADMIN_UIDS = [
   "G4d04MgUW4fguFOjmhQBbWezheB2",
   "Kb7jQGxp4pf1cjdfbMwz4HnujQi2",
-  "CChLqb7OxdbbSpjNRKMAt2vJNa12"
+  "CChLqb7OxdbbSpjNRKMAt2vJNa12",
+  "3rixbVLeMaUARuODthz3ds80WeS2"
 ];
 
 /**
