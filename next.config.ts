@@ -3,13 +3,9 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   output: 'standalone',
   typescript: {
-    // !! ATTENTION !!
-    // Autorise la fin du build même si des erreurs de type sont présentes.
-    // Utile pour accélérer les déploiements de prototypes.
     ignoreBuildErrors: true,
   },
   eslint: {
-    // Ignore les erreurs ESLint pendant le build.
     ignoreDuringBuilds: true,
   },
   images: {
@@ -35,7 +31,6 @@ const nextConfig: NextConfig = {
     ],
     formats: ['image/webp'],
   },
-  // Optimisation du rendu
   swcMinify: true,
   compress: true,
   poweredByHeader: false,

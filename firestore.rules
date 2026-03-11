@@ -78,6 +78,10 @@ service cloud.firestore {
       allow read, write: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
     }
 
+    match /products/{id} {
+      allow read: if true;
+    }
+
     match /mail/{mailId} {
       allow create: if true;
     }

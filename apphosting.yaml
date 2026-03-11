@@ -2,7 +2,7 @@
 runConfig:
   maxInstances: 10
   minInstances: 0
-  memory: 512Mi
+  memory: 1Gi
 
 env:
   - variable: NEXT_PUBLIC_BASE_URL
