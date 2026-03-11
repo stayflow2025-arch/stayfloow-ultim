@@ -1,4 +1,3 @@
-
 /**
  * @fileOverview Configuration centralisée des accès administrateur pour StayFloow.com
  */
