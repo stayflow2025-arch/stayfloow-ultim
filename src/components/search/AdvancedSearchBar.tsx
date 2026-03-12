@@ -20,9 +20,10 @@ type Category = 'accommodations' | 'cars' | 'circuits';
 
 interface AdvancedSearchBarProps {
   hideTabs?: boolean;
+  buttonLabel?: string;
 }
 
-export default function AdvancedSearchBar({ hideTabs = false }: AdvancedSearchBarProps) {
+export default function AdvancedSearchBar({ hideTabs = false, buttonLabel }: AdvancedSearchBarProps) {
   const { t, locale } = useLanguage();
   const router = useRouter();
   const pathname = usePathname();
@@ -202,6 +203,8 @@ export default function AdvancedSearchBar({ hideTabs = false }: AdvancedSearchBa
   };
 
   if (!isClient) return <div className="w-full h-[85px] bg-slate-100 animate-pulse rounded-xl" />;
+
+  const finalButtonLabel = buttonLabel || t("search_btn");
 
   return (
     <div className="w-full">
@@ -406,8 +409,8 @@ export default function AdvancedSearchBar({ hideTabs = false }: AdvancedSearchBa
             locale === 'ar' ? "md:rounded-l-lg" : "md:rounded-r-lg"
           )}
         >
-          <span className="text-2xl font-black tracking-tight group-hover:scale-105 transition-transform">
-            {t("search_btn")}
+          <span className="text-2xl font-black tracking-tight group-hover:scale-105 transition-transform text-center">
+            {finalButtonLabel}
           </span>
         </button>
       </form>
