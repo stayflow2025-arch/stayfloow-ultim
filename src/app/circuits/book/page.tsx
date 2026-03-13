@@ -114,7 +114,7 @@ function CircuitBookingContent() {
                 bookingDetails: { 
                   startDate: tourDate, 
                   endDate: endDate,
-                  participants: Object.values(tickets).reduce((a: any, b: any) => a + b, 0) as number, 
+                  participants: Object.values(tickets).reduce((a: any, b: any) => (a as number) + (b as number), 0) as number, 
                   totalPrice: fullTotalAmount,
                   depositAmount: depositAmount
                 }
@@ -163,7 +163,7 @@ function CircuitBookingContent() {
                       </Button>
                     </div>
                 </Card>
-                <CrossSellCard location={circuit.location?.address || circuit.location || "Alger"} bookedItemType="circuit" />
+                <CrossSellCard location={circuit.location?.address || (circuit as any).location || "Alger"} bookedItemType="circuit" />
             </div>
         );
     }
@@ -274,8 +274,8 @@ function CircuitBookingContent() {
 
                 <div className="lg:col-span-1">
                     <Card className="sticky top-24 shadow-2xl border-none overflow-hidden rounded-[2.5rem] bg-white">
-                        <div className="relative h-48 w-full"><Image src={circuit.photos?.[0] || circuit.images?.[0] || 'https://picsum.photos/seed/tour/800/600'} alt="tour" fill className="object-cover" /></div>
-                        <CardHeader className="p-8 pb-4"><CardTitle className="text-2xl font-black text-primary leading-tight">{circuit.details?.name || circuit.title}</CardTitle></CardHeader>
+                        <div className="relative h-48 w-full"><Image src={circuit.photos?.[0] || (circuit as any).images?.[0] || 'https://picsum.photos/seed/tour/800/600'} alt="tour" fill className="object-cover" /></div>
+                        <CardHeader className="p-8 pb-4"><CardTitle className="text-2xl font-black text-primary leading-tight">{circuit.details?.name || (circuit as any).title}</CardTitle></CardHeader>
                         <CardContent className="p-8 pt-0 space-y-6">
                             <Separator />
                             <div className="space-y-4">
@@ -286,8 +286,8 @@ function CircuitBookingContent() {
                                 <div className="space-y-2">
                                     {Object.entries(tickets).map(([tid, count]: [string, any]) => {
                                         if (count === 0) return null;
-                                        const ticketTypes = circuit.details?.ticketTypes || circuit.ticketTypes || [];
-                                        const ttype = ticketTypes.find((t: any) => t.id === tid) || { name: tid, price: circuit.price || circuit.pricePerPerson };
+                                        const ticketTypes = circuit.details?.ticketTypes || (circuit as any).ticketTypes || [];
+                                        const ttype = ticketTypes.find((t: any) => t.id === tid) || { name: tid, price: (circuit as any).price || (circuit as any).pricePerPerson };
                                         return (
                                             <div key={tid} className="flex justify-between text-sm font-black text-slate-700">
                                                 <span>{count} x {ttype.name}</span>
@@ -317,7 +317,7 @@ function CircuitBookingContent() {
                             <div className="bg-blue-50 p-4 rounded-xl flex gap-3 border border-blue-100">
                                 <Info className="h-5 w-5 text-blue-600 shrink-0" />
                                 <p className="text-[11px] text-blue-800 font-bold leading-relaxed">
-                                    ℹ Notre plateforme prélève uniquement 14% du montant total à titre de frais de service lors de votre réservation en ligne. Le solde restant (86%) est réglé directement sur place auprès du prestataire à votre arrivée.
+                                    ℹ Notre plateforme prélève uniquement 14% du montant total à titre de frais de service lors de votre réservation en ligne. Le solde restant (86%) est réglé directement au prestataire.
                                 </p>
                             </div>
 
