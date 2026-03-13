@@ -36,24 +36,23 @@
   }
 }
 
-/* FIX NAVIGATION & SELECTS : Garantit que les menus déroulants et boutons sont cliquables */
+/* FIX NAVIGATION, SELECTS & CALENDARS */
+/* Garantit que les portails Radix (Calendriers, Popovers, Dialogs) sont toujours prioritaires et cliquables */
 [data-radix-portal] {
   pointer-events: auto !important;
-  z-index: 9999 !important;
+  z-index: 99999 !important;
 }
 
-/* Évite les blocages de clics dans les calendriers et formulaires */
+/* Force les boutons de calendrier à être réactifs */
+[data-radix-portal] button, 
+[data-radix-portal] [role="button"] {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+/* Empêche le blocage des événements par des conteneurs transparents tout en gardant le contenu cliquable */
 .pointer-events-auto {
   pointer-events: auto !important;
-}
-
-/* Empêche les overlays invisibles de bloquer la navigation locale tout en préservant les clics utiles */
-.fixed.inset-0:not(.bg-black\/80):not(.bg-background\/80):not([data-radix-portal]) {
-  pointer-events: none;
-}
-
-.fixed.inset-0 > * {
-  pointer-events: auto;
 }
 
 .page-fade-in {

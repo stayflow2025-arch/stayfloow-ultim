@@ -40,6 +40,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { format, addDays, differenceInDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import type { DateRange } from 'react-day-picker';
 
 export default function CarDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -64,10 +65,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
   });
 
   const [tempLocation, setTempLocation] = useState("");
-  const [tempDates, setTempDates] = useState<{ from: Date | undefined; to: Date | undefined }>({
-    from: undefined,
-    to: undefined,
-  });
+  const [tempRange, setTempRange] = useState<DateRange | undefined>(undefined);
 
   const carRef = useMemoFirebase(() => doc(db, 'listings', id), [db, id]);
   const { data: car, loading } = useDoc(carRef);
@@ -134,14 +132,14 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
 
   const openEditModal = () => {
     setTempLocation(pickupLocation);
-    setTempDates({ from: dateRange.from, to: dateRange.to });
+    setTempRange({ from: dateRange.from, to: dateRange.to });
     setIsEditDialogOpen(true);
   };
 
   const saveSearchChanges = () => {
     if (tempLocation) setPickupLocation(tempLocation);
-    if (tempDates.from && tempDates.to) {
-      setDateRange({ from: tempDates.from, to: tempDates.to });
+    if (tempRange?.from && tempRange?.to) {
+      setDateRange({ from: tempRange.from, to: tempRange.to });
     }
     setIsEditDialogOpen(false);
   };
@@ -362,20 +360,21 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full h-14 justify-start text-left font-bold rounded-xl border-slate-100 bg-slate-50">
                     <CalendarIcon className="mr-3 h-5 w-5 text-primary" />
-                    {tempDates.from && tempDates.to ? (
+                    {tempRange?.from && tempRange?.to ? (
                       <>
-                        {format(tempDates.from, "dd MMM", { locale: fr })} — {format(tempDates.to, "dd MMM", { locale: fr })}
+                        {format(tempRange.from, "dd MMM", { locale: fr })} — {format(tempRange.to, "dd MMM", { locale: fr })}
                       </>
                     ) : (
                       "Sélectionner des dates"
                     )}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 border-none shadow-2xl" align="center">
+                <PopoverContent className="w-auto p-0 border-none shadow-2xl z-[150] bg-white" align="center">
                   <Calendar
                     mode="range"
-                    selected={{ from: tempDates.from, to: tempDates.to }}
-                    onSelect={(range: any) => setTempDates({ from: range?.from, to: range?.to })}
+                    selected={tempRange}
+                    onSelect={setTempRange}
+                    defaultMonth={tempRange?.from}
                     locale={fr}
                     numberOfMonths={2}
                     disabled={{ before: new Date() }}
