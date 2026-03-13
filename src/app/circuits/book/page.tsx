@@ -49,7 +49,8 @@ function CircuitBookingContent() {
     const tourId = searchParams.get('id');
     const tourDate = searchParams.get('date');
     const endDate = searchParams.get('endDate');
-    const tickets = searchParams.get('tickets') ? JSON.parse(searchParams.get('tickets')!) : {};
+    const ticketsParam = searchParams.get('tickets');
+    const tickets = useMemo(() => ticketsParam ? JSON.parse(ticketsParam) : {}, [ticketsParam]);
     const fullTotalAmount = Number(searchParams.get('total')) || 0;
     const depositAmount = fullTotalAmount * 0.14;
     const onSiteAmount = fullTotalAmount * 0.86;
@@ -142,11 +143,11 @@ function CircuitBookingContent() {
                     <h1 className="text-3xl font-black mb-4">Votre aventure commence bientôt !</h1>
                     <p className="text-xl text-slate-600 mb-8 font-medium">Retrouvez votre ticket dans votre portail client.</p>
                     <div className="space-y-3">
-                      <Button className="w-full bg-primary h-14 px-10 font-black rounded-xl text-lg shadow-xl" asChild>
-                        <Link href="/profile/bookings">Gérer mes réservations</Link>
+                      <Button className="w-full bg-primary h-14 px-10 font-black rounded-xl text-lg shadow-xl" onClick={() => router.push('/profile/bookings')}>
+                        Gérer mes réservations
                       </Button>
-                      <Button variant="ghost" className="w-full font-bold text-slate-400" asChild>
-                        <Link href="/">Retour à l'accueil</Link>
+                      <Button variant="ghost" className="w-full font-bold text-slate-400" onClick={() => router.push('/')}>
+                        Retour à l'accueil
                       </Button>
                     </div>
                 </Card>
