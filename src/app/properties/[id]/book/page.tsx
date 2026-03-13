@@ -15,7 +15,8 @@ import {
   CreditCard, 
   Loader2,
   CheckCircle,
-  Users
+  Users,
+  Lock
 } from "lucide-react";
 import { format, addDays, differenceInDays } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -41,6 +42,9 @@ const bookingSchema = z.object({
   phone: z.string().min(6, "Numéro trop court"),
   dialCode: z.string().min(1, "Indicatif requis"),
   paymentMethod: z.enum(["card", "paypal"]),
+  cardNumber: z.string().optional(),
+  cardExpiry: z.string().optional(),
+  cardCvc: z.string().optional(),
 });
 
 type BookingValues = z.infer<typeof bookingSchema>;
@@ -78,6 +82,8 @@ function PropertyBookingContent({ id }: { id: string }) {
       paymentMethod: "card",
     },
   });
+
+  const paymentMethod = form.watch("paymentMethod");
 
   const nights = Math.max(1, differenceInDays(date.to, date.from));
   const fullPrice = totalParam ? parseFloat(totalParam) : (property?.price || 85) * nights;
@@ -314,6 +320,49 @@ function PropertyBookingContent({ id }: { id: string }) {
                           </RadioGroup>
                         )}
                       />
+
+                      {paymentMethod === 'card' && (
+                        <div className="mt-8 p-8 bg-slate-50 rounded-3xl border border-slate-100 space-y-6 animate-in slide-in-from-top-4 duration-500">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Lock className="h-4 w-4 text-primary" />
+                            <span className="text-[10px] font-black text-primary uppercase tracking-widest">Informations de paiement sécurisées</span>
+                          </div>
+                          <div className="space-y-4">
+                            <div className="space-y-2">
+                              <Label className="font-bold text-slate-700">Numéro de carte</Label>
+                              <div className="relative">
+                                <Input 
+                                  placeholder="0000 0000 0000 0000" 
+                                  className="h-14 bg-white border-slate-200 rounded-xl font-mono text-lg" 
+                                  {...form.register("cardNumber")}
+                                />
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-2">
+                                  <div className="w-8 h-5 bg-slate-100 rounded" />
+                                  <div className="w-8 h-5 bg-slate-100 rounded" />
+                                </div>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label className="font-bold text-slate-700">Date d'expiration</Label>
+                                <Input 
+                                  placeholder="MM/AA" 
+                                  className="h-14 bg-white border-slate-200 rounded-xl" 
+                                  {...form.register("cardExpiry")}
+                                />
+                              </div>
+                              <div className="space-y-2">
+                                <Label className="font-bold text-slate-700">CVC</Label>
+                                <Input 
+                                  placeholder="123" 
+                                  className="h-14 bg-white border-slate-200 rounded-xl" 
+                                  {...form.register("cardCvc")}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <div className="bg-primary/5 p-6 rounded-2xl border border-primary/10 flex gap-4">

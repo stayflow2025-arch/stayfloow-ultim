@@ -8,7 +8,7 @@ import { doc, collection, addDoc } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, CheckCircle, CreditCard, ShieldCheck, Calendar as CalendarIcon, Loader2, Info } from 'lucide-react';
+import { ArrowLeft, CheckCircle, CreditCard, ShieldCheck, Calendar as CalendarIcon, Loader2, Info, Lock } from 'lucide-react';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
@@ -24,6 +24,7 @@ import { sendBookingConfirmationEmail } from '@/lib/mail';
 import { circuits as mockCircuits } from '@/lib/data';
 import { format } from 'date-fns';
 import { CrossSellCard } from '@/components/cross-sell-card';
+import { cn } from "@/lib/utils";
 
 const bookingSchema = z.object({
     fullName: z.string().min(2, "Nom complet requis"),
@@ -32,6 +33,9 @@ const bookingSchema = z.object({
     dialCode: z.string().min(1, "Indicatif requis"),
     paymentMethod: z.string().min(1, "Obligatoire"),
     agreeToTerms: z.boolean().refine(val => val === true, "Veuillez accepter les conditions"),
+    cardNumber: z.string().optional(),
+    cardExpiry: z.string().optional(),
+    cardCvc: z.string().optional(),
 });
 
 function CircuitBookingContent() {
@@ -61,6 +65,8 @@ function CircuitBookingContent() {
         resolver: zodResolver(bookingSchema),
         defaultValues: { fullName: user?.displayName || "", email: user?.email || "", phone: "", dialCode: "+213", paymentMethod: 'card', agreeToTerms: false },
     });
+
+    const paymentMethod = form.watch("paymentMethod");
 
     const onSubmit = async (values: any) => {
         setIsSubmitting(true);
@@ -163,7 +169,7 @@ function CircuitBookingContent() {
                                             <FormLabel className="font-bold">Téléphone (WhatsApp)</FormLabel>
                                             <div className="flex gap-2">
                                                 <FormField control={form.control} name="dialCode" render={({ field }) => (
-                                                    <FormItem className="w-24"><FormControl><Input className="h-14 text-center font-bold bg-slate-50 border-slate-100 rounded-xl" {...field} /></FormControl></FormItem>
+                                                    <FormItem className="w-24"><FormControl><Input className="h-14 text-center font-bold bg-slate-50 border-slate-100 rounded-xl" {...field} /></FormItem>
                                                 )}/>
                                                 <FormField control={form.control} name="phone" render={({ field }) => (
                                                     <FormItem className="flex-1"><FormControl><Input className="h-14 rounded-xl bg-slate-50 border-slate-100" placeholder="550 00 00 00" {...field} /></FormControl><FormMessage /></FormItem>
@@ -176,19 +182,56 @@ function CircuitBookingContent() {
 
                             <Card className="border-none shadow-xl rounded-3xl overflow-hidden bg-white">
                                 <CardHeader className="bg-slate-900 text-white p-8"><CardTitle className="text-xl font-black uppercase">2. Mode de Paiement</CardTitle></CardHeader>
-                                <CardContent className="p-8">
+                                <CardContent className="p-8 space-y-8">
                                     <FormField control={form.control} name="paymentMethod" render={({ field }) => (
                                         <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <Label htmlFor="card" className="flex items-center gap-4 p-6 border-2 rounded-2xl cursor-pointer hover:bg-slate-50 transition-all border-slate-100">
+                                            <Label htmlFor="card" className={cn(
+                                                "flex items-center gap-4 p-6 border-2 rounded-2xl cursor-pointer hover:bg-slate-50 transition-all",
+                                                field.value === 'card' ? "border-primary bg-primary/5" : "border-slate-100"
+                                            )}>
                                                 <RadioGroupItem value="card" id="card" className="sr-only" />
                                                 <CreditCard className="h-6 w-6 text-primary" /> <span className="font-black">Carte Bancaire</span>
                                             </Label>
-                                            <Label htmlFor="paypal" className="flex items-center gap-4 p-6 border-2 rounded-2xl cursor-pointer hover:bg-slate-50 transition-all border-slate-100">
+                                            <Label htmlFor="paypal" className={cn(
+                                                "flex items-center gap-4 p-6 border-2 rounded-2xl cursor-pointer hover:bg-slate-50 transition-all",
+                                                field.value === 'paypal' ? "border-primary bg-primary/5" : "border-slate-100"
+                                            )}>
                                                 <RadioGroupItem value="paypal" id="paypal" className="sr-only" />
                                                 <div className="h-6 w-16 bg-slate-200 rounded animate-pulse" /> <span className="font-black">PayPal</span>
                                             </Label>
                                         </RadioGroup>
                                     )}/>
+
+                                    {paymentMethod === 'card' && (
+                                        <div className="p-8 bg-slate-50 rounded-3xl border border-slate-100 space-y-6 animate-in slide-in-from-top-4 duration-500">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <Lock className="h-4 w-4 text-primary" />
+                                                <span className="text-[10px] font-black text-primary uppercase tracking-widest">Informations de paiement sécurisées</span>
+                                            </div>
+                                            <div className="space-y-4">
+                                                <FormField control={form.control} name="cardNumber" render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel className="font-bold text-slate-700">Numéro de carte</FormLabel>
+                                                        <FormControl><Input placeholder="0000 0000 0000 0000" className="h-14 bg-white border-slate-200 rounded-xl font-mono text-lg" {...field} /></FormControl>
+                                                    </FormItem>
+                                                )}/>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <FormField control={form.control} name="cardExpiry" render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel className="font-bold text-slate-700">Expiration</FormLabel>
+                                                            <FormControl><Input placeholder="MM/AA" className="h-14 bg-white border-slate-200 rounded-xl" {...field} /></FormControl>
+                                                        </FormItem>
+                                                    )}/>
+                                                    <FormField control={form.control} name="cardCvc" render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel className="font-bold text-slate-700">CVC</FormLabel>
+                                                            <FormControl><Input placeholder="123" className="h-14 bg-white border-slate-200 rounded-xl" {...field} /></FormControl>
+                                                        </FormItem>
+                                                    )}/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </CardContent>
                             </Card>
 

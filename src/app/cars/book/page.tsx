@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   ArrowLeft, Calendar as CalendarIcon, ShieldCheck, 
   Info, CreditCard, Users, Briefcase, Settings2, Fuel, 
-  CheckCircle, Loader2, Globe, Phone, Mail, User as UserIcon, MapPin
+  CheckCircle, Loader2, Globe, Phone, Mail, User as UserIcon, MapPin, Lock
 } from "lucide-react";
 import Image from "next/image";
 import { useCurrency } from "@/context/currency-context";
@@ -23,6 +23,7 @@ import { useFirestore, useUser, useDoc, useMemoFirebase } from "@/firebase";
 import { collection, addDoc, doc } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import { sendBookingConfirmationEmail } from "@/lib/mail";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 function BookCarContent() {
   const router = useRouter();
@@ -34,6 +35,7 @@ function BookCarContent() {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("card");
 
   const carId = searchParams.get('id') || 'mock';
   const pickupLocation = searchParams.get('pickup') || "Alger, Algérie";
@@ -51,7 +53,10 @@ function BookCarContent() {
     lastName: user?.displayName?.split(' ').slice(1).join(' ') || "",
     email: user?.email || "",
     phone: "",
-    dialCode: "+213"
+    dialCode: "+213",
+    cardNumber: "",
+    cardExpiry: "",
+    cardCvc: ""
   });
 
   const displayCar = useMemo(() => {
@@ -231,7 +236,77 @@ function BookCarContent() {
               </div>
 
               <Card className="border-none shadow-xl rounded-3xl overflow-hidden bg-white">
-                <CardContent className="p-10">
+                <CardContent className="p-10 space-y-8">
+                  <RadioGroup onValueChange={setPaymentMethod} defaultValue="card" className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Label 
+                      htmlFor="card" 
+                      className={cn(
+                        "flex items-center justify-between p-6 border-2 rounded-2xl cursor-pointer transition-all",
+                        paymentMethod === 'card' ? "border-primary bg-primary/5" : "border-slate-100 hover:border-slate-200"
+                      )}
+                    >
+                      <div className="flex items-center gap-4">
+                        <RadioGroupItem value="card" id="card" className="sr-only" />
+                        <CreditCard className="h-6 w-6 text-primary" />
+                        <span className="font-bold">Carte Bancaire</span>
+                      </div>
+                    </Label>
+
+                    <Label 
+                      htmlFor="paypal" 
+                      className={cn(
+                        "flex items-center justify-between p-6 border-2 rounded-2xl cursor-pointer transition-all",
+                        paymentMethod === 'paypal' ? "border-primary bg-primary/5" : "border-slate-100 hover:border-slate-200"
+                      )}
+                    >
+                      <div className="flex items-center gap-4">
+                        <RadioGroupItem value="paypal" id="paypal" className="sr-only" />
+                        <div className="w-6 h-6 bg-[#0070ba] rounded-full flex items-center justify-center text-white text-[10px] font-bold">P</div>
+                        <span className="font-bold">PayPal</span>
+                      </div>
+                    </Label>
+                  </RadioGroup>
+
+                  {paymentMethod === 'card' && (
+                    <div className="p-8 bg-slate-50 rounded-3xl border border-slate-100 space-y-6 animate-in slide-in-from-top-4 duration-500">
+                      <div className="flex items-center gap-2">
+                        <Lock className="h-4 w-4 text-primary" />
+                        <span className="text-[10px] font-black text-primary uppercase tracking-widest">Informations de paiement sécurisées</span>
+                      </div>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label className="font-bold text-slate-700">Numéro de carte</Label>
+                          <Input 
+                            placeholder="0000 0000 0000 0000" 
+                            className="h-14 bg-white border-slate-200 rounded-xl font-mono text-lg" 
+                            value={formData.cardNumber}
+                            onChange={e => setFormData({...formData, cardNumber: e.target.value})}
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="font-bold text-slate-700">Date d'expiration</Label>
+                            <Input 
+                              placeholder="MM/AA" 
+                              className="h-14 bg-white border-slate-200 rounded-xl" 
+                              value={formData.cardExpiry}
+                              onChange={e => setFormData({...formData, cardExpiry: e.target.value})}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="font-bold text-slate-700">CVC</Label>
+                            <Input 
+                              placeholder="123" 
+                              className="h-14 bg-white border-slate-200 rounded-xl" 
+                              value={formData.cardCvc}
+                              onChange={e => setFormData({...formData, cardCvc: e.target.value})}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="bg-slate-900 rounded-3xl p-8 text-white">
                     <h4 className="text-xl font-black mb-4 flex items-center gap-2"><ShieldCheck className="text-secondary" /> Finaliser ma location</h4>
                     <p className="text-white/60 text-sm mb-8">Paiement 100% sécurisé via StayFloow Pay.</p>
