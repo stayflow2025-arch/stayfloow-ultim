@@ -6,7 +6,8 @@ import { doc } from 'firebase/firestore';
 import { 
   MapPin, Star, Share2, Heart, ShieldCheck, 
   ChevronLeft, Loader2, Fuel, Users, Calendar as CalendarIcon, 
-  ArrowRight, CheckCircle, Briefcase, Settings2, Search
+  ArrowRight, CheckCircle, Briefcase, Settings2, Search,
+  MessageSquare, AlertTriangle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
