@@ -132,30 +132,28 @@ function CircuitBookingContent() {
     if (loading) return <div className="p-20 text-center"><Loader2 className="animate-spin h-10 w-10 mx-auto text-primary" /></div>;
     if (!circuit) return <div className="p-20 text-center">Erreur de chargement de l'offre.</div>;
 
-    const name = circuit.details?.name || circuit.title;
-    const photos = circuit.photos || circuit.images || ['https://picsum.photos/seed/tour/800/600'];
-    const locationStr = circuit.location?.address || circuit.location || "Alger";
-
-    if (isConfirmed) return (
-        <div className="container mx-auto px-4 py-20 max-w-5xl space-y-12">
-            <Card className="border-none shadow-2xl p-12 rounded-[2.5rem] bg-white text-center max-w-2xl mx-auto animate-in zoom-in-95">
-                <div className="bg-primary/10 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8">
-                  <CheckCircle className="h-16 w-16 text-primary" />
-                </div>
-                <h1 className="text-3xl font-black mb-4">Votre aventure commence bientôt !</h1>
-                <p className="text-xl text-slate-600 mb-8 font-medium">Retrouvez votre ticket dans votre portail client.</p>
-                <div className="space-y-3">
-                  <Button className="w-full bg-primary h-14 px-10 font-black rounded-xl text-lg shadow-xl" asChild>
-                    <Link href="/profile/bookings">Gérer mes réservations</Link>
-                  </Button>
-                  <Button variant="ghost" className="w-full font-bold text-slate-400" asChild>
-                    <Link href="/">Retour à l'accueil</Link>
-                  </Button>
-                </div>
-            </Card>
-            <CrossSellCard location={locationStr.split(',')[0].trim()} bookedItemType="circuit" />
-        </div>
-    );
+    if (isConfirmed) {
+        return (
+            <div className="container mx-auto px-4 py-20 max-w-5xl space-y-12">
+                <Card className="border-none shadow-2xl p-12 rounded-[2.5rem] bg-white text-center max-w-2xl mx-auto animate-in zoom-in-95">
+                    <div className="bg-primary/10 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8">
+                      <CheckCircle className="h-16 w-16 text-primary" />
+                    </div>
+                    <h1 className="text-3xl font-black mb-4">Votre aventure commence bientôt !</h1>
+                    <p className="text-xl text-slate-600 mb-8 font-medium">Retrouvez votre ticket dans votre portail client.</p>
+                    <div className="space-y-3">
+                      <Button className="w-full bg-primary h-14 px-10 font-black rounded-xl text-lg shadow-xl" asChild>
+                        <Link href="/profile/bookings">Gérer mes réservations</Link>
+                      </Button>
+                      <Button variant="ghost" className="w-full font-bold text-slate-400" asChild>
+                        <Link href="/">Retour à l'accueil</Link>
+                      </Button>
+                    </div>
+                </Card>
+                <CrossSellCard location={circuit.location?.address || circuit.location || "Alger"} bookedItemType="circuit" />
+            </div>
+        );
+    }
 
     return (
         <div className="container mx-auto px-4 py-12 max-w-6xl">
@@ -263,8 +261,8 @@ function CircuitBookingContent() {
 
                 <div className="lg:col-span-1">
                     <Card className="sticky top-24 shadow-2xl border-none overflow-hidden rounded-[2.5rem] bg-white">
-                        <div className="relative h-48 w-full"><Image src={photos[0]} alt="tour" fill className="object-cover" /></div>
-                        <CardHeader className="p-8 pb-4"><CardTitle className="text-2xl font-black text-primary leading-tight">{name}</CardTitle></CardHeader>
+                        <div className="relative h-48 w-full"><Image src={circuit.photos?.[0] || circuit.images?.[0] || 'https://picsum.photos/seed/tour/800/600'} alt="tour" fill className="object-cover" /></div>
+                        <CardHeader className="p-8 pb-4"><CardTitle className="text-2xl font-black text-primary leading-tight">{circuit.details?.name || circuit.title}</CardTitle></CardHeader>
                         <CardContent className="p-8 pt-0 space-y-6">
                             <Separator />
                             <div className="space-y-4">
