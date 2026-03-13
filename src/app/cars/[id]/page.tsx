@@ -68,7 +68,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
   const [tempRange, setTempRange] = useState<DateRange | undefined>(undefined);
 
   const carRef = useMemoFirebase(() => doc(db, 'listings', id), [db, id]);
-  const { data: car, loading } = useDoc(carRef);
+  const { data: car, isLoading: loading } = useDoc(carRef);
 
   useEffect(() => {
     if (car && !pickupLocation && !destParam) {
@@ -254,7 +254,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                     )}
                   >
                     <div className="flex items-center gap-4">
-                      <Checkbox checked={selectedOptions.includes(opt.id)} />
+                      <Checkbox checked={selectedOptions.includes(opt.id)} onCheckedChange={() => toggleOption(opt.id)} />
                       <span className="font-bold text-slate-700 text-sm">{opt.label}</span>
                     </div>
                     <span className="font-black text-primary text-sm">+{formatPrice(opt.price)}</span>

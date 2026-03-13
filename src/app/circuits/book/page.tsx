@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useState } from 'react';
+import React, { Suspense, useState, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { useDoc, useFirestore, useUser, useMemoFirebase } from '@/firebase';
@@ -8,7 +8,7 @@ import { doc, collection, addDoc } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, CheckCircle, CreditCard, ShieldCheck, Calendar as CalendarIcon, Loader2, Info, Lock } from 'lucide-react';
+import { ArrowLeft, CheckCircle, CreditCard, ShieldCheck, Calendar as CalendarIcon, Loader2, Info, Lock, User as UserIcon, Mail, Phone } from 'lucide-react';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useForm } from 'react-hook-form';
@@ -55,15 +55,25 @@ function CircuitBookingContent() {
     const onSiteAmount = fullTotalAmount * 0.86;
 
     const circuitRef = useMemoFirebase(() => tourId ? doc(db, 'listings', tourId) : null, [db, tourId]);
-    const { data: dbCircuit, loading } = useDoc(circuitRef);
-    const circuit = dbCircuit || mockCircuits.find(c => c.id === tourId);
+    const { data: dbCircuit, isLoading: loading } = useDoc(circuitRef);
+    const circuit = useMemo(() => dbCircuit || mockCircuits.find(c => c.id === tourId), [dbCircuit, tourId]);
 
     const [isConfirmed, setIsConfirmed] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const form = useForm({
         resolver: zodResolver(bookingSchema),
-        defaultValues: { fullName: user?.displayName || "", email: user?.email || "", phone: "", dialCode: "+213", paymentMethod: 'card', agreeToTerms: false },
+        defaultValues: { 
+          fullName: user?.displayName || "", 
+          email: user?.email || "", 
+          phone: "", 
+          dialCode: "+213", 
+          paymentMethod: 'card', 
+          agreeToTerms: false,
+          cardNumber: "",
+          cardExpiry: "",
+          cardCvc: ""
+        },
     });
 
     const paymentMethod = form.watch("paymentMethod");
@@ -120,11 +130,11 @@ function CircuitBookingContent() {
     };
 
     if (loading) return <div className="p-20 text-center"><Loader2 className="animate-spin h-10 w-10 mx-auto text-primary" /></div>;
-    if (!circuit) return <div className="p-20 text-center">Erreur de chargement.</div>;
+    if (!circuit) return <div className="p-20 text-center">Erreur de chargement de l'offre.</div>;
 
     const name = circuit.details?.name || circuit.title;
     const photos = circuit.photos || circuit.images || ['https://picsum.photos/seed/tour/800/600'];
-    const location = circuit.location?.address || circuit.location || "Alger";
+    const locationStr = circuit.location?.address || circuit.location || "Alger";
 
     if (isConfirmed) return (
         <div className="container mx-auto px-4 py-20 max-w-5xl space-y-12">
@@ -143,13 +153,15 @@ function CircuitBookingContent() {
                   </Button>
                 </div>
             </Card>
-            <CrossSellCard location={location.split(',')[0].trim()} bookedItemType="circuit" />
+            <CrossSellCard location={locationStr.split(',')[0].trim()} bookedItemType="circuit" />
         </div>
     );
 
     return (
         <div className="container mx-auto px-4 py-12 max-w-6xl">
-            <Button variant="ghost" onClick={() => router.back()} className="mb-8 font-black"><ArrowLeft className="mr-2 h-4 w-4" /> Retour au circuit</Button>
+            <Button variant="ghost" onClick={() => router.back()} className="mb-8 font-black">
+              <ArrowLeft className="mr-2 h-4 w-4" /> Retour au circuit
+            </Button>
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                 <div className="lg:col-span-2 space-y-8">
@@ -169,7 +181,7 @@ function CircuitBookingContent() {
                                             <FormLabel className="font-bold">Téléphone (WhatsApp)</FormLabel>
                                             <div className="flex gap-2">
                                                 <FormField control={form.control} name="dialCode" render={({ field }) => (
-                                                    <FormItem className="w-24"><FormControl><Input className="h-14 text-center font-bold bg-slate-50 border-slate-100 rounded-xl" {...field} /></FormItem>
+                                                    <FormItem className="w-24"><FormControl><Input className="h-14 text-center font-bold bg-slate-50 border-slate-100 rounded-xl" {...field} /></FormControl></FormItem>
                                                 )}/>
                                                 <FormField control={form.control} name="phone" render={({ field }) => (
                                                     <FormItem className="flex-1"><FormControl><Input className="h-14 rounded-xl bg-slate-50 border-slate-100" placeholder="550 00 00 00" {...field} /></FormControl><FormMessage /></FormItem>
@@ -242,7 +254,7 @@ function CircuitBookingContent() {
                                 </FormItem>
                             )}/>
 
-                            <Button type="submit" disabled={!form.getValues('agreeToTerms') || isSubmitting} className="w-full h-16 text-xl font-black bg-primary hover:bg-primary/90 shadow-xl rounded-2xl">
+                            <Button type="submit" disabled={!form.watch('agreeToTerms') || isSubmitting} className="w-full h-16 text-xl font-black bg-primary hover:bg-primary/90 shadow-xl rounded-2xl">
                                 {isSubmitting ? <Loader2 className="animate-spin h-6 w-6" /> : `Payez maintenant ${formatPrice(depositAmount)}`}
                             </Button>
                         </form>
@@ -312,5 +324,9 @@ function CircuitBookingContent() {
 }
 
 export default function CircuitBookingPage() {
-    return <Suspense fallback={<div className="p-20 text-center"><Loader2 className="animate-spin mx-auto h-10 w-10 text-primary" /></div>}><CircuitBookingContent /></Suspense>;
+    return (
+      <Suspense fallback={<div className="p-20 text-center"><Loader2 className="animate-spin mx-auto h-10 w-10 text-primary" /></div>}>
+        <CircuitBookingContent />
+      </Suspense>
+    );
 }
