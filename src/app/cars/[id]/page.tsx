@@ -335,7 +335,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
       </main>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[500px] rounded-[2rem] p-8">
+        <DialogContent className="sm:max-w-[700px] rounded-[2rem] p-8">
           <DialogHeader>
             <DialogTitle className="text-2xl font-black text-slate-900 flex items-center gap-3">
               <Search className="h-6 w-6 text-primary" /> Modifier la recherche
@@ -377,6 +377,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                     selected={{ from: tempDates.from, to: tempDates.to }}
                     onSelect={(range: any) => setTempDates({ from: range?.from, to: range?.to })}
                     locale={fr}
+                    numberOfMonths={2}
                     disabled={{ before: new Date() }}
                   />
                 </PopoverContent>
