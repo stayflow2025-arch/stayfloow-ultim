@@ -103,6 +103,14 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
     return Math.max(1, differenceInDays(dates.to, dates.from));
   }, [dates]);
 
+  const quantityLabel = useMemo(() => {
+    const type = property?.details?.propertyType || property?.type?.toLowerCase() || '';
+    if (type === 'hotel' || type.includes('hôtel') || type.includes('riad')) return "Sélectionné des chambres";
+    if (type === 'apartment' || type.includes('appartement')) return "Sélectionner l'appartement";
+    if (type === 'villa' || type.includes('maison') || type.includes('villa')) return "Sélectionner la maison";
+    return "Sélectionner le logement";
+  }, [property]);
+
   // Room types calculation...
   const roomTypes = useMemo(() => {
     if (!property) return [];
@@ -341,11 +349,11 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
             <Table>
               <TableHeader className="bg-[#4C4C4C] hover:bg-[#4C4C4C]">
                 <TableRow>
-                  <TableHead className="text-white font-bold py-4">Option d'hébergement</TableHead>
-                  <TableHead className="text-white font-bold text-center">Capacité</TableHead>
+                  <TableHead className="text-white font-bold py-4">Type d'hébergement</TableHead>
+                  <TableHead className="text-white font-bold text-center">Nombre de voyageurs</TableHead>
                   <TableHead className="text-white font-bold">Tarif total ({nights} nuits)</TableHead>
-                  <TableHead className="text-white font-bold">Conditions</TableHead>
-                  <TableHead className="text-white font-bold">Quantité</TableHead>
+                  <TableHead className="text-white font-bold">Vos options</TableHead>
+                  <TableHead className="text-white font-bold">{quantityLabel}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
