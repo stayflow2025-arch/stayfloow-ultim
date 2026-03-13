@@ -331,7 +331,7 @@ function PropertyBookingContent({ id }: { id: string }) {
                       {isSubmitting ? (
                         <Loader2 className="h-6 w-6 animate-spin" />
                       ) : (
-                        `Régler les frais de service — ${formatPrice(depositPrice)}`
+                        `Payez maintenant ${formatPrice(depositPrice)}`
                       )}
                     </Button>
                   </form>

@@ -236,7 +236,7 @@ function BookCarContent() {
                     <h4 className="text-xl font-black mb-4 flex items-center gap-2"><ShieldCheck className="text-secondary" /> Finaliser ma location</h4>
                     <p className="text-white/60 text-sm mb-8">Paiement 100% sécurisé via StayFloow Pay.</p>
                     <Button type="submit" disabled={isSubmitting} className="w-full h-16 bg-secondary text-primary font-black text-xl rounded-2xl shadow-xl">
-                      {isSubmitting ? <Loader2 className="animate-spin" /> : "Régler " + formatPrice(depositTotal)}
+                      {isSubmitting ? <Loader2 className="animate-spin" /> : "Payez maintenant " + formatPrice(depositTotal)}
                     </Button>
                   </div>
                 </CardContent>

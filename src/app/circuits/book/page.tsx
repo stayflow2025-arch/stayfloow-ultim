@@ -200,7 +200,7 @@ function CircuitBookingContent() {
                             )}/>
 
                             <Button type="submit" disabled={!form.getValues('agreeToTerms') || isSubmitting} className="w-full h-16 text-xl font-black bg-primary hover:bg-primary/90 shadow-xl rounded-2xl">
-                                {isSubmitting ? <Loader2 className="animate-spin h-6 w-6" /> : `Confirmer et Payer ${formatPrice(depositAmount)}`}
+                                {isSubmitting ? <Loader2 className="animate-spin h-6 w-6" /> : `Payez maintenant ${formatPrice(depositAmount)}`}
                             </Button>
                         </form>
                     </Form>
