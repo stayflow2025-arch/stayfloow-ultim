@@ -5,8 +5,8 @@ import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { 
   MapPin, Star, Share2, Heart, ShieldCheck, 
-  ChevronLeft, Loader2, Info, Fuel, Gauge, Users, Calendar as CalendarIcon, 
-  ArrowRight, Check, CheckCircle, Briefcase, Settings2, MessageSquare, AlertTriangle, X, Search
+  ChevronLeft, Loader2, Fuel, Users, Calendar as CalendarIcon, 
+  ArrowRight, CheckCircle, Briefcase, Settings2, Search
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -20,7 +20,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useCurrency } from '@/context/currency-context';
 import { useLanguage } from '@/context/language-context';
 import Link from 'next/link';
@@ -43,17 +43,23 @@ import { fr } from 'date-fns/locale';
 export default function CarDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const db = useFirestore();
   const { t } = useLanguage();
   const { formatPrice } = useCurrency();
 
+  const fromParam = searchParams.get('from');
+  const toParam = searchParams.get('to');
+  const destParam = searchParams.get('dest');
+
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   
-  const [pickupLocation, setPickupLocation] = useState("");
-  const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
-    from: new Date(),
-    to: addDays(new Date(), 3),
+  const [pickupLocation, setPickupLocation] = useState(destParam || "");
+  const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>(() => {
+    const from = fromParam ? new Date(fromParam) : new Date();
+    const to = toParam ? new Date(toParam) : addDays(new Date(), 3);
+    return { from, to };
   });
 
   const [tempLocation, setTempLocation] = useState("");
@@ -66,10 +72,10 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
   const { data: car, loading } = useDoc(carRef);
 
   useEffect(() => {
-    if (car && !pickupLocation) {
+    if (car && !pickupLocation && !destParam) {
       setPickupLocation(car.location?.address || "Aéroport d'Alger (ALG), Algérie");
     }
-  }, [car, pickupLocation]);
+  }, [car, pickupLocation, destParam]);
 
   const optionsList = [
     { id: 'insurance', label: 'Protection Complète (Zéro Franchise)', price: 15 },
@@ -138,6 +144,8 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
     }
     setIsEditDialogOpen(false);
   };
+
+  const bookingUrl = `/cars/book?id=${id}&options=${selectedOptions.join(',')}&days=${daysCount}&pickup=${encodeURIComponent(pickupLocation)}&from=${dateRange.from.toISOString()}&to=${dateRange.to.toISOString()}&total=${totalPrice}`;
 
   return (
     <div className="min-h-screen bg-[#f5f5f5] flex flex-col">
@@ -305,7 +313,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                 </div>
 
                 <Button className="w-full h-16 text-xl font-black bg-primary hover:bg-primary/90 shadow-xl rounded-2xl" asChild>
-                  <Link href={`/cars/book?id=${id}&options=${selectedOptions.join(',')}&days=${daysCount}&pickup=${encodeURIComponent(pickupLocation)}&from=${dateRange.from.toISOString()}&to=${dateRange.to.toISOString()}&total=${totalPrice}`}>
+                  <Link href={bookingUrl}>
                     Suivant <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
