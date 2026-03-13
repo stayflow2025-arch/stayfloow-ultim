@@ -1,3 +1,4 @@
+
 "use client";
 
 import dynamic from 'next/dynamic';
@@ -14,6 +15,7 @@ import { properties } from '@/lib/data';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
+import { useSearchParams } from 'next/navigation';
 
 // Chargement différé strict pour les composants non critiques au LCP
 const AiRecommender = dynamic(() => import('@/components/ai-recommender').then(mod => mod.AiRecommender), {
@@ -31,6 +33,7 @@ export function HomeClient() {
   const { formatPrice } = useCurrency();
   const db = useFirestore();
   const [isClient, setIsClient] = useState(false);
+  const searchParams = useSearchParams();
 
   // Récupération de la configuration du site pour le texte Hero
   const configRef = useMemoFirebase(() => doc(db, "settings", "siteConfig"), [db]);
@@ -39,6 +42,9 @@ export function HomeClient() {
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // On récupère les paramètres de recherche actuels pour les transmettre aux liens
+  const currentParams = searchParams.toString();
 
   // Calcul dynamique des hébergements par type
   const counts = useMemo(() => {
@@ -148,7 +154,7 @@ export function HomeClient() {
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {propertyTypes.map((type, idx) => (
-              <Link key={type.slug} href={`/search?type=${type.slug}`} className="group block">
+              <Link key={type.slug} href={`/search?type=${type.slug}${currentParams ? `&${currentParams}` : ""}`} className="group block">
                 <div className="relative aspect-[4/3] rounded-[2rem] overflow-hidden shadow-xl border-4 border-white mb-4 transition-all group-hover:shadow-2xl group-hover:-translate-y-2">
                   <Image 
                     src={type.image} 
@@ -177,40 +183,43 @@ export function HomeClient() {
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-            {uniqueStays.map((stay, idx) => (
-              <Link key={stay.id} href={`/properties/${stay.id}`} className="group block bg-white p-4 rounded-[2.5rem] shadow-lg border border-slate-100 hover:shadow-2xl transition-all">
-                <div className="relative aspect-[4/5] rounded-[2rem] overflow-hidden mb-6 shadow-inner">
-                  <Image 
-                    src={stay.images[0]} 
-                    alt={stay.name} 
-                    fill 
-                    sizes="(max-width: 768px) 100vw, 25vw"
-                    priority={idx === 0}
-                    className="object-cover group-hover:scale-110 transition-transform duration-1000"
-                  />
-                  <div className="absolute top-4 left-4 bg-primary text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg">STAYFLOOW SELECTION</div>
-                </div>
-                <div className="px-2">
-                  <h3 className="font-black text-xl text-slate-900 truncate group-hover:text-primary transition-colors">{stay.name}</h3>
-                  <p className="text-sm text-slate-400 font-bold flex items-center gap-1.5 mt-1 mb-4 uppercase tracking-tighter">
-                    <MapPin className="h-3.5 w-3.5 text-primary" /> {stay.location}
-                  </p>
-                  
-                  <div className="flex justify-between items-end pt-4 border-t border-slate-50">
-                    <div className="flex items-center gap-2">
-                      <div className="bg-primary text-white text-xs font-black h-8 w-8 flex items-center justify-center rounded-xl shadow-md">
-                        {stay.rating}
+            {uniqueStays.map((stay, idx) => {
+              const detailUrl = `/properties/${stay.id}${currentParams ? `?${currentParams}` : ""}`;
+              return (
+                <Link key={stay.id} href={detailUrl} className="group block bg-white p-4 rounded-[2.5rem] shadow-lg border border-slate-100 hover:shadow-2xl transition-all">
+                  <div className="relative aspect-[4/5] rounded-[2rem] overflow-hidden mb-6 shadow-inner">
+                    <Image 
+                      src={stay.images[0]} 
+                      alt={stay.name} 
+                      fill 
+                      sizes="(max-width: 768px) 100vw, 25vw"
+                      priority={idx === 0}
+                      className="object-cover group-hover:scale-110 transition-transform duration-1000"
+                    />
+                    <div className="absolute top-4 left-4 bg-primary text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg">STAYFLOOW SELECTION</div>
+                  </div>
+                  <div className="px-2">
+                    <h3 className="font-black text-xl text-slate-900 truncate group-hover:text-primary transition-colors">{stay.name}</h3>
+                    <p className="text-sm text-slate-400 font-bold flex items-center gap-1.5 mt-1 mb-4 uppercase tracking-tighter">
+                      <MapPin className="h-3.5 w-3.5 text-primary" /> {stay.location}
+                    </p>
+                    
+                    <div className="flex justify-between items-end pt-4 border-t border-slate-50">
+                      <div className="flex items-center gap-2">
+                        <div className="bg-primary text-white text-xs font-black h-8 w-8 flex items-center justify-center rounded-xl shadow-md">
+                          {stay.rating}
+                        </div>
+                        <span className="text-[10px] font-black text-slate-400 uppercase">Top</span>
                       </div>
-                      <span className="text-[10px] font-black text-slate-400 uppercase">Top</span>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-[10px] text-slate-400 font-black uppercase">{t("from_price")}</p>
-                      <p className="text-2xl font-black text-primary tracking-tighter">{formatPrice(stay.price)}</p>
+                      <div className="text-right">
+                        <p className="text-[10px] text-slate-400 font-black uppercase">{t("from_price")}</p>
+                        <p className="text-2xl font-black text-primary tracking-tighter">{formatPrice(stay.price)}</p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         </section>
 

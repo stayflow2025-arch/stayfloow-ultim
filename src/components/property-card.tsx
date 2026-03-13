@@ -10,6 +10,7 @@ import { Badge } from "./ui/badge";
 import { useCurrency } from "@/context/currency-context";
 import { Button } from "./ui/button";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 interface PropertyCardProps {
   property: Property;
@@ -20,6 +21,11 @@ interface PropertyCardProps {
 export function PropertyCard({ property, viewMode = "list", priority = false }: PropertyCardProps) {
   const { formatPrice } = useCurrency();
   const [isFavorite, setIsFavorited] = useState(false);
+  const searchParams = useSearchParams();
+
+  // On récupère les paramètres de recherche actuels pour les transmettre au lien de détail
+  const currentParams = searchParams.toString();
+  const detailUrl = `/properties/${property.id}${currentParams ? `?${currentParams}` : ""}`;
 
   const ratingText = property.rating >= 9 ? "Fabuleux" : property.rating >= 8.5 ? "Exceptionnel" : property.rating >= 8 ? "Très bien" : "Bien";
 
@@ -61,7 +67,7 @@ export function PropertyCard({ property, viewMode = "list", priority = false }: 
               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">À partir de</p>
               <p className="text-xl font-black text-[#10B981] tracking-tighter">{formatPrice(property.price)}</p>
             </div>
-            <Link href={`/properties/${property.id}`}>
+            <Link href={detailUrl}>
               <Button size="sm" className="bg-[#10B981] hover:bg-[#059669] h-8 rounded-md px-4 text-[10px] font-black uppercase">Détails</Button>
             </Link>
           </div>
@@ -95,7 +101,7 @@ export function PropertyCard({ property, viewMode = "list", priority = false }: 
         <div className="flex justify-between items-start gap-4">
           <div className="min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <Link href={`/properties/${property.id}`}>
+              <Link href={detailUrl}>
                 <h3 className="text-[18px] font-bold text-[#10B981] hover:text-[#059669] hover:underline transition-all truncate leading-tight">
                   {property.name}
                 </h3>
@@ -150,7 +156,7 @@ export function PropertyCard({ property, viewMode = "list", priority = false }: 
           <p className="text-[24px] font-black text-[#10B981] leading-none tracking-tighter">{formatPrice(property.price)}</p>
           <p className="text-[10px] text-slate-400 mt-1 font-bold">Taxes et frais compris</p>
         </div>
-        <Link href={`/properties/${property.id}`} className="w-full">
+        <Link href={detailUrl} className="w-full">
           <Button className="w-full bg-[#10B981] hover:bg-[#059669] text-white font-black h-10 rounded-md group/btn flex items-center justify-between px-4 transition-all active:scale-95 shadow-md shadow-emerald-100">
             Dispo
             <ChevronRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
