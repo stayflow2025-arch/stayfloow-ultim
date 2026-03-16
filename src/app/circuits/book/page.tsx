@@ -38,6 +38,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useCurrency } from '@/context/currency-context';
+import { useLanguage } from '@/context/language-context';
 import { sendBookingConfirmationEmail } from '@/lib/mail';
 import { circuits as mockCircuits } from '@/lib/data';
 import { format } from 'date-fns';
@@ -63,6 +64,7 @@ function CircuitBookingContent() {
   const { user } = useUser();
   const { toast } = useToast();
   const { formatPrice } = useCurrency();
+  const { t } = useLanguage();
   
   const tourId = searchParams.get('id');
   const tourDate = searchParams.get('date');
@@ -148,10 +150,10 @@ function CircuitBookingContent() {
         }
       });
       setIsConfirmed(true);
-      toast({ title: "Réservation réussie !" });
+      toast({ title: t('success') });
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (e) { 
-      toast({ variant: "destructive", title: "Erreur lors de la réservation." });
+      toast({ variant: "destructive", title: t('error_loading_offer') });
     } finally {
       setIsSubmitting(false);
     }
@@ -168,7 +170,7 @@ function CircuitBookingContent() {
   if (!circuit) {
     return (
       <div className="p-20 text-center font-bold">
-        Erreur de chargement de l'offre.
+        {t('error_loading_offer')}
       </div>
     );
   }
@@ -180,14 +182,14 @@ function CircuitBookingContent() {
           <div className="bg-primary/10 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-8">
             <CheckCircle className="h-16 w-16 text-primary" />
           </div>
-          <h1 className="text-3xl font-black mb-4">Votre aventure commence bientôt !</h1>
-          <p className="text-xl text-slate-600 mb-8 font-medium">Retrouvez votre ticket dans votre portail client.</p>
+          <h1 className="text-3xl font-black mb-4">{t('booking_confirmed_msg')}</h1>
+          <p className="text-xl text-slate-600 mb-8 font-medium">{t('booking_confirmed_sub')}</p>
           <div className="space-y-3">
             <Button className="w-full bg-primary h-14 px-10 font-black rounded-xl text-lg shadow-xl" onClick={() => router.push('/profile/bookings')}>
-              Gérer mes réservations
+              {t('manage_bookings')}
             </Button>
             <Button variant="ghost" className="w-full font-bold text-slate-400" onClick={() => router.push('/')}>
-              Retour à l'accueil
+              {t('back_home')}
             </Button>
           </div>
         </Card>
@@ -199,7 +201,7 @@ function CircuitBookingContent() {
   return (
     <div className="container mx-auto px-4 py-12 max-w-6xl">
       <Button variant="ghost" onClick={() => router.back()} className="mb-8 font-black">
-        <ArrowLeft className="mr-2 h-4 w-4" /> Retour au circuit
+        <ArrowLeft className="mr-2 h-4 w-4" /> {t('back_to_tour')}
       </Button>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
@@ -208,7 +210,7 @@ function CircuitBookingContent() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               <Card className="border-none shadow-xl rounded-3xl overflow-hidden bg-white">
                 <CardHeader className="bg-slate-900 text-white p-8">
-                  <CardTitle className="text-xl font-black uppercase">1. Vos Informations</CardTitle>
+                  <CardTitle className="text-xl font-black uppercase tracking-tight">{t('your_info')}</CardTitle>
                 </CardHeader>
                 <CardContent className="p-8 space-y-6">
                   <FormField 
@@ -216,9 +218,9 @@ function CircuitBookingContent() {
                     name="fullName" 
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="font-bold">Nom complet</FormLabel>
+                        <FormLabel className="font-bold">{t('full_name')}</FormLabel>
                         <FormControl>
-                          <Input placeholder="Ex: Sofiane Belkacem" className="h-14 rounded-xl bg-slate-50 border-slate-100" {...field} />
+                          <Input placeholder={t('full_name_placeholder')} className="h-14 rounded-xl bg-slate-50 border-slate-100" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -230,16 +232,16 @@ function CircuitBookingContent() {
                       name="email" 
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="font-bold">Email</FormLabel>
+                          <FormLabel className="font-bold">{t('contact.email')}</FormLabel>
                           <FormControl>
-                            <Input className="h-14 rounded-xl bg-slate-50 border-slate-100" type="email" placeholder="votre@email.com" {...field} />
+                            <Input className="h-14 rounded-xl bg-slate-50 border-slate-100" type="email" placeholder={t('email_placeholder')} {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                     <div className="space-y-2">
-                      <FormLabel className="font-bold">Téléphone (WhatsApp)</FormLabel>
+                      <FormLabel className="font-bold">{t('phone_whatsapp')}</FormLabel>
                       <div className="flex gap-2">
                         <FormField 
                           control={form.control} 
@@ -258,7 +260,7 @@ function CircuitBookingContent() {
                           render={({ field }) => (
                             <FormItem className="flex-1">
                               <FormControl>
-                                <Input className="h-14 rounded-xl bg-slate-50 border-slate-100" placeholder="550 00 00 00" {...field} />
+                                <Input className="h-14 rounded-xl bg-slate-50 border-slate-100" placeholder={t('phone_placeholder')} {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -272,7 +274,7 @@ function CircuitBookingContent() {
 
               <Card className="border-none shadow-xl rounded-3xl overflow-hidden bg-white">
                 <CardHeader className="bg-slate-900 text-white p-8">
-                  <CardTitle className="text-xl font-black uppercase">2. Mode de Paiement</CardTitle>
+                  <CardTitle className="text-xl font-black uppercase tracking-tight">{t('payment_method')}</CardTitle>
                 </CardHeader>
                 <CardContent className="p-8 space-y-8">
                   <FormField 
@@ -286,7 +288,7 @@ function CircuitBookingContent() {
                         )}>
                           <RadioGroupItem value="card" id="card" className="sr-only" />
                           <CreditCard className="h-6 w-6 text-primary" /> 
-                          <span className="font-black">Carte Bancaire</span>
+                          <span className="font-black">{t('card_payment')}</span>
                         </Label>
                         <Label htmlFor="paypal" className={cn(
                           "flex items-center gap-4 p-6 border-2 rounded-2xl cursor-pointer hover:bg-slate-50 transition-all",
@@ -294,7 +296,7 @@ function CircuitBookingContent() {
                         )}>
                           <RadioGroupItem value="paypal" id="paypal" className="sr-only" />
                           <div className="h-6 w-16 bg-slate-200 rounded animate-pulse" /> 
-                          <span className="font-black">PayPal</span>
+                          <span className="font-black">{t('paypal_payment')}</span>
                         </Label>
                       </RadioGroup>
                     )}
@@ -304,7 +306,7 @@ function CircuitBookingContent() {
                     <div className="p-8 bg-slate-50 rounded-3xl border border-slate-100 space-y-6 animate-in slide-in-from-top-4 duration-500">
                       <div className="flex items-center gap-2 mb-2">
                         <Lock className="h-4 w-4 text-primary" />
-                        <span className="text-[10px] font-black text-primary uppercase tracking-widest">Informations de paiement sécurisées</span>
+                        <span className="text-[10px] font-black text-primary uppercase tracking-widest">{t('secure_payment_info')}</span>
                       </div>
                       <div className="space-y-4">
                         <FormField 
@@ -312,7 +314,7 @@ function CircuitBookingContent() {
                           name="cardNumber" 
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="font-bold text-slate-700">Numéro de carte</Label>
+                              <FormLabel className="font-bold text-slate-700">{t('card_number')}</FormLabel>
                               <FormControl>
                                 <Input placeholder="0000 0000 0000 0000" className="h-14 bg-white border-slate-200 rounded-xl font-mono text-lg" {...field} />
                               </FormControl>
@@ -325,7 +327,7 @@ function CircuitBookingContent() {
                             name="cardExpiry" 
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="font-bold text-slate-700">Expiration</FormLabel>
+                                <FormLabel className="font-bold text-slate-700">{t('expiration')}</FormLabel>
                                 <FormControl>
                                   <Input placeholder="MM/AA" className="h-14 bg-white border-slate-200 rounded-xl" {...field} />
                                 </FormControl>
@@ -337,7 +339,7 @@ function CircuitBookingContent() {
                             name="cardCvc" 
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel className="font-bold text-slate-700">CVC</FormLabel>
+                                <FormLabel className="font-bold text-slate-700">{t('cvc')}</FormLabel>
                                 <FormControl>
                                   <Input placeholder="123" className="h-14 bg-white border-slate-200 rounded-xl" {...field} />
                                 </FormControl>
@@ -360,14 +362,14 @@ function CircuitBookingContent() {
                       <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                     </FormControl>
                     <Label className="text-sm font-medium leading-tight text-slate-600 cursor-pointer">
-                      Je confirme l'exactitude des informations et j'accepte les conditions de StayFloow.com.
+                      {t('confirm_terms')}
                     </Label>
                   </FormItem>
                 )}
               />
 
               <Button type="submit" disabled={!form.watch('agreeToTerms') || isSubmitting} className="w-full h-16 text-xl font-black bg-primary hover:bg-primary/90 shadow-xl rounded-2xl">
-                {isSubmitting ? <Loader2 className="animate-spin h-6 w-6" /> : `Payez maintenant ${formatPrice(depositAmount)}`}
+                {isSubmitting ? <Loader2 className="animate-spin h-6 w-6" /> : `${t('pay_now')} ${formatPrice(depositAmount)}`}
               </Button>
             </form>
           </Form>
@@ -414,15 +416,15 @@ function CircuitBookingContent() {
               
               <div className="space-y-3">
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-slate-500 font-medium">Prix total circuit</span>
+                  <span className="text-slate-500 font-medium">{t('total_price')}</span>
                   <span className="font-black text-slate-900">{formatPrice(fullTotalAmount)}</span>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-primary/5 rounded-xl border border-primary/10">
-                  <span className="text-xs font-bold text-primary">À PAYER EN LIGNE (14%)</span>
+                  <span className="text-xs font-bold text-primary">{t('pay_online_label')}</span>
                   <span className="font-black text-primary">{formatPrice(depositAmount)}</span>
                 </div>
                 <div className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100">
-                  <span className="text-xs font-bold text-slate-500">À PAYER SUR PLACE (86%)</span>
+                  <span className="text-xs font-bold text-slate-500">{t('pay_on_site_label')}</span>
                   <span className="font-black text-slate-700">{formatPrice(onSiteAmount)}</span>
                 </div>
               </div>
@@ -430,14 +432,14 @@ function CircuitBookingContent() {
               <div className="bg-blue-50 p-4 rounded-xl flex gap-3 border border-blue-100">
                 <Info className="h-5 w-5 text-blue-600 shrink-0" />
                 <p className="text-[11px] text-blue-800 font-bold leading-relaxed">
-                  ℹ Notre plateforme prélève uniquement 14% du montant total à titre de frais de service lors de votre réservation en ligne. Le solde restant (86%) est réglé directement au prestataire.
+                  {t('deposit_info_text')}
                 </p>
               </div>
 
               <Separator />
               <div className="flex justify-between items-end pt-2">
                 <div>
-                  <p className="text-[10px] font-black text-slate-400 uppercase">Total TTC</p>
+                  <p className="text-[10px] font-black text-slate-400 uppercase">{t('total_ttc')}</p>
                   <p className="text-3xl font-black text-primary tracking-tighter">{formatPrice(fullTotalAmount)}</p>
                 </div>
                 <ShieldCheck className="h-10 w-10 text-primary opacity-20" />
