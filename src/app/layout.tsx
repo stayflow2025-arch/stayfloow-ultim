@@ -84,14 +84,16 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                window.addEventListener('error', function(event) {
-                  var message = event.message || '';
+                var handleChunkError = function(error) {
+                  var message = error.message || (error.reason && error.reason.message) || '';
                   var isChunkError = /ChunkLoadError|Loading chunk|Failed to fetch dynamically imported module/i.test(message);
                   if (isChunkError) {
-                    console.warn('StayFloow Recovery: Reloading due to chunk error...');
+                    console.warn('StayFloow Recovery: Reloading due to chunk failure...');
                     window.location.reload();
                   }
-                }, true);
+                };
+                window.addEventListener('error', handleChunkError, true);
+                window.addEventListener('unhandledrejection', handleChunkError);
               })();
             `,
           }}
