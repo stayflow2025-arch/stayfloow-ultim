@@ -312,7 +312,7 @@ function CircuitBookingContent() {
                           name="cardNumber" 
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="font-bold text-slate-700">Numéro de carte</FormLabel>
+                              <FormLabel className="font-bold text-slate-700">Numéro de carte</Label>
                               <FormControl>
                                 <Input placeholder="0000 0000 0000 0000" className="h-14 bg-white border-slate-200 rounded-xl font-mono text-lg" {...field} />
                               </FormControl>

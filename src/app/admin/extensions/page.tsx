@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { useRouter } from "next/navigation";
 import { checkIsAdmin } from "@/lib/admin-config";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 const EXTENSIONS = [
   {
