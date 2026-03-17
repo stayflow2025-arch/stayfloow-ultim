@@ -12,14 +12,9 @@ import {
   ArrowLeft, 
   Calendar as CalendarIcon, 
   ShieldCheck, 
-  Info, 
   CreditCard, 
   CheckCircle, 
   Loader2, 
-  Mail, 
-  Phone, 
-  User as UserIcon, 
-  MapPin, 
   Lock 
 } from "lucide-react";
 import Image from "next/image";
@@ -64,15 +59,12 @@ function BookCarContent() {
     email: user?.email || "",
     phone: "",
     dialCode: "+213",
-    cardNumber: "",
-    cardExpiry: "",
-    cardCvc: ""
   });
 
   const displayCar = useMemo(() => {
     if (dbCar) return {
       name: dbCar.details?.brand + " " + (dbCar.details?.model || dbCar.details?.name),
-      image: dbCar.photos?.[0] || "https://placehold.co/800x600?text=Car+StayFloow",
+      image: dbCar.photos?.[0] || "https://picsum.photos/seed/car/800/600",
       price: dbCar.price || 85
     };
     return {
@@ -98,7 +90,6 @@ function BookCarContent() {
     const resNum = `ST-CAR-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
     try {
-      // Initialisation Stripe si carte
       if (paymentMethod === 'card') {
         const url = await createStripeCheckout(
           db, 
@@ -148,7 +139,6 @@ function BookCarContent() {
       });
 
       setIsSuccess(true);
-      toast({ title: "Véhicule réservé !" });
     } catch (e) {
       toast({ variant: "destructive", title: "Erreur Stripe." });
     } finally {
@@ -194,6 +184,12 @@ function BookCarContent() {
                 <div className="space-y-3"><Label className="font-bold">Email</Label><Input value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} type="email" className="h-14 rounded-xl" required /></div>
                 
                 <div className="pt-8 border-t">
+                  <h3 className="text-xl font-black mb-6 flex items-center gap-3"><CreditCard className="h-6 w-6 text-primary" /> Mode de Paiement (Sécurisé)</h3>
+                  <div className="bg-blue-50 p-4 rounded-xl mb-6 border border-blue-100 flex gap-3">
+                    <Lock className="h-5 w-5 text-blue-600 shrink-0" />
+                    <p className="text-xs text-blue-700 font-medium italic">Vous allez être redirigé vers Stripe pour saisir vos informations de carte en toute sécurité.</p>
+                  </div>
+
                   <RadioGroup onValueChange={setPaymentMethod} defaultValue="card" className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Label htmlFor="card" className={cn("flex items-center gap-4 p-6 border-2 rounded-2xl cursor-pointer transition-all", paymentMethod === 'card' ? "border-primary bg-primary/5" : "border-slate-100")}>
                       <RadioGroupItem value="card" id="card" className="sr-only" /><CreditCard className="h-6 w-6 text-primary" /><span className="font-bold">Carte Bancaire (Stripe)</span>

@@ -14,13 +14,8 @@ import {
   CheckCircle, 
   CreditCard, 
   ShieldCheck, 
-  Calendar as CalendarIcon, 
   Loader2, 
-  Info, 
-  Lock, 
-  User as UserIcon, 
-  Mail, 
-  Phone 
+  Lock 
 } from 'lucide-react';
 import { 
   Form, 
@@ -53,9 +48,6 @@ const bookingSchema = z.object({
   dialCode: z.string().min(1, "Indicatif requis"),
   paymentMethod: z.string().min(1, "Obligatoire"),
   agreeToTerms: z.boolean().refine(val => val === true, "Veuillez accepter les conditions"),
-  cardNumber: z.string().optional(),
-  cardExpiry: z.string().optional(),
-  cardCvc: z.string().optional(),
 });
 
 function CircuitBookingContent() {
@@ -70,17 +62,7 @@ function CircuitBookingContent() {
   const tourId = searchParams.get('id');
   const tourDate = searchParams.get('date');
   const endDate = searchParams.get('endDate');
-  const ticketsParam = searchParams.get('tickets');
   
-  const tickets = useMemo(() => {
-    if (!ticketsParam) return {};
-    try {
-      return JSON.parse(ticketsParam);
-    } catch (e) {
-      return {};
-    }
-  }, [ticketsParam]);
-
   const fullTotalAmount = Number(searchParams.get('total')) || 0;
   const depositAmount = fullTotalAmount * 0.14;
   const onSiteAmount = fullTotalAmount * 0.86;
@@ -92,7 +74,7 @@ function CircuitBookingContent() {
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm({
+  const form = useForm<z.infer<typeof bookingSchema>>({
     resolver: zodResolver(bookingSchema),
     defaultValues: { 
       fullName: user?.displayName || "", 
@@ -101,13 +83,10 @@ function CircuitBookingContent() {
       dialCode: "+213", 
       paymentMethod: 'card', 
       agreeToTerms: false,
-      cardNumber: "",
-      cardExpiry: "",
-      cardCvc: ""
     },
   });
 
-  const onSubmit = async (values: any) => {
+  const onSubmit = async (values: z.infer<typeof bookingSchema>) => {
     setIsSubmitting(true);
     const finalUserId = user?.uid || `guest_${Date.now()}`;
     const resNum = `ST-TOUR-${Math.floor(1000 + Math.random() * 8999)}`;
@@ -131,7 +110,7 @@ function CircuitBookingContent() {
         listingId: tourId,
         itemName: circuit?.details?.name || circuit?.title || "Circuit",
         itemType: 'circuit',
-        itemImage: circuit?.photos?.[0] || circuit?.images?.[0] || "",
+        itemImage: circuit?.photos?.[0] || circuit?.images?.[0] || "https://picsum.photos/seed/tour/800/600",
         customerName: values.fullName,
         customerEmail: values.email,
         totalPrice: fullTotalAmount,
@@ -160,7 +139,6 @@ function CircuitBookingContent() {
         }
       });
       setIsConfirmed(true);
-      toast({ title: t('success') });
     } catch (e) { 
       toast({ variant: "destructive", title: t('error_loading_offer') });
     } finally {
@@ -179,12 +157,12 @@ function CircuitBookingContent() {
           <h1 className="text-3xl font-black mb-4">{t('booking_confirmed_msg')}</h1>
           <Button className="w-full bg-primary h-14 rounded-xl text-lg shadow-xl" onClick={() => router.push('/profile/bookings')}>{t('manage_bookings')}</Button>
         </Card>
-        <CrossSellCard location={circuit.location?.address || "Alger"} bookedItemType="circuit" />
+        <CrossSellCard location={circuit.location?.address || circuit.location || "Alger"} bookedItemType="circuit" />
       </div>
     );
   }
 
-  const circuitImage = circuit?.photos?.[0] || circuit?.images?.[0] || "https://placehold.co/800x600?text=Tour+StayFloow";
+  const circuitImage = circuit?.photos?.[0] || circuit?.images?.[0] || "https://picsum.photos/seed/tour/800/600";
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-6xl">
@@ -240,6 +218,11 @@ function CircuitBookingContent() {
                   <CardTitle className="text-xl font-black uppercase tracking-tight">{t('payment_method')} (Stripe)</CardTitle>
                 </CardHeader>
                 <CardContent className="p-8 space-y-8">
+                  <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-100 flex gap-3">
+                    <Lock className="h-5 w-5 text-emerald-600 shrink-0" />
+                    <p className="text-xs text-emerald-700 font-medium italic">Paiement 100% sécurisé via Stripe. Vous pourrez saisir votre numéro de carte sur la page suivante.</p>
+                  </div>
+
                   <FormField control={form.control} name="paymentMethod" render={({ field }) => (
                     <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <Label htmlFor="card" className={cn("flex items-center gap-4 p-6 border-2 rounded-2xl cursor-pointer", field.value === 'card' ? "border-primary bg-primary/5" : "border-slate-100")}>

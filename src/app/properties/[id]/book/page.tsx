@@ -10,14 +10,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { 
   ArrowLeft, 
-  Calendar as CalendarIcon, 
   ShieldCheck, 
-  Info, 
   CreditCard, 
   Loader2,
   CheckCircle,
   Users,
-  Lock
+  Lock,
+  Info
 } from "lucide-react";
 import { addDays, differenceInDays } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -41,12 +40,7 @@ const bookingSchema = z.object({
   phone: z.string().min(6, "Numéro trop court"),
   dialCode: z.string().min(1, "Indicatif requis"),
   paymentMethod: z.enum(["card", "paypal"]),
-  cardNumber: z.string().optional(),
-  cardExpiry: z.string().optional(),
-  cardCvc: z.string().optional(),
 });
-
-type BookingValues = z.infer<typeof bookingSchema>;
 
 function PropertyBookingContent({ id }: { id: string }) {
   const router = useRouter();
@@ -71,7 +65,7 @@ function PropertyBookingContent({ id }: { id: string }) {
   const docRef = useMemoFirebase(() => doc(db, 'listings', id), [db, id]);
   const { data: property, loading } = useDoc(docRef);
 
-  const form = useForm<BookingValues>({
+  const form = useForm<z.infer<typeof bookingSchema>>({
     resolver: zodResolver(bookingSchema),
     defaultValues: {
       fullName: user?.displayName || "",
@@ -87,13 +81,14 @@ function PropertyBookingContent({ id }: { id: string }) {
   const depositPrice = fullPrice * 0.14;
   const onSitePrice = fullPrice * 0.86;
 
-  const onSubmit = async (values: BookingValues) => {
+  const onSubmit = async (values: z.infer<typeof bookingSchema>) => {
     setIsSubmitting(true);
     const finalUserId = user?.uid || `guest_${Date.now()}`;
     const reservationNumber = `ST-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
     try {
       if (values.paymentMethod === 'card') {
+        // Redirection vers Stripe Checkout pour la saisie de carte
         const checkoutUrl = await createStripeCheckout(
           db, 
           finalUserId, 
@@ -105,13 +100,14 @@ function PropertyBookingContent({ id }: { id: string }) {
         return;
       }
 
+      // Fallback ou PayPal
       await addDoc(collection(db, "bookings"), {
         userId: finalUserId,
         partnerId: property?.ownerId || "admin",
         listingId: id,
         itemName: property?.details?.name || "Hébergement StayFloow",
         itemType: 'accommodation',
-        itemImage: property?.photos?.[0] || "",
+        itemImage: property?.photos?.[0] || "https://picsum.photos/seed/stay/800/600",
         customerName: values.fullName,
         customerEmail: values.email,
         totalPrice: fullPrice,
@@ -142,13 +138,8 @@ function PropertyBookingContent({ id }: { id: string }) {
       });
 
       setIsSuccess(true);
-      toast({ title: "Réservation confirmée !" });
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Erreur",
-        description: "Une erreur est survenue lors de l'initialisation du paiement Stripe.",
-      });
+      toast({ variant: "destructive", title: "Erreur de paiement", description: "Impossible d'initialiser Stripe." });
     } finally {
       setIsSubmitting(false);
     }
@@ -172,7 +163,7 @@ function PropertyBookingContent({ id }: { id: string }) {
     );
   }
 
-  const propertyImage = property?.photos?.[0] || "https://placehold.co/800x600?text=StayFloow+Accommodation";
+  const propertyImage = property?.photos?.[0] || "https://picsum.photos/seed/stay/800/600";
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -211,6 +202,11 @@ function PropertyBookingContent({ id }: { id: string }) {
 
                     <div className="pt-8 border-t">
                       <h3 className="text-xl font-black mb-6 flex items-center gap-3"><CreditCard className="h-6 w-6 text-primary" /> Mode de Paiement (Sécurisé par Stripe)</h3>
+                      <div className="bg-slate-50 p-4 rounded-xl mb-6 border flex gap-3">
+                        <Lock className="h-5 w-5 text-slate-400 shrink-0" />
+                        <p className="text-xs text-slate-500 font-medium italic">En choisissant la carte, vous serez redirigé vers la passerelle sécurisée de Stripe pour finaliser la transaction.</p>
+                      </div>
+                      
                       <FormField control={form.control} name="paymentMethod" render={({ field }) => (
                         <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <Label htmlFor="card" className={cn("flex items-center justify-between p-6 border-2 rounded-2xl cursor-pointer transition-all", field.value === 'card' ? "border-primary bg-primary/5" : "border-slate-100 hover:border-slate-200")}>
