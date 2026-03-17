@@ -46,11 +46,11 @@ const useFormField = () => {
   const itemContext = React.useContext(FormItemContext)
   const formState = useFormContext()
 
-  // Protection contre le crash si le contexte est null
+  // Fix: handle cases where hook is called outside FormProvider context
   if (!formState || !fieldContext) {
     return {
-      id: itemContext?.id,
-      name: fieldContext?.name,
+      id: itemContext?.id || "fallback-id",
+      name: fieldContext?.name || "fallback-name",
       formItemId: itemContext?.id ? `${itemContext.id}-form-item` : undefined,
       formDescriptionId: itemContext?.id ? `${itemContext.id}-form-item-description` : undefined,
       formMessageId: itemContext?.id ? `${itemContext.id}-form-item-message` : undefined,
