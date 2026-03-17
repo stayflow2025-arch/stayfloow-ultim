@@ -44,22 +44,27 @@ const FormField = <
 const useFormField = () => {
   const fieldContext = React.useContext(FormFieldContext)
   const itemContext = React.useContext(FormItemContext)
-  const { getFieldState, formState } = useFormContext()
+  const formState = useFormContext()
 
-  const fieldState = getFieldState(fieldContext.name, formState)
-
-  if (!fieldContext) {
-    throw new Error("useFormField should be used within <FormField>")
+  if (!fieldContext || !formState) {
+    return {
+      id: itemContext?.id,
+      name: fieldContext?.name,
+      formItemId: itemContext?.id ? `${itemContext.id}-form-item` : undefined,
+      formDescriptionId: itemContext?.id ? `${itemContext.id}-form-item-description` : undefined,
+      formMessageId: itemContext?.id ? `${itemContext.id}-form-item-message` : undefined,
+    }
   }
 
-  const { id } = itemContext
+  const { getFieldState, formState: internalFormState } = formState
+  const fieldState = getFieldState(fieldContext.name, internalFormState)
 
   return {
-    id,
+    id: itemContext.id,
     name: fieldContext.name,
-    formItemId: `${id}-form-item`,
-    formDescriptionId: `${id}-form-item-description`,
-    formMessageId: `${id}-form-item-message`,
+    formItemId: `${itemContext.id}-form-item`,
+    formDescriptionId: `${itemContext.id}-form-item-description`,
+    formMessageId: `${itemContext.id}-form-item-message`,
     ...fieldState,
   }
 }
