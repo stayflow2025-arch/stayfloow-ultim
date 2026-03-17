@@ -19,8 +19,7 @@ import {
   Users,
   Lock
 } from "lucide-react";
-import { format, addDays, differenceInDays } from "date-fns";
-import { fr } from "date-fns/locale";
+import { addDays, differenceInDays } from "date-fns";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -83,8 +82,6 @@ function PropertyBookingContent({ id }: { id: string }) {
     },
   });
 
-  const paymentMethod = form.watch("paymentMethod");
-
   const nights = Math.max(1, differenceInDays(date.to, date.from));
   const fullPrice = totalParam ? parseFloat(totalParam) : (property?.price || 85) * nights;
   const depositPrice = fullPrice * 0.14;
@@ -96,12 +93,11 @@ function PropertyBookingContent({ id }: { id: string }) {
     const reservationNumber = `ST-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
     try {
-      // 1. Si Paiement Carte -> Initialiser Stripe
       if (values.paymentMethod === 'card') {
         const checkoutUrl = await createStripeCheckout(
           db, 
           finalUserId, 
-          "price_accommodation_placeholder", // ID prix Stripe configuré par l'extension
+          "price_accommodation_placeholder",
           window.location.origin + "/profile/bookings?success=true",
           window.location.href
         );
@@ -109,7 +105,6 @@ function PropertyBookingContent({ id }: { id: string }) {
         return;
       }
 
-      // 2. Enregistrement en base
       await addDoc(collection(db, "bookings"), {
         userId: finalUserId,
         partnerId: property?.ownerId || "admin",
@@ -177,6 +172,8 @@ function PropertyBookingContent({ id }: { id: string }) {
     );
   }
 
+  const propertyImage = property?.photos?.[0] || "https://placehold.co/800x600?text=StayFloow+Accommodation";
+
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="bg-primary text-white py-6 px-8 shadow-md flex justify-between items-center">
@@ -237,7 +234,9 @@ function PropertyBookingContent({ id }: { id: string }) {
 
           <div className="lg:col-span-1">
             <Card className="sticky top-28 shadow-2xl border-none rounded-[2.5rem] bg-white overflow-hidden">
-              <div className="relative h-48 w-full"><Image src={property?.photos?.[0] || ""} alt="Stay" fill className="object-cover" /></div>
+              <div className="relative h-48 w-full">
+                <Image src={propertyImage} alt="Stay" fill className="object-cover" />
+              </div>
               <CardContent className="p-8 space-y-6">
                 <h2 className="text-xl font-black truncate">{property?.details?.name}</h2>
                 <div className="bg-primary/5 p-4 rounded-xl flex justify-between items-center"><span className="text-xs font-bold text-primary">À PAYER EN LIGNE (14%)</span><span className="font-black text-primary">{formatPrice(depositPrice)}</span></div>

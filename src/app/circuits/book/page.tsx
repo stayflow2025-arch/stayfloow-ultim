@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { Suspense, useState, useMemo } from 'react';
+import React, { Suspense, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { useDoc, useFirestore, useUser, useMemoFirebase } from '@/firebase';
@@ -42,7 +42,6 @@ import { useCurrency } from '@/context/currency-context';
 import { useLanguage } from '@/context/language-context';
 import { sendBookingConfirmationEmail } from '@/lib/mail';
 import { circuits as mockCircuits } from '@/lib/data';
-import { format } from 'date-fns';
 import { CrossSellCard } from '@/components/cross-sell-card';
 import { cn } from "@/lib/utils";
 import { createStripeCheckout } from "@/lib/stripe-payment";
@@ -108,15 +107,12 @@ function CircuitBookingContent() {
     },
   });
 
-  const paymentMethod = form.watch("paymentMethod");
-
   const onSubmit = async (values: any) => {
     setIsSubmitting(true);
     const finalUserId = user?.uid || `guest_${Date.now()}`;
     const resNum = `ST-TOUR-${Math.floor(1000 + Math.random() * 8999)}`;
 
     try {
-      // Intégration Stripe pour Carte
       if (values.paymentMethod === 'card') {
         const url = await createStripeCheckout(
           db, 
@@ -177,8 +173,8 @@ function CircuitBookingContent() {
 
   if (isConfirmed) {
     return (
-      <div className="container mx-auto px-4 py-20 max-w-5xl space-y-12">
-        <Card className="border-none shadow-2xl p-12 rounded-[2.5rem] bg-white text-center max-w-2xl mx-auto">
+      <div className="container mx-auto px-4 py-20 max-w-5xl space-y-12 text-center">
+        <Card className="border-none shadow-2xl p-12 rounded-[2.5rem] bg-white max-w-2xl mx-auto">
           <CheckCircle className="h-16 w-16 text-primary mx-auto mb-8" />
           <h1 className="text-3xl font-black mb-4">{t('booking_confirmed_msg')}</h1>
           <Button className="w-full bg-primary h-14 rounded-xl text-lg shadow-xl" onClick={() => router.push('/profile/bookings')}>{t('manage_bookings')}</Button>
@@ -188,9 +184,13 @@ function CircuitBookingContent() {
     );
   }
 
+  const circuitImage = circuit?.photos?.[0] || circuit?.images?.[0] || "https://placehold.co/800x600?text=Tour+StayFloow";
+
   return (
     <div className="container mx-auto px-4 py-12 max-w-6xl">
-      <Button variant="ghost" onClick={() => router.back()} className="mb-8 font-black"><ArrowLeft className="mr-2 h-4 w-4" /> {t('back_to_tour')}</Button>
+      <Button variant="ghost" onClick={() => router.back()} className="mb-8 font-black">
+        <ArrowLeft className="mr-2 h-4 w-4" /> {t('back_to_tour')}
+      </Button>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
         <div className="lg:col-span-2 space-y-8">
@@ -202,18 +202,33 @@ function CircuitBookingContent() {
                 </CardHeader>
                 <CardContent className="p-8 space-y-6">
                   <FormField control={form.control} name="fullName" render={({ field }) => (
-                    <FormItem><FormLabel className="font-bold">{t('full_name')}</FormLabel><FormControl><Input placeholder={t('full_name_placeholder')} className="h-14 rounded-xl" {...field} /></FormControl><FormMessage /></FormItem>
+                    <FormItem>
+                      <FormLabel className="font-bold">{t('full_name')}</FormLabel>
+                      <FormControl><Input placeholder={t('full_name_placeholder')} className="h-14 rounded-xl" {...field} /></FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )} />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField control={form.control} name="email" render={({ field }) => (
-                      <FormItem><FormLabel className="font-bold">{t('contact.email')}</FormLabel><FormControl><Input className="h-14 rounded-xl" type="email" placeholder={t('email_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
+                      <FormItem>
+                        <FormLabel className="font-bold">{t('contact.email')}</FormLabel>
+                        <FormControl><Input className="h-14 rounded-xl" type="email" placeholder={t('email_placeholder')} {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
                     )} />
                     <div className="flex gap-2">
                       <FormField control={form.control} name="dialCode" render={({ field }) => (
-                        <FormItem className="w-24"><FormControl><Input className="h-14 text-center font-bold" {...field} /></FormControl></FormItem>
+                        <FormItem className="w-24">
+                          <FormLabel className="font-bold">Code</FormLabel>
+                          <FormControl><Input className="h-14 text-center font-bold" {...field} /></FormControl>
+                        </FormItem>
                       )} />
                       <FormField control={form.control} name="phone" render={({ field }) => (
-                        <FormItem className="flex-1"><FormControl><Input className="h-14 rounded-xl" placeholder={t('phone_placeholder')} {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem className="flex-1">
+                          <FormLabel className="font-bold">{t('phone_whatsapp')}</FormLabel>
+                          <FormControl><Input className="h-14 rounded-xl" placeholder={t('phone_placeholder')} {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
                       )} />
                     </div>
                   </div>
@@ -254,7 +269,9 @@ function CircuitBookingContent() {
 
         <div className="lg:col-span-1">
           <Card className="sticky top-24 shadow-2xl border-none overflow-hidden rounded-[2.5rem] bg-white">
-            <div className="relative h-48 w-full"><Image src={circuit.photos?.[0] || ""} alt="tour" fill className="object-cover" /></div>
+            <div className="relative h-48 w-full">
+              <Image src={circuitImage} alt="tour" fill className="object-cover" />
+            </div>
             <CardContent className="p-8 space-y-6">
               <h3 className="text-2xl font-black text-primary leading-tight">{circuit.details?.name || circuit.title}</h3>
               <Separator />
