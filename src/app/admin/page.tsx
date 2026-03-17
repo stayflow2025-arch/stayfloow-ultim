@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { 
   LayoutDashboard, Building, Clock, 
   TrendingUp, Users, ArrowRight, Loader2, Tag, 
-  ShieldCheck, Wallet, MessageSquare, Puzzle
+  ShieldCheck, Wallet, MessageSquare, Puzzle, CreditCard
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -100,7 +100,7 @@ export default function AdminDashboardMaster() {
             <SidebarItem icon={<LayoutDashboard />} label="Tableau de Bord" active={activeTab === 'dashboard'} onClick={() => setActiveTab('dashboard')} />
             <SidebarItem icon={<Building />} label="Catalogue Maître" onClick={() => router.push('/admin/catalog')} />
             <SidebarItem icon={<Users />} label="Utilisateurs" onClick={() => router.push('/admin/users')} />
-            <SidebarItem icon={<Clock />} label="Validations" onClick={() => router.push('/admin/validate')} />
+            <SidebarItem icon={<CreditCard />} label="Gestion Stripe" onClick={() => router.push('/admin/stripe')} />
             <SidebarItem icon={<Puzzle />} label="Extensions" onClick={() => router.push('/admin/extensions')} />
             <SidebarItem icon={<Wallet />} label="Finance & Paiements" onClick={() => router.push('/admin/finance')} />
             <SidebarItem icon={<MessageSquare />} label="Support Client" onClick={() => router.push('/admin/messaging')} />

@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useMemo, useEffect, useState } from "react";
@@ -7,7 +6,7 @@ import { doc, setDoc, getDoc } from "firebase/firestore";
 import { 
   Puzzle, ArrowLeft, Loader2, Download, CheckCircle2, 
   Settings2, Plus, Zap, ShieldCheck, Mail, Wallet, BrainCircuit,
-  Save, X, Globe, Smartphone, Bell
+  Save, X, Globe, Smartphone, Bell, CreditCard
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,7 +32,7 @@ const EXTENSIONS = [
     id: "stripe-payments",
     name: "Stripe Connect",
     description: "Système de paiement sécurisé pour les frais de service (14%) et règlements partenaires.",
-    icon: <Wallet className="h-6 w-6 text-blue-500" />,
+    icon: <CreditCard className="h-6 w-6 text-blue-500" />,
     status: "installed",
     category: "Paiements"
   },
@@ -109,6 +108,10 @@ export default function AdminExtensionsPage() {
   };
 
   const openConfig = (ext: any) => {
+    if (ext.id === 'stripe-payments') {
+      router.push('/admin/stripe');
+      return;
+    }
     setSelectedExt(ext);
     setIsConfigOpen(true);
   };
@@ -223,22 +226,6 @@ export default function AdminExtensionsPage() {
           </div>
 
           <div className="p-8 space-y-6">
-            {selectedExt?.id === 'stripe-payments' && (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label className="font-bold">Clé secrète Stripe (Live)</Label>
-                  <Input type="password" placeholder="sk_live_..." className="h-12 bg-slate-50" />
-                </div>
-                <div className="flex items-center justify-between p-4 bg-blue-50 rounded-2xl border border-blue-100">
-                  <div className="space-y-1">
-                    <p className="text-sm font-bold text-blue-900">Mode Test</p>
-                    <p className="text-[10px] text-blue-700">Utiliser les clés de test Stripe</p>
-                  </div>
-                  <Switch />
-                </div>
-              </div>
-            )}
-
             {selectedExt?.id === 'trigger-email' && (
               <div className="space-y-4">
                 <div className="space-y-2">
