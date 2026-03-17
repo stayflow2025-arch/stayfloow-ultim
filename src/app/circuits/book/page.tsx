@@ -47,6 +47,9 @@ const bookingSchema = z.object({
   phone: z.string().min(6, "Numéro requis"),
   dialCode: z.string().min(1, "Indicatif requis"),
   paymentMethod: z.string().min(1, "Obligatoire"),
+  cardNumber: z.string().min(16, "Numéro de carte invalide").max(19),
+  expiry: z.string().regex(/^(0[1-9]|1[0-2])\/?([0-9]{2})$/, "Format MM/AA invalide"),
+  cvc: z.string().min(3, "CVC invalide").max(4),
   agreeToTerms: z.boolean().refine(val => val === true, "Veuillez accepter les conditions"),
 });
 
@@ -71,7 +74,6 @@ function CircuitBookingContent() {
   const tourDate = searchParams.get('date');
   const endDate = searchParams.get('endDate');
   const fullTotalAmount = Number(searchParams.get('total')) || 0;
-  
   const depositAmount = fullTotalAmount * 0.14;
   const onSiteAmount = fullTotalAmount * 0.86;
 
@@ -87,9 +89,20 @@ function CircuitBookingContent() {
       phone: "", 
       dialCode: "+213", 
       paymentMethod: 'card', 
+      cardNumber: '',
+      expiry: '',
+      cvc: '',
       agreeToTerms: false,
     },
   });
+
+  const formatCardNumber = (value: string) => {
+    return value.replace(/\W/gi, '').replace(/(.{4})/g, '$1 ').trim().substring(0, 19);
+  };
+
+  const formatExpiry = (value: string) => {
+    return value.replace(/\W/gi, '').replace(/(.{2})/, '$1/').substring(0, 5);
+  };
 
   const onSubmit = async (values: z.infer<typeof bookingSchema>) => {
     setIsSubmitting(true);
@@ -237,24 +250,57 @@ function CircuitBookingContent() {
                   )} />
 
                   {form.watch('paymentMethod') === 'card' && (
-                    <div className="space-y-6 pt-6 border-t">
+                    <div className="space-y-6 pt-6 border-t animate-in slide-in-from-top-4 duration-500">
                       <div className="flex items-center gap-2 text-primary font-black text-xs uppercase tracking-widest mb-4">
                         <Lock className="h-4 w-4" /> Saisie sécurisée StayFloow Pay
                       </div>
                       <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label className="font-bold">Numéro de carte</Label>
-                          <Input placeholder="0000 0000 0000 0000" className="h-14 rounded-xl bg-slate-50 border-slate-200" />
-                        </div>
+                        <FormField control={form.control} name="cardNumber" render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="font-bold">Numéro de carte</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Input 
+                                  placeholder="0000 0000 0000 0000" 
+                                  className="h-14 rounded-xl bg-slate-50 border-slate-200 pl-12" 
+                                  {...field}
+                                  onChange={(e) => field.onChange(formatCardNumber(e.target.value))}
+                                />
+                                <CreditCard className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300" />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )} />
                         <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label className="font-bold">Expiration (MM/AA)</Label>
-                            <Input placeholder="MM/AA" className="h-14 rounded-xl bg-slate-50 border-slate-200" />
-                          </div>
-                          <div className="space-y-2">
-                            <Label className="font-bold">CVC</Label>
-                            <Input placeholder="123" className="h-14 rounded-xl bg-slate-50 border-slate-200" />
-                          </div>
+                          <FormField control={form.control} name="expiry" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="font-bold">Expiration (MM/AA)</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder="MM/AA" 
+                                  className="h-14 rounded-xl bg-slate-50 border-slate-200" 
+                                  {...field}
+                                  onChange={(e) => field.onChange(formatExpiry(e.target.value))}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
+                          <FormField control={form.control} name="cvc" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="font-bold">CVC</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder="123" 
+                                  className="h-14 rounded-xl bg-slate-50 border-slate-200" 
+                                  {...field}
+                                  onChange={(e) => field.onChange(e.target.value.replace(/\D/g, '').substring(0, 4))}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )} />
                         </div>
                       </div>
                     </div>

@@ -46,7 +46,8 @@ const useFormField = () => {
   const itemContext = React.useContext(FormItemContext)
   const formState = useFormContext()
 
-  if (!fieldContext || !formState) {
+  // Protection contre le crash si le contexte est null
+  if (!formState || !fieldContext) {
     return {
       id: itemContext?.id,
       name: fieldContext?.name,
