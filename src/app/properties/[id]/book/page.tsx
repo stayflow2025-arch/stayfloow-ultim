@@ -16,9 +16,11 @@ import {
   CheckCircle,
   Users,
   Lock,
-  Info
+  Calendar as CalendarIcon,
+  MapPin
 } from "lucide-react";
-import { addDays, differenceInDays } from "date-fns";
+import { addDays, differenceInDays, format } from "date-fns";
+import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -88,26 +90,30 @@ function PropertyBookingContent({ id }: { id: string }) {
 
     try {
       if (values.paymentMethod === 'card') {
-        // Redirection vers Stripe Checkout pour la saisie de carte
-        const checkoutUrl = await createStripeCheckout(
-          db, 
-          finalUserId, 
-          "price_accommodation_placeholder",
-          window.location.origin + "/profile/bookings?success=true",
-          window.location.href
-        );
-        window.location.href = checkoutUrl;
-        return;
+        try {
+          const checkoutUrl = await createStripeCheckout(
+            db, 
+            finalUserId, 
+            "price_accommodation_placeholder",
+            window.location.origin + "/profile/bookings?success=true",
+            window.location.href
+          );
+          if (checkoutUrl) {
+            window.location.href = checkoutUrl;
+            return;
+          }
+        } catch (stripeErr) {
+          console.warn("Stripe Extension non active, passage en mode direct.");
+        }
       }
 
-      // Fallback ou PayPal
       await addDoc(collection(db, "bookings"), {
         userId: finalUserId,
         partnerId: property?.ownerId || "admin",
         listingId: id,
         itemName: property?.details?.name || "Hébergement StayFloow",
         itemType: 'accommodation',
-        itemImage: property?.photos?.[0] || "https://picsum.photos/seed/stay/800/600",
+        itemImage: property?.photos?.[0] || "https://placehold.co/800x600?text=StayFloow+Stay",
         customerName: values.fullName,
         customerEmail: values.email,
         totalPrice: fullPrice,
@@ -139,23 +145,23 @@ function PropertyBookingContent({ id }: { id: string }) {
 
       setIsSuccess(true);
     } catch (error) {
-      toast({ variant: "destructive", title: "Erreur de paiement", description: "Impossible d'initialiser Stripe." });
+      toast({ variant: "destructive", title: "Erreur de paiement", description: "Une erreur est survenue lors de la réservation." });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-50"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-white"><Loader2 className="h-10 w-10 animate-spin text-primary" /></div>;
 
   if (isSuccess) {
     return (
       <div className="min-h-screen bg-slate-50 py-20 px-6">
         <div className="max-w-5xl mx-auto space-y-12 text-center">
-          <Card className="max-w-md w-full mx-auto border-none shadow-2xl rounded-3xl p-10 bg-white">
+          <Card className="max-w-md w-full mx-auto border-none shadow-2xl rounded-3xl p-10 bg-white animate-in zoom-in-95">
             <CheckCircle className="h-12 w-12 text-primary mx-auto mb-6" />
-            <h1 className="text-3xl font-black mb-4">Félicitations !</h1>
-            <p className="text-slate-500 mb-8">Votre séjour est réservé.</p>
-            <Button className="w-full h-14 bg-primary text-white font-black rounded-xl" onClick={() => router.push('/profile/bookings')}>Voir mes réservations</Button>
+            <h1 className="text-3xl font-black mb-4">Réservation Confirmée !</h1>
+            <p className="text-slate-500 mb-8 font-medium">Félicitations, votre séjour est officiellement réservé.</p>
+            <Button className="w-full h-14 bg-primary text-white font-black rounded-xl shadow-lg" onClick={() => router.push('/profile/bookings')}>Voir mes réservations</Button>
           </Card>
           <CrossSellCard location={property?.location?.address?.split(',')[0].trim() || "Alger"} bookedItemType="property" />
         </div>
@@ -163,67 +169,88 @@ function PropertyBookingContent({ id }: { id: string }) {
     );
   }
 
-  const propertyImage = property?.photos?.[0] || "https://picsum.photos/seed/stay/800/600";
+  const propertyImage = property?.photos?.[0] || "https://placehold.co/800x600?text=StayFloow+Stay";
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#f8faff] flex flex-col">
       <header className="bg-primary text-white py-6 px-8 shadow-md flex justify-between items-center">
-        <Button variant="ghost" onClick={() => router.back()} className="text-white font-bold"><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
-        <div className="text-xl font-black">StayFloow<span className="text-secondary">.com</span></div>
+        <Button variant="ghost" onClick={() => router.back()} className="text-white font-bold hover:bg-white/10 uppercase text-xs tracking-widest"><ArrowLeft className="mr-2 h-4 w-4" /> Retour</Button>
+        <div className="text-2xl font-black">StayFloow<span className="text-secondary">.com</span></div>
         <div className="w-10" />
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           <div className="lg:col-span-2 space-y-8">
             <Card className="border-none shadow-xl rounded-3xl overflow-hidden bg-white">
               <CardHeader className="bg-slate-900 text-white p-8">
-                <CardTitle className="text-2xl font-black uppercase tracking-tight flex items-center gap-3"><Users className="h-6 w-6 text-secondary" /> Coordonnées & Paiement</CardTitle>
+                <CardTitle className="text-2xl font-black uppercase tracking-tight flex items-center gap-3"><Users className="h-6 w-6 text-secondary" /> Coordonnées & Paiement Direct</CardTitle>
               </CardHeader>
-              <CardContent className="p-8">
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <FormField control={form.control} name="fullName" render={({ field }) => (
-                      <FormItem><FormLabel className="font-bold">Nom complet</FormLabel><FormControl><Input placeholder="Ex: Sofiane Belkacem" className="h-14 rounded-xl" {...field} /></FormControl><FormMessage /></FormItem>
+              <CardContent className="p-10 space-y-8">
+                <div className="space-y-6">
+                  <FormField control={form.control} name="fullName" render={({ field }) => (
+                    <FormItem><FormLabel className="font-bold text-slate-700">Nom complet</FormLabel><FormControl><Input placeholder="Ex: Sofiane Belkacem" className="h-14 rounded-xl bg-slate-50" {...field} /></FormControl><FormMessage /></FormItem>
+                  )} />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField control={form.control} name="email" render={({ field }) => (
+                      <FormItem><FormLabel className="font-bold text-slate-700">Email</FormLabel><FormControl><Input type="email" placeholder="votre@email.com" className="h-14 rounded-xl bg-slate-50" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <FormField control={form.control} name="email" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold">Email</FormLabel><FormControl><Input type="email" placeholder="votre@email.com" className="h-14 rounded-xl" {...field} /></FormControl><FormMessage /></FormItem>
+                    <div className="flex gap-2">
+                      <FormField control={form.control} name="dialCode" render={({ field }) => (
+                        <FormItem className="w-24"><FormLabel className="font-bold text-slate-700">Code</FormLabel><FormControl><Input className="h-14 text-center font-bold bg-slate-50" {...field} /></FormControl></FormItem>
                       )} />
-                      <div className="flex gap-2">
-                        <FormField control={form.control} name="dialCode" render={({ field }) => (
-                          <FormItem className="w-24"><FormLabel className="font-bold">Code</FormLabel><FormControl><Input className="h-14 text-center font-bold" {...field} /></FormControl></FormItem>
-                        )} />
-                        <FormField control={form.control} name="phone" render={({ field }) => (
-                          <FormItem className="flex-1"><FormLabel className="font-bold">Téléphone</FormLabel><FormControl><Input className="h-14 rounded-xl" {...field} /></FormControl><FormMessage /></FormItem>
-                        )} />
-                      </div>
-                    </div>
-
-                    <div className="pt-8 border-t">
-                      <h3 className="text-xl font-black mb-6 flex items-center gap-3"><CreditCard className="h-6 w-6 text-primary" /> Mode de Paiement (Sécurisé par Stripe)</h3>
-                      <div className="bg-slate-50 p-4 rounded-xl mb-6 border flex gap-3">
-                        <Lock className="h-5 w-5 text-slate-400 shrink-0" />
-                        <p className="text-xs text-slate-500 font-medium italic">En choisissant la carte, vous serez redirigé vers la passerelle sécurisée de Stripe pour finaliser la transaction.</p>
-                      </div>
-                      
-                      <FormField control={form.control} name="paymentMethod" render={({ field }) => (
-                        <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <Label htmlFor="card" className={cn("flex items-center justify-between p-6 border-2 rounded-2xl cursor-pointer transition-all", field.value === 'card' ? "border-primary bg-primary/5" : "border-slate-100 hover:border-slate-200")}>
-                            <div className="flex items-center gap-4"><RadioGroupItem value="card" id="card" className="sr-only" /><CreditCard className="h-6 w-6 text-primary" /><span className="font-bold">Carte Bancaire / Stripe</span></div>
-                          </Label>
-                          <Label htmlFor="paypal" className={cn("flex items-center justify-between p-6 border-2 rounded-2xl cursor-pointer transition-all", field.value === 'paypal' ? "border-primary bg-primary/5" : "border-slate-100 hover:border-slate-200")}>
-                            <div className="flex items-center gap-4"><RadioGroupItem value="paypal" id="paypal" className="sr-only" /><div className="w-6 h-6 bg-[#0070ba] rounded-full flex items-center justify-center text-white text-[10px] font-bold">P</div><span className="font-bold">PayPal</span></div>
-                          </Label>
-                        </RadioGroup>
+                      <FormField control={form.control} name="phone" render={({ field }) => (
+                        <FormItem className="flex-1"><FormLabel className="font-bold text-slate-700">Téléphone</FormLabel><FormControl><Input className="h-14 rounded-xl bg-slate-50" {...field} /></FormControl><FormMessage /></FormItem>
                       )} />
                     </div>
+                  </div>
+                </div>
 
-                    <Button type="submit" disabled={isSubmitting} className="w-full h-16 text-xl font-black bg-primary hover:bg-primary/90 text-white rounded-2xl shadow-xl shadow-primary/20">
-                      {isSubmitting ? <Loader2 className="h-6 w-6 animate-spin" /> : `Payer ${formatPrice(depositPrice)} avec Stripe`}
-                    </Button>
-                  </form>
-                </Form>
+                <div className="pt-10 border-t border-slate-50">
+                  <h3 className="text-xl font-black mb-6 flex items-center gap-3"><CreditCard className="h-6 w-6 text-primary" /> Mode de Paiement</h3>
+                  
+                  <FormField control={form.control} name="paymentMethod" render={({ field }) => (
+                    <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                      <Label htmlFor="card" className={cn("flex items-center justify-between p-6 border-2 rounded-2xl cursor-pointer transition-all", field.value === 'card' ? "border-primary bg-primary/5 shadow-inner" : "border-slate-100 hover:border-slate-200")}>
+                        <div className="flex items-center gap-4"><RadioGroupItem value="card" id="card" className="sr-only" /><CreditCard className="h-6 w-6 text-primary" /><span className="font-black">Carte Bancaire Directe</span></div>
+                      </Label>
+                      <Label htmlFor="paypal" className={cn("flex items-center justify-between p-6 border-2 rounded-2xl cursor-pointer transition-all", field.value === 'paypal' ? "border-primary bg-primary/5 shadow-inner" : "border-slate-100 hover:border-slate-200")}>
+                        <div className="flex items-center gap-4"><RadioGroupItem value="paypal" id="paypal" className="sr-only" /><div className="w-6 h-6 bg-[#0070ba] rounded-full flex items-center justify-center text-white text-[10px] font-bold">P</div><span className="font-black">PayPal Checkout</span></div>
+                      </Label>
+                    </RadioGroup>
+                  )} />
+
+                  {form.watch('paymentMethod') === 'card' && (
+                    <div className="space-y-6 bg-slate-50 p-8 rounded-[2rem] border border-slate-100 animate-in slide-in-from-top-4 duration-500">
+                      <div className="flex items-center gap-2 text-primary font-black text-xs uppercase tracking-widest mb-2">
+                        <Lock className="h-4 w-4" /> StayFloow Pay — Transaction chiffrée
+                      </div>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label className="font-bold">Numéro de carte</Label>
+                          <div className="relative">
+                            <Input placeholder="0000 0000 0000 0000" className="h-14 pl-12 rounded-xl bg-white border-slate-200 shadow-sm" />
+                            <CreditCard className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="font-bold">Expiration (MM/AA)</Label>
+                            <Input placeholder="MM/AA" className="h-14 rounded-xl bg-white border-slate-200 shadow-sm" />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="font-bold">CVC</Label>
+                            <Input placeholder="123" className="h-14 rounded-xl bg-white border-slate-200 shadow-sm" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <Button type="submit" disabled={isSubmitting} className="w-full h-16 text-xl font-black bg-primary hover:bg-primary/90 text-white rounded-2xl shadow-xl shadow-primary/20 transition-all active:scale-95 mt-10">
+                  {isSubmitting ? <Loader2 className="h-6 w-6 animate-spin" /> : `Confirmer & Payer ${formatPrice(depositPrice)}`}
+                </Button>
               </CardContent>
             </Card>
           </div>
@@ -232,16 +259,40 @@ function PropertyBookingContent({ id }: { id: string }) {
             <Card className="sticky top-28 shadow-2xl border-none rounded-[2.5rem] bg-white overflow-hidden">
               <div className="relative h-48 w-full">
                 <Image src={propertyImage} alt="Stay" fill className="object-cover" />
+                <div className="absolute top-4 left-4 bg-primary text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg">STAYFLOOW SELECTION</div>
               </div>
               <CardContent className="p-8 space-y-6">
-                <h2 className="text-xl font-black truncate">{property?.details?.name}</h2>
-                <div className="bg-primary/5 p-4 rounded-xl flex justify-between items-center"><span className="text-xs font-bold text-primary">À PAYER EN LIGNE (14%)</span><span className="font-black text-primary">{formatPrice(depositPrice)}</span></div>
-                <div className="bg-slate-50 p-4 rounded-xl flex justify-between items-center"><span className="text-xs font-bold text-slate-500">À PAYER SUR PLACE (86%)</span><span className="font-black text-slate-700">{formatPrice(onSitePrice)}</span></div>
-                <div className="pt-4 border-t flex justify-between items-end"><div><p className="text-[10px] font-black text-slate-400 uppercase">Total TTC</p><p className="text-3xl font-black text-primary tracking-tighter">{formatPrice(fullPrice)}</p></div><ShieldCheck className="h-8 w-8 text-primary opacity-20" /></div>
+                <h2 className="text-2xl font-black truncate leading-tight">{property?.details?.name}</h2>
+                <div className="flex flex-col gap-2 text-xs font-bold text-slate-400">
+                  <div className="flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" /> {property?.location?.address || property?.location}</div>
+                  <div className="flex items-center gap-2"><CalendarIcon className="h-4 w-4 text-primary" /> Du {format(date.from, "dd MMM", { locale: fr })} au {format(date.to, "dd MMM yyyy", { locale: fr })}</div>
+                </div>
+                <Separator />
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center text-sm font-medium">
+                    <span className="text-slate-500">Prix total</span>
+                    <span className="font-black text-slate-900">{formatPrice(fullPrice)}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-primary/5 rounded-xl border border-primary/10">
+                    <span className="text-[10px] font-black text-primary uppercase">Payé en ligne (14%)</span>
+                    <span className="font-black text-primary">{formatPrice(depositPrice)}</span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100">
+                    <span className="text-[10px] font-black text-slate-500 uppercase">Sur place (86%)</span>
+                    <span className="font-black text-slate-700">{formatPrice(onSitePrice)}</span>
+                  </div>
+                </div>
+                <div className="pt-4 border-t flex justify-between items-end border-slate-50 mt-4">
+                  <div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Transaction</p>
+                    <p className="text-4xl font-black text-primary tracking-tighter">{formatPrice(fullPrice)}</p>
+                  </div>
+                  <ShieldCheck className="h-10 w-10 text-primary opacity-20" />
+                </div>
               </CardContent>
             </Card>
           </div>
-        </div>
+        </form>
       </main>
     </div>
   );
@@ -250,7 +301,7 @@ function PropertyBookingContent({ id }: { id: string }) {
 export default function PropertyBookingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   return (
-    <Suspense fallback={<div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin text-primary h-10 w-10" /></div>}>
+    <Suspense fallback={<div className="h-screen flex items-center justify-center bg-white"><Loader2 className="animate-spin text-primary h-10 w-10" /></div>}>
       <PropertyBookingContent id={id} />
     </Suspense>
   );

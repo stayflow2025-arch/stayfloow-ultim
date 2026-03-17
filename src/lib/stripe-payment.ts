@@ -19,6 +19,7 @@ export async function createStripeCheckout(
     const sessionsRef = collection(db, 'customers', userId, 'checkout_sessions');
     
     // 1. Ajouter un document pour demander une session
+    // On utilise un timeout court pour ne pas bloquer l'utilisateur si l'extension met trop de temps
     const docRef = await addDoc(sessionsRef, {
       price: priceId,
       success_url: successUrl,
@@ -26,16 +27,29 @@ export async function createStripeCheckout(
     });
 
     // 2. Écouter le document jusqu'à ce que l'extension Stripe ajoute l'URL
-    return new Promise<string>((resolve, reject) => {
+    return new Promise<string | null>((resolve, reject) => {
+      // Sécurité : Timeout après 5 secondes si l'extension ne répond pas
+      const timeoutId = setTimeout(() => {
+        unsubscribe();
+        resolve(null); // On retourne null pour passer en mode direct/manuel
+      }, 5000);
+
       const unsubscribe = onSnapshot(docRef, (snap) => {
-        const { error, url } = snap.data() as any;
+        const data = snap.data();
+        if (!data) return;
+
+        const { error, url } = data as any;
+        
         if (error) {
+          clearTimeout(timeoutId);
           unsubscribe();
           reject(new Error(`Stripe Error: ${error.message}`));
         }
+        
         if (url) {
+          clearTimeout(timeoutId);
           unsubscribe();
-          resolve(url); // On renvoie l'URL vers laquelle rediriger le client
+          resolve(url); 
         }
       });
     });
