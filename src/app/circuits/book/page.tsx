@@ -30,7 +30,7 @@ const bookingSchema = z.object({
   email: z.string().email("Email invalide"),
   phone: z.string().min(6, "Numéro requis"),
   dialCode: z.string().min(1, "Indicatif requis"),
-  paymentMethod: z.string().min(1, "Obligatoire"),
+  paymentMethod: z.enum(['card', 'paypal']),
   cardNumber: z.string().min(16, "Numéro de carte invalide").max(19),
   expiry: z.string().regex(/^(0[1-9]|1[0-2])\/?([0-9]{2})$/, "Format MM/AA invalide"),
   cvc: z.string().min(3, "CVC invalide").max(4),
@@ -64,7 +64,17 @@ function CircuitBookingContent() {
 
   const form = useForm<z.infer<typeof bookingSchema>>({
     resolver: zodResolver(bookingSchema),
-    defaultValues: { fullName: user?.displayName || "", email: user?.email || "", phone: "", dialCode: "+213", paymentMethod: 'card', cardNumber: '', expiry: '', cvc: '', agreeToTerms: false },
+    defaultValues: { 
+      fullName: user?.displayName || "", 
+      email: user?.email || "", 
+      phone: "", 
+      dialCode: "+213", 
+      paymentMethod: 'card', 
+      cardNumber: '', 
+      expiry: '', 
+      cvc: '', 
+      agreeToTerms: false 
+    },
   });
 
   const formatCardNumber = (v: string) => v.replace(/\W/gi, '').replace(/(.{4})/g, '$1 ').trim().substring(0, 19);
@@ -74,15 +84,49 @@ function CircuitBookingContent() {
     setIsSubmitting(true);
     const finalUserId = user?.uid || `guest_${Date.now()}`;
     const resNum = `ST-TOUR-${Math.floor(1000 + Math.random() * 8999)}`;
+    
     try {
       if (values.paymentMethod === 'card') {
         const url = await createStripeCheckout(db, finalUserId, "price_tour_placeholder", window.location.origin + "/profile/bookings?success=true", window.location.href);
         if (url) { window.location.href = url; return; }
       }
-      await addDoc(collection(db, "bookings"), { userId: finalUserId, partnerId: circuit?.ownerId || "guide_stayfloow", listingId: tourId, itemName: circuit?.details?.name || circuit?.title || "Circuit", itemType: 'circuit', itemImage: circuit?.photos?.[0] || circuit?.images?.[0] || "https://picsum.photos/seed/circuit/400/300", customerName: values.fullName, customerEmail: values.email, totalPrice: fullTotalAmount, depositPaid: depositAmount, status: 'approved', startDate: tourDate, endDate: endDate || tourDate, createdAt: new Date().toISOString(), reservationNumber: resNum });
-      await sendBookingConfirmationEmail({ customerName: values.fullName, customerEmail: values.email, reservationNumber: resNum, itemName: circuit?.details?.name || circuit?.title || "Circuit", itemType: 'circuit', hostName: "StayFloow Guide", hostEmail: "contact@stayfloow.com", hostPhone: "+213 550 00 00 00", bookingDetails: { startDate: tourDate, endDate: endDate, totalPrice: fullTotalAmount, depositAmount: depositAmount } });
+      
+      await addDoc(collection(db, "bookings"), { 
+        userId: finalUserId, 
+        partnerId: circuit?.ownerId || "guide_stayfloow", 
+        listingId: tourId, 
+        itemName: circuit?.details?.name || circuit?.title || "Circuit", 
+        itemType: 'circuit', 
+        itemImage: circuit?.photos?.[0] || circuit?.images?.[0] || "https://picsum.photos/seed/circuit/400/300", 
+        customerName: values.fullName, 
+        customerEmail: values.email, 
+        totalPrice: fullTotalAmount, 
+        depositPaid: depositAmount, 
+        status: 'approved', 
+        startDate: tourDate, 
+        endDate: endDate || tourDate, 
+        createdAt: new Date().toISOString(), 
+        reservationNumber: resNum 
+      });
+
+      await sendBookingConfirmationEmail({ 
+        customerName: values.fullName, 
+        customerEmail: values.email, 
+        reservationNumber: resNum, 
+        itemName: circuit?.details?.name || circuit?.title || "Circuit", 
+        itemType: 'circuit', 
+        hostName: "StayFloow Guide", 
+        hostEmail: "contact@stayfloow.com", 
+        hostPhone: "+213 550 00 00 00", 
+        bookingDetails: { startDate: tourDate, endDate: endDate, totalPrice: fullTotalAmount, depositAmount: depositAmount } 
+      });
+
       setIsConfirmed(true);
-    } catch (e) { toast({ variant: "destructive", title: t('error_loading_offer') }); } finally { setIsSubmitting(false); }
+    } catch (e) { 
+      toast({ variant: "destructive", title: t('error_loading_offer') }); 
+    } finally { 
+      setIsSubmitting(false); 
+    }
   };
 
   if (loading) return <div className="flex h-screen items-center justify-center bg-white"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div>;

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { MapPin, Calendar as CalendarIcon, Building, Car, Compass, Users, Plus, Minus, ChevronDown, Loader2, Baby } from 'lucide-react';
+import { MapPin, Calendar as CalendarIcon, Building, Car, Compass, Users, Plus, Minus, ChevronDown, Loader2 } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
@@ -10,11 +10,8 @@ import { cn } from '@/lib/utils';
 import { DateRange } from 'react-day-picker';
 import { useLanguage } from '@/context/language-context';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
+import { Label } from '@/components/ui/label';
 
 type Category = 'accommodations' | 'cars' | 'circuits';
 
@@ -56,22 +53,24 @@ export default function AdvancedSearchBar({ hideTabs = false, buttonLabel }: Adv
     setIsClient(true);
     const dest = searchParams.get('dest');
     if (dest) setDestination(dest);
+    
     const from = searchParams.get('from');
     const to = searchParams.get('to');
     if (from && to) setDateRange({ from: new Date(from), to: new Date(to) });
+    
     const adults = searchParams.get('adults');
     const children = searchParams.get('children');
     const rooms = searchParams.get('rooms');
-    const pets = searchParams.get('pets');
+    
     if (adults || children || rooms) {
       setOccupancy(prev => ({
         ...prev,
         adults: adults ? parseInt(adults) : prev.adults,
         children: children ? parseInt(children) : prev.children,
-        rooms: rooms ? parseInt(rooms) : prev.rooms,
-        pets: pets === 'true'
+        rooms: rooms ? parseInt(rooms) : prev.rooms
       }));
     }
+
     if (pathname.startsWith('/cars')) setActiveCategory('cars');
     else if (pathname.startsWith('/circuits')) setActiveCategory('circuits');
     else setActiveCategory('accommodations');
@@ -125,21 +124,23 @@ export default function AdvancedSearchBar({ hideTabs = false, buttonLabel }: Adv
     e.preventDefault();
     const from = dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : '';
     const to = dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : '';
-    const hasInfants = occupancy.childrenAges.some(age => age < 2);
-    const params = `dest=${encodeURIComponent(destination)}&from=${from}&to=${to}&adults=${occupancy.adults}&children=${occupancy.children}&rooms=${occupancy.rooms}&pets=${occupancy.pets}&hasInfants=${hasInfants}`;
-    router.push(activeCategory === 'cars' ? `/cars/results?${params}` : activeCategory === 'circuits' ? `/circuits/results?${params}` : `/search?${params}`);
+    const params = `dest=${encodeURIComponent(destination)}&from=${from}&to=${to}&adults=${occupancy.adults}&children=${occupancy.children}&rooms=${occupancy.rooms}`;
+    
+    if (activeCategory === 'cars') router.push(`/cars/results?${params}`);
+    else if (activeCategory === 'circuits') router.push(`/circuits/results?${params}`);
+    else router.push(`/search?${params}`);
   };
 
   const updateOccupancy = (field: 'adults' | 'children' | 'rooms', delta: number) => {
-    setOccupancy(prev => {
-      const newVal = Math.max(field === 'adults' || field === 'rooms' ? 1 : 0, prev[field] + delta);
-      let newAges = [...prev.childrenAges];
-      if (field === 'children') { if (delta > 0) newAges.push(10); else if (delta < 0) newAges.pop(); }
-      return { ...prev, [field]: newVal, childrenAges: newAges };
-    });
+    setOccupancy(prev => ({
+      ...prev,
+      [field]: Math.max(field === 'children' ? 0 : 1, prev[field] + delta)
+    }));
   };
 
   if (!isClient) return <div className="w-full h-20 bg-slate-100 animate-pulse rounded-xl" />;
+
+  const finalButtonLabel = buttonLabel || t('search_btn');
 
   return (
     <div className="w-full">
@@ -152,11 +153,17 @@ export default function AdvancedSearchBar({ hideTabs = false, buttonLabel }: Adv
       )}
 
       <form onSubmit={handleSearch} className="bg-[#FEBA02] p-1 rounded-2xl shadow-2xl flex flex-col md:flex-row items-stretch gap-1 relative z-40">
-        <div className="flex-1 bg-white rounded-xl flex flex-col justify-center px-4 py-3 min-h-[70px] md:min-h-[85px] relative transition-colors hover:bg-slate-50">
+        <div className="flex-[1.5] bg-white rounded-xl flex flex-col justify-center px-4 py-3 min-h-[75px] md:min-h-[85px] relative transition-colors hover:bg-slate-50">
           <span className="text-[10px] font-black text-slate-400 uppercase mb-1">{activeCategory === 'cars' ? t('pickup_location') : t('where_to')}</span>
           <div className="flex items-center gap-3">
             <MapPin className="text-slate-300 h-5 w-5 shrink-0" />
-            <input className="w-full bg-transparent border-none focus:ring-0 p-0 text-sm md:text-lg font-black text-slate-800 outline-none" placeholder={activeCategory === 'cars' ? t('pickup_location') : t('where_to')} value={destination} onChange={(e) => setDestination(e.target.value)} onFocus={() => destination.length >= 2 && setShowSuggestions(true)} />
+            <input 
+              className="w-full bg-transparent border-none focus:ring-0 p-0 text-sm md:text-lg font-black text-slate-800 outline-none" 
+              placeholder={activeCategory === 'cars' ? t('pickup_location') : t('where_to')} 
+              value={destination} 
+              onChange={(e) => setDestination(e.target.value)} 
+              onFocus={() => destination.length >= 2 && setShowSuggestions(true)} 
+            />
             {isLoadingSuggestions && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
           </div>
           {showSuggestions && suggestions.length > 0 && (
@@ -173,7 +180,7 @@ export default function AdvancedSearchBar({ hideTabs = false, buttonLabel }: Adv
 
         <Popover>
           <PopoverTrigger asChild>
-            <div className="flex-1 bg-white rounded-xl flex flex-col justify-center px-4 py-3 min-h-[70px] md:min-h-[85px] cursor-pointer hover:bg-slate-50 transition-colors">
+            <div className="flex-1 bg-white rounded-xl flex flex-col justify-center px-4 py-3 min-h-[75px] md:min-h-[85px] cursor-pointer hover:bg-slate-50 transition-colors">
               <span className="text-[10px] font-black text-slate-400 uppercase mb-1">{activeCategory === 'cars' ? t("pickup_return") : t("arrival_departure")}</span>
               <div className="flex items-center gap-3">
                 <CalendarIcon className="text-slate-300 h-5 w-5 shrink-0" />
@@ -191,7 +198,7 @@ export default function AdvancedSearchBar({ hideTabs = false, buttonLabel }: Adv
         {activeCategory === 'accommodations' && (
           <Popover open={isOccupancyOpen} onOpenChange={setIsOccupancyOpen}>
             <PopoverTrigger asChild>
-              <div className="flex-1 bg-white rounded-xl flex flex-col justify-center px-4 py-3 min-h-[70px] md:min-h-[85px] cursor-pointer hover:bg-slate-50 transition-colors">
+              <div className="flex-1 bg-white rounded-xl flex flex-col justify-center px-4 py-3 min-h-[75px] md:min-h-[85px] cursor-pointer hover:bg-slate-50 transition-colors">
                 <span className="text-[10px] font-black text-slate-400 uppercase mb-1">{t('guests_rooms')}</span>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 truncate"><Users className="text-slate-300 h-5 w-5 shrink-0" /><span className="text-sm md:text-lg font-black text-slate-800 truncate">{occupancy.adults} · {occupancy.children} · {occupancy.rooms}</span></div>
@@ -208,7 +215,7 @@ export default function AdvancedSearchBar({ hideTabs = false, buttonLabel }: Adv
           </Popover>
         )}
 
-        <button type="submit" className="bg-primary hover:bg-[#059669] text-white px-8 md:px-12 py-4 flex items-center justify-center transition-all active:scale-95 rounded-xl min-h-[70px] md:min-h-[85px] group">
+        <button type="submit" className="bg-primary hover:bg-[#059669] text-white px-8 md:px-12 py-4 flex items-center justify-center transition-all active:scale-95 rounded-xl min-h-[75px] md:min-h-[85px] group">
           <span className="text-xl md:text-2xl font-black tracking-tight group-hover:scale-105 transition-transform">{finalButtonLabel}</span>
         </button>
       </form>
