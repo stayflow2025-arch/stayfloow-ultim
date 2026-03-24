@@ -107,18 +107,33 @@ function PropertyBookingContent({ id }: { id: string }) {
     const reservationNumber = `ST-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
     try {
+      // 1. Déclencher le paiement réel si Carte sélectionnée
       if (values.paymentMethod === 'card') {
-        try {
-          const checkoutUrl = await createStripeCheckout(db, finalUserId, "price_accommodation_placeholder", window.location.origin + "/profile/bookings?success=true", window.location.href);
-          if (checkoutUrl) {
-            window.location.href = checkoutUrl;
-            return;
-          }
-        } catch (stripeErr) {
-          console.warn("Paiement direct activé.");
+        const checkoutUrl = await createStripeCheckout(
+          db, 
+          finalUserId, 
+          "price_accommodation_placeholder", 
+          window.location.origin + "/profile/bookings?success=true", 
+          window.location.href
+        );
+
+        if (checkoutUrl) {
+          // Si on a une URL, on redirige pour le paiement RÉEL
+          window.location.href = checkoutUrl;
+          return;
+        } else {
+          // Si l'extension ne répond pas, on bloque pour éviter une fausse confirmation
+          toast({ 
+            variant: "destructive", 
+            title: "Service de paiement indisponible", 
+            description: "Le système Stripe n'est pas encore activé sur votre compte admin." 
+          });
+          setIsSubmitting(false);
+          return;
         }
       }
 
+      // 2. Enregistrement en base de données (si paiement réussi ou autre méthode)
       await addDoc(collection(db, "bookings"), {
         userId: finalUserId,
         partnerId: property?.ownerId || "admin",

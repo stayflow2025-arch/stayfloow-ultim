@@ -4,12 +4,10 @@ service cloud.firestore {
 
     // --- FONCTIONS DE SÉCURITÉ ---
     
-    // Vérifie si l'utilisateur est authentifié
     function isSignedIn() {
       return request.auth != null;
     }
 
-    // Vérifie si l'utilisateur est un administrateur maître (Basé sur l'UID fourni dans l'erreur)
     function isAdmin() {
       return isSignedIn() && (
         request.auth.uid == "Kb7jQGxp4pf1cjdfbMwz4HnujQi2" ||
@@ -24,68 +22,52 @@ service cloud.firestore {
 
     // --- RÈGLES GLOBALES ---
 
-    // Accès total pour les administrateurs sur toute la base de données
     match /{document=**} {
       allow read, write: if isAdmin();
     }
 
     // --- RÈGLES SPÉCIFIQUES ---
 
-    // BOOKINGS (Réservations)
     match /bookings/{bookingId} {
-      // Autoriser le listage pour les admins et les utilisateurs connectés
-      // (Nécessaire pour que la requête de collection ne soit pas rejetée d'emblée)
+      // Autoriser le listage global pour l'admin et le listage filtré pour l'utilisateur
       allow list: if isSignedIn();
       
-      // Accès individuel : propriétaire, partenaire ou admin
-      allow get, update, delete: if isAdmin() || (isSignedIn() && (
+      allow get: if isAdmin() || (isSignedIn() && (
         resource.data.userId == request.auth.uid ||
         resource.data.partnerId == request.auth.uid
       ));
       
       allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
     }
 
-    // USERS (Profils utilisateurs)
     match /users/{userId} {
       allow read, write: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
     }
 
-    // LISTINGS (Annonces)
     match /listings/{listingId} {
       allow read: if true;
       allow create: if isSignedIn();
       allow update, delete: if isAdmin() || (isSignedIn() && resource.data.ownerId == request.auth.uid);
     }
 
-    // PARTNERS (Profils partenaires)
     match /partners/{partnerId} {
       allow read: if isSignedIn();
       allow write: if isAdmin() || (isSignedIn() && request.auth.uid == partnerId);
     }
 
-    // CONVERSATIONS (Messagerie)
     match /conversations/{convId} {
       allow read, write: if isAdmin() || (isSignedIn() && request.auth.uid in resource.data.participants);
-      
       match /messages/{msgId} {
         allow read, write: if isSignedIn();
       }
     }
 
-    // SETTINGS (Configuration site)
-    match /settings/{doc} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    // MAIL (Trigger Email Extension)
     match /mail/{mailId} {
       allow create: if true;
       allow read: if isAdmin();
     }
 
-    // STRIPE (Customers & Checkout)
     match /customers/{uid}/{any=**} {
       allow read, write: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
     }

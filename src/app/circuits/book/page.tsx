@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { Suspense, useMemo, useState, useEffect } from 'react';
@@ -90,8 +89,25 @@ function CircuitBookingContent() {
     
     try {
       if (values.paymentMethod === 'card') {
-        const url = await createStripeCheckout(db, finalUserId, "price_tour_placeholder", window.location.origin + "/profile/bookings?success=true", window.location.href);
-        if (url) { window.location.href = url; return; }
+        const url = await createStripeCheckout(
+          db, 
+          finalUserId, 
+          "price_tour_placeholder", 
+          window.location.origin + "/profile/bookings?success=true", 
+          window.location.href
+        );
+        if (url) {
+          window.location.href = url;
+          return;
+        } else {
+          toast({ 
+            variant: "destructive", 
+            title: "Paiement en ligne indisponible", 
+            description: "Nous ne pouvons pas traiter votre carte pour le moment. Veuillez réessayer plus tard." 
+          });
+          setIsSubmitting(false);
+          return;
+        }
       }
       
       await addDoc(collection(db, "bookings"), { 
@@ -225,7 +241,7 @@ function CircuitBookingContent() {
 
         <div className="lg:col-span-1 order-1 lg:order-2">
           <Card className="sticky top-24 shadow-2xl border-none rounded-[2rem] bg-white overflow-hidden">
-            <div className="relative h-48 w-full"><Image src={circuit?.photos?.[0] || "https://picsum.photos/seed/circuit/800/600"} alt="tour" fill className="object-cover" /></div>
+            <div className="relative h-48 w-full"><Image src={circuit?.photos?.[0] || circuit?.images?.[0] || "https://picsum.photos/seed/circuit/800/600"} alt="tour" fill className="object-cover" /></div>
             <CardContent className="p-8 space-y-6">
               <h3 className="text-2xl font-black text-primary leading-tight">{circuit?.details?.name || circuit?.title}</h3>
               <div className="flex items-center gap-2 text-xs font-black text-slate-400 uppercase"><CalendarIcon className="h-4 w-4 text-primary" /> {tourDate ? format(new Date(tourDate), "dd MMMM yyyy", { locale: fr }) : "Date à confirmer"}</div>

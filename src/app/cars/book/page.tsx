@@ -123,14 +123,25 @@ function BookCarContent() {
 
     try {
       if (values.paymentMethod === 'card') {
-        try {
-          const url = await createStripeCheckout(db, finalUserId, "price_car_placeholder", window.location.origin + "/profile/bookings?success=true", window.location.href);
-          if (url) {
-            window.location.href = url;
-            return;
-          }
-        } catch (err) {
-          console.warn("Mode direct activé.");
+        const url = await createStripeCheckout(
+          db, 
+          finalUserId, 
+          "price_car_placeholder", 
+          window.location.origin + "/profile/bookings?success=true", 
+          window.location.href
+        );
+        
+        if (url) {
+          window.location.href = url;
+          return;
+        } else {
+          toast({ 
+            variant: "destructive", 
+            title: "Paiement impossible", 
+            description: "Le système de paiement Stripe n'est pas encore opérationnel dans votre zone." 
+          });
+          setIsSubmitting(false);
+          return;
         }
       }
 
