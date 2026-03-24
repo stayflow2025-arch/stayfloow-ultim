@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
@@ -55,6 +56,9 @@ export default function AdvancedSearchBar({ hideTabs = false, buttonLabel }: Adv
   });
 
   const [isOccupancyOpen, setIsOccupancyOpen] = useState(false);
+
+  // Correction de la variable finale avant toute utilisation
+  const finalButtonLabel = buttonLabel || t('search_btn');
 
   useEffect(() => {
     setIsClient(true);
@@ -132,7 +136,6 @@ export default function AdvancedSearchBar({ hideTabs = false, buttonLabel }: Adv
     const from = dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : '';
     const to = dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : '';
     
-    // Détection des nourrissons (moins de 2 ans) pour l'algorithme StayFloow
     const hasInfant = occupancy.childrenAges.some(age => age < 2);
     
     const params = new URLSearchParams({
@@ -157,10 +160,8 @@ export default function AdvancedSearchBar({ hideTabs = false, buttonLabel }: Adv
       
       if (field === 'children') {
         if (delta > 0) {
-          // Ajout d'un enfant : age par défaut 12 ans
           newAges.push(12);
         } else if (newAges.length > 0) {
-          // Retrait du dernier enfant
           newAges.pop();
         }
       }
@@ -182,8 +183,6 @@ export default function AdvancedSearchBar({ hideTabs = false, buttonLabel }: Adv
   };
 
   if (!isClient) return <div className="w-full h-20 bg-slate-100 animate-pulse rounded-xl" />;
-
-  const finalButtonLabel = buttonLabel || t('search_btn');
 
   return (
     <div className="w-full">
@@ -253,7 +252,6 @@ export default function AdvancedSearchBar({ hideTabs = false, buttonLabel }: Adv
               <OccupancyRow label={t('adults')} value={occupancy.adults} onMinus={() => updateOccupancy('adults', -1)} onPlus={() => updateOccupancy('adults', 1)} min={1} />
               <OccupancyRow label={t('children')} value={occupancy.children} onMinus={() => updateOccupancy('children', -1)} onPlus={() => updateOccupancy('children', 1)} min={0} />
               
-              {/* SECTION AGES ENFANTS */}
               {occupancy.children > 0 && (
                 <div className="pt-4 border-t space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('age_of_child')}</p>

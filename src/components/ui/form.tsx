@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -46,14 +47,14 @@ const useFormField = () => {
   const itemContext = React.useContext(FormItemContext)
   const formState = useFormContext()
 
-  // Fix: handle cases where hook is called outside FormProvider context
+  // Protection contre useFormContext() === null
   if (!formState || !fieldContext) {
     return {
       id: itemContext?.id || "fallback-id",
       name: fieldContext?.name || "fallback-name",
-      formItemId: itemContext?.id ? `${itemContext.id}-form-item` : undefined,
-      formDescriptionId: itemContext?.id ? `${itemContext.id}-form-item-description` : undefined,
-      formMessageId: itemContext?.id ? `${itemContext.id}-form-item-message` : undefined,
+      formItemId: itemContext?.id ? `${itemContext.id}-form-item` : "fallback-id-form-item",
+      formDescriptionId: itemContext?.id ? `${itemContext.id}-form-item-description` : "fallback-id-form-item-description",
+      formMessageId: itemContext?.id ? `${itemContext.id}-form-item-message` : "fallback-id-form-item-message",
     }
   }
 
