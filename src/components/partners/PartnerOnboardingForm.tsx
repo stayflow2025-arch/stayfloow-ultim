@@ -135,11 +135,12 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
     transmission: 'Manuelle',
     fuel: 'Essence',
     seats: 5,
-    duration: '5 jours', // Valeur par défaut pour l'image
+    duration: '5 jours', 
     maxGroupSize: 10,
     languages: [] as string[],
     amenities: [] as string[],
     availableDates: [] as Date[],
+    applyDiscount: false, // Nouvelle option
   });
 
   const steps = [
@@ -246,6 +247,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
         currency: 'EUR', 
         photos: photos,
         rating: 8.0,
+        isBoosted: formData.applyDiscount, // Enregistrement de la mise en avant
         createdAt: new Date().toISOString()
       };
 
@@ -401,6 +403,44 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
                 <Label className="font-black text-lg">Prix unitaire (en {formData.listingCurrency}) *</Label>
                 <Input type="number" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="h-14 text-xl font-black rounded-2xl bg-slate-50" placeholder="Ex: 75" />
                 <p className="text-[10px] text-slate-400 italic">Ce prix sera converti en Euro pour le stockage de référence.</p>
+              </div>
+            </div>
+
+            {/* NOUVELLES OPTIONS : BOOST & MENTION FRAIS */}
+            <div className="space-y-6 bg-slate-50 p-8 rounded-[2rem] border border-slate-100">
+              <div 
+                className="flex items-center space-x-4 cursor-pointer group" 
+                onClick={() => setFormData({...formData, applyDiscount: !formData.applyDiscount})}
+              >
+                <div className={cn(
+                  "w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all shadow-sm",
+                  formData.applyDiscount ? "bg-primary border-primary text-white" : "bg-white border-slate-300 text-transparent"
+                )}>
+                  <CheckCircle2 className="h-5 w-5" />
+                </div>
+                <div className="space-y-1">
+                  <Label className="font-black text-slate-900 cursor-pointer text-base">Mettre en avant mon offre avec une réduction de 10%</Label>
+                  <p className="text-xs text-slate-500 font-medium italic">Votre annonce sera boostée sur le site avec un badge "Promotion" pour attirer plus de voyageurs.</p>
+                </div>
+              </div>
+
+              <div className="h-px bg-slate-200" />
+
+              <div className="flex gap-4 items-start bg-primary/5 p-6 rounded-2xl border border-primary/10">
+                <Info className="h-6 w-6 text-primary shrink-0 mt-0.5" />
+                <div className="space-y-3">
+                  <p className="text-sm font-bold text-slate-800 leading-tight">
+                    Information sur le système de paiement StayFloow :
+                  </p>
+                  <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                    Notre plateforme prélève uniquement <strong>14% de frais de service</strong> sur le montant total de la réservation. Ce montant est payé directement par le client sur le site lors de sa réservation.
+                  </p>
+                  <div className="p-3 bg-white/50 rounded-xl border border-primary/5">
+                    <p className="text-xs font-black text-primary uppercase tracking-tighter">
+                      La différence (86%) vous sera versée directement par le client, soit à son arrivée sur place, soit selon vos modalités de paiement habituelles.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -688,7 +728,7 @@ function renderStep3(formData: any, setFormData: any, category: string, onAI: an
         <div className="flex justify-between items-center">
           <Label className="font-black text-lg">Description attractive</Label>
           <Button variant="ghost" size="sm" onClick={onAI} disabled={isGen} className="text-primary font-black border border-primary/20 rounded-lg">
-            <Wand2 className="h-4 w-4 mr-2"/> {isGen ? 'Génération...' : 'Améliorer avec l\'IA'}
+            <Wand2 className="h-4 w-4 mr-2"/> {isGen ? 'Génération...' : 'Amériorer avec l\'IA'}
           </Button>
         </div>
         <Textarea 
