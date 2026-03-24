@@ -9,43 +9,47 @@ service cloud.firestore {
     function isAdmin() {
       return isSignedIn() && (
         request.auth.token.email == "stayflow2025@gmail.com" ||
-        request.auth.uid == "G4d04MgUW4fguFOjmhQBbWezheB2" ||
-        request.auth.uid == "Kb7jQGxp4pf1cjdfbMwz4HnujQi2" ||
-        request.auth.uid == "CChLqb7OxdbbSpjNRKMAt2vJNa12" ||
-        request.auth.uid == "3rixbVLeMaUARuODthz3ds80WeS2" ||
-        request.auth.uid == "dqUISCFanPajTlrvC23iAXTr4BI2" ||
-        request.auth.uid == "cJujCOjr1nRe4YSBZ9FY3WLLvO93"
+        request.auth.uid in [
+          "G4d04MgUW4fguFOjmhQBbWezheB2",
+          "Kb7jQGxp4pf1cjdfbMwz4HnujQi2",
+          "CChLqb7OxdbbSpjNRKMAt2vJNa12",
+          "3rixbVLeMaUARuODthz3ds80WeS2",
+          "dqUISCFanPajTlrvC23iAXTr4BI2",
+          "cJujCOjr1nRe4YSBZ9FY3WLLvO93"
+        ]
       );
     }
 
-    // ADMIN - accès total à tout
+    // ADMIN - accès total à tout (Priorité Haute)
     match /{document=**} {
       allow read, write: if isAdmin();
     }
 
-    // USERS - uniquement son propre profil, jamais celui d'un autre
+    // USERS - uniquement son propre profil ou admin
     match /users/{userId} {
-      allow read, write: if isSignedIn() && request.auth.uid == userId;
+      allow read, write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
     }
 
     // LISTINGS - lecture publique, création partenaire, modif propriétaire
     match /listings/{listingId} {
       allow read: if true;
-      allow create: if request.resource.data.status == "pending";
+      allow create: if isSignedIn() && (request.resource.data.status == "pending" || isAdmin());
       allow update, delete: if isAdmin() || (isSignedIn() && resource.data.ownerId == request.auth.uid);
     }
 
-    // BOOKINGS - client voit ses réservations, partenaire voit ses demandes
+    // BOOKINGS - client voit ses réservations, partenaire voit ses demandes, admin voit tout
     match /bookings/{bookingId} {
       allow list: if isSignedIn();
       allow get: if isSignedIn() && (
         resource.data.userId == request.auth.uid ||
-        resource.data.partnerId == request.auth.uid
+        resource.data.partnerId == request.auth.uid ||
+        isAdmin()
       );
       allow create: if isSignedIn();
       allow update: if isSignedIn() && (
         resource.data.userId == request.auth.uid ||
-        resource.data.partnerId == request.auth.uid
+        resource.data.partnerId == request.auth.uid ||
+        isAdmin()
       );
       allow delete: if isAdmin();
     }
@@ -53,15 +57,15 @@ service cloud.firestore {
     // PARTNERS - partenaire gère uniquement son propre profil
     match /partners/{partnerId} {
       allow read: if isSignedIn();
-      allow write: if isSignedIn() && request.auth.uid == partnerId;
+      allow write: if isSignedIn() && (request.auth.uid == partnerId || isAdmin());
     }
 
-    // CONVERSATIONS - uniquement les participants
+    // CONVERSATIONS - uniquement les participants ou admin
     match /conversations/{convId} {
       allow list: if isSignedIn();
-      allow get: if isSignedIn() && request.auth.uid in resource.data.participants;
+      allow get: if isSignedIn() && (request.auth.uid in resource.data.participants || isAdmin());
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && request.auth.uid in resource.data.participants;
+      allow update: if isSignedIn() && (request.auth.uid in resource.data.participants || isAdmin());
       allow delete: if isAdmin();
 
       match /messages/{msgId} {
@@ -70,15 +74,15 @@ service cloud.firestore {
       }
     }
 
-    // SETTINGS - lecture publique uniquement
+    // SETTINGS - lecture publique, modif admin
     match /settings/{doc} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // STRIPE - uniquement son propre compte
+    // STRIPE - uniquement son propre compte ou admin
     match /customers/{uid}/checkout_sessions/{id} {
-      allow read, write: if isSignedIn() && request.auth.uid == uid;
+      allow read, write: if isSignedIn() && (request.auth.uid == uid || isAdmin());
     }
 
     match /products/{id} {
@@ -88,6 +92,7 @@ service cloud.firestore {
     // EMAILS
     match /mail/{mailId} {
       allow create: if true;
+      allow read: if isAdmin();
     }
   }
 }
