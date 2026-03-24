@@ -2,6 +2,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // --- FONCTIONS DE BASE ---
     function isSignedIn() {
       return request.auth != null;
     }
@@ -9,90 +10,81 @@ service cloud.firestore {
     function isAdmin() {
       return isSignedIn() && (
         request.auth.token.email == "stayflow2025@gmail.com" ||
-        request.auth.uid in [
-          "G4d04MgUW4fguFOjmhQBbWezheB2",
-          "Kb7jQGxp4pf1cjdfbMwz4HnujQi2",
-          "CChLqb7OxdbbSpjNRKMAt2vJNa12",
-          "3rixbVLeMaUARuODthz3ds80WeS2",
-          "dqUISCFanPajTlrvC23iAXTr4BI2",
-          "cJujCOjr1nRe4YSBZ9FY3WLLvO93"
-        ]
+        request.auth.uid == "Kb7jQGxp4pf1cjdfbMwz4HnujQi2" ||
+        request.auth.uid == "G4d04MgUW4fguFOjmhQBbWezheB2" ||
+        request.auth.uid == "CChLqb7OxdbbSpjNRKMAt2vJNa12" ||
+        request.auth.uid == "3rixbVLeMaUARuODthz3ds80WeS2" ||
+        request.auth.uid == "dqUISCFanPajTlrvC23iAXTr4BI2" ||
+        request.auth.uid == "cJujCOjr1nRe4YSBZ9FY3WLLvO93"
       );
     }
 
-    // ADMIN - accès total à tout (Priorité Haute)
+    // --- ACCÈS ADMINISTRATEUR GLOBAL (PRIORITÉ MAXIMALE) ---
+    // Cette règle autorise les administrateurs à tout lire et tout écrire partout.
     match /{document=**} {
       allow read, write: if isAdmin();
     }
 
-    // USERS - uniquement son propre profil ou admin
+    // --- RÈGLES SPÉCIFIQUES PAR COLLECTION ---
+
+    // USERS
     match /users/{userId} {
       allow read, write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
     }
 
-    // LISTINGS - lecture publique, création partenaire, modif propriétaire
+    // LISTINGS
     match /listings/{listingId} {
       allow read: if true;
-      allow create: if isSignedIn() && (request.resource.data.status == "pending" || isAdmin());
+      allow create: if isSignedIn();
       allow update, delete: if isAdmin() || (isSignedIn() && resource.data.ownerId == request.auth.uid);
     }
 
-    // BOOKINGS - client voit ses réservations, partenaire voit ses demandes, admin voit tout
+    // BOOKINGS
     match /bookings/{bookingId} {
+      // Autoriser le listage pour les admins (via la règle globale) et les utilisateurs connectés
       allow list: if isSignedIn();
-      allow get: if isSignedIn() && (
+      // Lecture/Ecriture spécifique pour les propriétaires ou admins
+      allow get, update, delete: if isAdmin() || (isSignedIn() && (
         resource.data.userId == request.auth.uid ||
-        resource.data.partnerId == request.auth.uid ||
-        isAdmin()
-      );
+        resource.data.partnerId == request.auth.uid
+      ));
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && (
-        resource.data.userId == request.auth.uid ||
-        resource.data.partnerId == request.auth.uid ||
-        isAdmin()
-      );
-      allow delete: if isAdmin();
     }
 
-    // PARTNERS - partenaire gère uniquement son propre profil
+    // PARTNERS
     match /partners/{partnerId} {
       allow read: if isSignedIn();
       allow write: if isSignedIn() && (request.auth.uid == partnerId || isAdmin());
     }
 
-    // CONVERSATIONS - uniquement les participants ou admin
+    // CONVERSATIONS
     match /conversations/{convId} {
-      allow list: if isSignedIn();
-      allow get: if isSignedIn() && (request.auth.uid in resource.data.participants || isAdmin());
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && (request.auth.uid in resource.data.participants || isAdmin());
-      allow delete: if isAdmin();
-
+      allow read, write: if isSignedIn() && (request.auth.uid in resource.data.participants || isAdmin());
+      
       match /messages/{msgId} {
-        allow list, get: if isSignedIn();
-        allow create: if isSignedIn();
+        allow read, write: if isSignedIn();
       }
     }
 
-    // SETTINGS - lecture publique, modif admin
+    // SETTINGS & SITE CONFIG
     match /settings/{doc} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // STRIPE - uniquement son propre compte ou admin
-    match /customers/{uid}/checkout_sessions/{id} {
+    // MAIL (TRIGGER EMAIL EXTENSION)
+    match /mail/{mailId} {
+      allow create: if true;
+      allow read: if isAdmin();
+    }
+
+    // STRIPE (CUSTOMERS & PRODUCTS)
+    match /customers/{uid}/{any=**} {
       allow read, write: if isSignedIn() && (request.auth.uid == uid || isAdmin());
     }
 
     match /products/{id} {
       allow read: if true;
-    }
-
-    // EMAILS
-    match /mail/{mailId} {
-      allow create: if true;
-      allow read: if isAdmin();
     }
   }
 }
