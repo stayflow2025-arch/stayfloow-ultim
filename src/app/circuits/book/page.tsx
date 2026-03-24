@@ -25,6 +25,8 @@ import { sendBookingConfirmationEmail } from '@/lib/mail';
 import { circuits as mockCircuits } from '@/lib/data';
 import { cn } from "@/lib/utils";
 import { createStripeCheckout } from "@/lib/stripe-payment";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 const bookingSchema = z.object({
   fullName: z.string().min(2, "Nom complet requis"),

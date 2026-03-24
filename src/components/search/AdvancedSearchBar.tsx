@@ -183,7 +183,7 @@ export default function AdvancedSearchBar({ hideTabs = false, buttonLabel }: Adv
     setActiveCategory(cat);
     if (cat === 'cars') router.push('/cars');
     else if (cat === 'circuits') router.push('/circuits');
-    else router.push('/search');
+    else router.push('/'); // Redirection vers accueil pour Hébergement
   };
 
   const finalButtonLabel = buttonLabel || (isClient ? t('search_btn') : 'Rechercher');
