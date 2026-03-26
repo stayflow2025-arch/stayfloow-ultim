@@ -5,7 +5,7 @@ import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import { 
   MapPin, Star, Share2, Heart, 
-  Wifi, Coffee, Car, Wind, ChevronLeft, 
+  Wifi, Coffee, Car, Wind, ChevronLeft, ChevronRight, X,
   Loader2, Utensils, Clock, 
   Sofa, Trees,
   Users, Check,
@@ -54,6 +54,10 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
   const [activeTab, setActiveCategory] = useState('overview');
   const [selectedRooms, setSelectedRooms] = useState<Record<string, number>>({});
   const [isMounted, setIsMounted] = useState(false);
+  
+  // Lightbox State
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
 
   const [dates, setDates] = useState<{ from: Date; to: Date }>({
     from: searchParams.get('from') ? new Date(searchParams.get('from')!) : new Date(),
@@ -125,10 +129,15 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
           <div className="flex flex-col md:flex-row justify-between items-start gap-4">
             <div className="space-y-2">
               <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight leading-tight">{propertyName}</h1>
-              <div className="flex items-center gap-2 text-sm text-slate-600">
+              <a 
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(property.location?.address || property.location)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-sm text-slate-600 hover:text-primary transition-colors cursor-pointer"
+              >
                 <MapPin className="h-4 w-4 text-primary shrink-0" />
-                <span>{property.location?.address || property.location}</span>
-              </div>
+                <span className="underline decoration-dotted underline-offset-4">{property.location?.address || property.location}</span>
+              </a>
             </div>
             <div className="flex items-center gap-3 w-full md:w-auto">
               <Button onClick={() => scrollToSection(availabilityRef, 'availability')} className="flex-1 md:flex-none bg-primary hover:bg-primary/90 text-white font-black px-8 rounded-xl shadow-lg">Vérifier les prix</Button>
@@ -136,18 +145,33 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-2 aspect-[4/3] md:aspect-[21/9] rounded-2xl overflow-hidden shadow-xl">
-            <div className="md:col-span-2 md:row-span-2 relative"><Image src={photos[0]} alt="Stay" fill className="object-cover" /></div>
-            <div className="hidden md:block relative"><Image src={photos[1] || photos[0]} alt="Stay" fill className="object-cover" /></div>
+            <div 
+              className="md:col-span-2 md:row-span-2 relative cursor-pointer group" 
+              onClick={() => { setCurrentPhotoIndex(0); setLightboxOpen(true); }}
+            >
+              <Image src={photos[0]} alt="Stay" fill className="object-cover group-hover:opacity-90 transition-opacity" />
+            </div>
+            <div 
+              className="hidden md:block relative cursor-pointer group" 
+              onClick={() => { setCurrentPhotoIndex(1 >= photos.length ? 0 : 1); setLightboxOpen(true); }}
+            >
+              <Image src={photos[1] || photos[0]} alt="Stay" fill className="object-cover group-hover:opacity-90 transition-opacity" />
+            </div>
             <div className="md:row-span-2 relative bg-primary flex flex-col items-center justify-center text-white p-4">
               <div className="text-4xl font-black mb-2">{rating.toFixed(1)}</div>
               <p className="font-bold text-center">Top StayFloow</p>
             </div>
-            <div className="hidden md:block relative"><Image src={photos[2] || photos[0]} alt="Stay" fill className="object-cover" /></div>
+            <div 
+              className="hidden md:block relative cursor-pointer group" 
+              onClick={() => { setCurrentPhotoIndex(2 >= photos.length ? 0 : 2); setLightboxOpen(true); }}
+            >
+              <Image src={photos[2] || photos[0]} alt="Stay" fill className="object-cover group-hover:opacity-90 transition-opacity" />
+            </div>
           </div>
         </section>
 
         <section ref={availabilityRef} className="pt-10 border-t space-y-6">
-          <div className="bg-slate-50 p-4 md:p-8 rounded-[2rem] border border-slate-100"><AdvancedSearchBar hideTabs buttonLabel="Mettre à jour" /></div>
+          <div className="bg-slate-50 p-4 md:p-8 rounded-[2rem] border border-slate-100"><AdvancedSearchBar hideTabs hideLocation buttonLabel="Mettre à jour" /></div>
           <div className="border rounded-2xl overflow-hidden shadow-lg bg-white overflow-x-auto">
             <Table className="min-w-[800px]">
               <TableHeader className="bg-slate-900">
@@ -194,6 +218,55 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
           <div className="h-[300px] md:h-[450px] rounded-3xl overflow-hidden border-4 border-slate-50 shadow-xl"><OnboardingMap location={property.location?.address || property.location} /></div>
         </section>
       </main>
+
+      {/* Lightbox Overlay */}
+      {lightboxOpen && photos.length > 0 && (
+        <div 
+          className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center animate-in fade-in duration-300" 
+          onClick={() => setLightboxOpen(false)}
+        >
+          <button 
+            onClick={(e) => { e.stopPropagation(); setLightboxOpen(false); }} 
+            className="absolute top-6 right-6 text-white/70 hover:text-white p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-[110]"
+          >
+            <X className="w-8 h-8" />
+          </button>
+          
+          <button 
+            onClick={(e) => { 
+              e.stopPropagation(); 
+              setCurrentPhotoIndex((prev) => (prev - 1 + photos.length) % photos.length); 
+            }} 
+            className="absolute left-4 md:left-10 text-white/70 hover:text-white p-4 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-[110]"
+          >
+            <ChevronLeft className="w-8 h-8" />
+          </button>
+
+          <div className="relative w-full max-w-5xl aspect-[4/3] md:aspect-video px-4 md:px-0" onClick={e => e.stopPropagation()}>
+            <Image 
+              src={photos[currentPhotoIndex] || photos[0]} 
+              alt={`Photo ${currentPhotoIndex + 1}`} 
+              fill 
+              className="object-contain"
+              priority
+            />
+          </div>
+
+          <button 
+            onClick={(e) => { 
+              e.stopPropagation(); 
+              setCurrentPhotoIndex((prev) => (prev + 1) % photos.length); 
+            }} 
+            className="absolute right-4 md:right-10 text-white/70 hover:text-white p-4 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-[110]"
+          >
+            <ChevronRight className="w-8 h-8" />
+          </button>
+          
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/70 font-bold bg-black/50 px-6 py-2 rounded-full text-base z-[110]">
+            {currentPhotoIndex + 1} / {photos.length}
+          </div>
+        </div>
+      )}
     </div>
   );
 

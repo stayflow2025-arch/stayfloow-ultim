@@ -30,7 +30,7 @@ export default function CircuitDetailsPage({ params }: { params: Promise<{ id: s
   const { t } = useLanguage();
 
   const circuitRef = useMemoFirebase(() => doc(db, 'listings', id), [db, id]);
-  const { data: dbCircuit, loading } = useDoc(circuitRef);
+  const { data: dbCircuit, isLoading: loading } = useDoc(circuitRef);
 
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [ticketCounts, setTicketCounts] = useState<Record<string, number>>({
@@ -129,7 +129,15 @@ export default function CircuitDetailsPage({ params }: { params: Promise<{ id: s
             <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">{name}</h1>
             <div className="flex flex-wrap items-center gap-6 text-sm font-bold text-slate-500">
               <div className="flex items-center gap-1.5"><Clock className="h-4 w-4 text-primary" /> {durationLabel}</div>
-              <div className="flex items-center gap-1.5 text-primary"><MapPin className="h-4 w-4" /> {location}</div>
+            <a 
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-primary hover:opacity-80 transition-opacity cursor-pointer font-bold text-sm"
+            >
+              <MapPin className="h-4 w-4" /> 
+              <span className="underline decoration-dotted underline-offset-4">{location}</span>
+            </a>
             </div>
           </div>
 
@@ -222,7 +230,7 @@ export default function CircuitDetailsPage({ params }: { params: Promise<{ id: s
                         disabled={(date) => {
                           if (date < new Date(new Date().setHours(0,0,0,0))) return true;
                           if (allowedDates.length > 0) {
-                            return !allowedDates.some(allowed => isSameDay(allowed, date));
+                            return !allowedDates.some((allowed: Date) => isSameDay(allowed, date));
                           }
                           return false;
                         }} 

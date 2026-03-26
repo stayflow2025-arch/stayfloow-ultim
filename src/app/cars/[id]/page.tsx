@@ -190,9 +190,15 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                 <h1 className="text-3xl font-black text-slate-900 tracking-tight">
                   {displayData.details?.brand} {displayData.details?.model || displayData.details?.name}
                 </h1>
-                <div className="flex items-center gap-2 text-slate-500 font-bold text-sm">
-                  <MapPin className="h-4 w-4 text-primary" /> {displayData.location?.address}
-                </div>
+                <a 
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(displayData.location?.address)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-slate-500 font-bold text-sm hover:text-primary transition-colors cursor-pointer"
+                >
+                  <MapPin className="h-4 w-4 text-primary" /> 
+                  <span className="underline decoration-dotted underline-offset-4">{displayData.location?.address}</span>
+                </a>
               </div>
               <div className="flex items-center gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
                 <div className="text-right">

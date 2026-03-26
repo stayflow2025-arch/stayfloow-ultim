@@ -26,9 +26,10 @@ type Category = 'accommodations' | 'cars' | 'circuits';
 interface AdvancedSearchBarProps {
   hideTabs?: boolean;
   buttonLabel?: string;
+  hideLocation?: boolean;
 }
 
-export default function AdvancedSearchBar({ hideTabs = false, buttonLabel }: AdvancedSearchBarProps) {
+export default function AdvancedSearchBar({ hideTabs = false, hideLocation = false, buttonLabel }: AdvancedSearchBarProps) {
   const { t, locale } = useLanguage();
   const router = useRouter();
   const pathname = usePathname();
@@ -201,30 +202,32 @@ export default function AdvancedSearchBar({ hideTabs = false, buttonLabel }: Adv
       )}
 
       <form onSubmit={handleSearch} className="bg-[#FEBA02] p-1 rounded-2xl shadow-2xl flex flex-col md:flex-row items-stretch gap-1 relative z-40">
-        <div className="flex-[1.5] bg-white rounded-xl flex flex-col justify-center px-4 py-3 min-h-[75px] md:min-h-[85px] relative transition-colors hover:bg-slate-50">
-          <span className="text-[10px] font-black text-slate-400 uppercase mb-1">{activeCategory === 'cars' ? t('pickup_location') : t('where_to')}</span>
-          <div className="flex items-center gap-3">
-            <MapPin className="text-slate-300 h-5 w-5 shrink-0" />
-            <input 
-              className="w-full bg-transparent border-none focus:ring-0 p-0 text-sm md:text-lg font-black text-slate-800 outline-none" 
-              placeholder={activeCategory === 'cars' ? t('pickup_location') : t('where_to')} 
-              value={destination} 
-              onChange={(e) => setDestination(e.target.value)} 
-              onFocus={() => destination.length >= 2 && setShowSuggestions(true)} 
-            />
-            {isLoadingSuggestions && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
-          </div>
-          {showSuggestions && suggestions.length > 0 && (
-            <div ref={suggestionsRef} className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-[100] animate-in fade-in slide-in-from-top-2">
-              {suggestions.map((s, i) => (
-                <div key={i} onClick={() => { setDestination(s.main); setShowSuggestions(false); }} className="flex items-center gap-4 p-4 hover:bg-primary/5 cursor-pointer">
-                  <MapPin className="h-5 w-5 text-slate-400" />
-                  <div className="flex flex-col"><span className="font-black text-slate-900">{s.main}</span><span className="text-[10px] text-slate-400 uppercase font-bold">{s.sub}</span></div>
-                </div>
-              ))}
+        {!hideLocation && (
+          <div className="flex-[1.5] bg-white rounded-xl flex flex-col justify-center px-4 py-3 min-h-[75px] md:min-h-[85px] relative transition-colors hover:bg-slate-50">
+            <span className="text-[10px] font-black text-slate-400 uppercase mb-1">{activeCategory === 'cars' ? t('pickup_location') : t('where_to')}</span>
+            <div className="flex items-center gap-3">
+              <MapPin className="text-slate-300 h-5 w-5 shrink-0" />
+              <input 
+                className="w-full bg-transparent border-none focus:ring-0 p-0 text-sm md:text-lg font-black text-slate-800 outline-none" 
+                placeholder={activeCategory === 'cars' ? t('pickup_location') : t('where_to')} 
+                value={destination} 
+                onChange={(e) => setDestination(e.target.value)} 
+                onFocus={() => destination.length >= 2 && setShowSuggestions(true)} 
+              />
+              {isLoadingSuggestions && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
             </div>
-          )}
-        </div>
+            {showSuggestions && suggestions.length > 0 && (
+              <div ref={suggestionsRef} className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-[100] animate-in fade-in slide-in-from-top-2">
+                {suggestions.map((s, i) => (
+                  <div key={i} onClick={() => { setDestination(s.main); setShowSuggestions(false); }} className="flex items-center gap-4 p-4 hover:bg-primary/5 cursor-pointer">
+                    <MapPin className="h-5 w-5 text-slate-400" />
+                    <div className="flex flex-col"><span className="font-black text-slate-900">{s.main}</span><span className="text-[10px] text-slate-400 uppercase font-bold">{s.sub}</span></div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         <Popover>
           <PopoverTrigger asChild>

@@ -99,7 +99,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="font-body antialiased bg-background min-h-screen flex flex-col overflow-x-hidden">
+      <body className="font-body antialiased bg-background min-h-screen flex flex-col overflow-x-hidden" suppressHydrationWarning>
         <FirebaseClientProvider>
           <ClientProviders>
             <Header />
