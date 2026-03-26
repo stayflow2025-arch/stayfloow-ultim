@@ -91,16 +91,35 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
 
   const roomTypes = useMemo(() => {
     if (!property) return [];
-    const basePrice = property.price || 85;
+    
+    // Calcul du prix dynamique basé sur le nombre d'occupants (Occupancy Pricing)
+    const adults = parseInt(searchParams.get('adults') || '2');
+    const children = parseInt(searchParams.get('children') || '0');
+    const totalGuests = adults + children;
+    
+    let basePrice = property.price || 85;
+    
+    // Si l'hôte a défini des prix par nombre de personnes (Occupany pricing)
+    if (property.useOccupancyPricing && property.occupancyPrices) {
+      const guestCount = Math.min(totalGuests, property.details?.maxCapacity || 10);
+      // On cherche le prix défini pour ce nombre exact de personnes
+      const occupancyPrice = property.occupancyPrices[guestCount.toString()] || 
+                             property.occupancyPrices[Object.keys(property.occupancyPrices).sort().pop() || ""];
+      
+      if (occupancyPrice) {
+        basePrice = occupancyPrice;
+      }
+    }
+    
     const types = [];
     if (property.details?.propertyType === 'hotel' || property.type?.toLowerCase().includes('hôtel')) {
       types.push({ id: 'double', name: 'Chambre Double Standard', specs: ['1 grand lit double', 'WiFi gratuit', 'Climatisation'], maxGuests: 2, price: basePrice, stock: 10 });
       types.push({ id: 'suite', name: 'Suite Parentale King Size', specs: ['1 lit King Size', 'Espace salon', 'Vue panoramique'], maxGuests: 3, price: basePrice * 1.6, stock: 3 });
     } else {
-      types.push({ id: 'entire', name: `Logement entier (${property.details?.roomsCount || 1} pièces)`, specs: [`${property.details?.roomsCount || 1} chambres`, `${property.details?.bathroomsCount || 1} SDB`, 'Cuisine équipée'], maxGuests: 4, price: basePrice, stock: 1 });
+      types.push({ id: 'entire', name: `Logement entier (${property.details?.roomsCount || 1} pièces)`, specs: [`${property.details?.roomsCount || 1} chambres`, `${property.details?.bathroomsCount || 1} SDB`, 'Cuisine équipée'], maxGuests: property.details?.maxCapacity || 4, price: basePrice, stock: 1 });
     }
     return types;
-  }, [property]);
+  }, [property, searchParams]);
 
   const totalBookingPrice = Object.entries(selectedRooms).reduce((acc, [roomId, qty]) => {
     const room = roomTypes.find(r => r.id === roomId);

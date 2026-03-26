@@ -12,6 +12,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
@@ -165,6 +172,24 @@ export default function AdminSettingsPage() {
                   <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-black">%</div>
                 </div>
                 <p className="text-[10px] text-slate-400 italic">Appliqué sur chaque réservation confirmée.</p>
+              </div>
+
+              <div className="space-y-2 pt-4 border-t">
+                <Label className="font-bold text-slate-700">Devise par défaut de la plateforme</Label>
+                <Select value={formData.currency} onValueChange={v => setFormData({...formData, currency: v})}>
+                  <SelectTrigger className="h-12 bg-slate-50 border-slate-100 rounded-xl font-bold">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="EUR">EUR (€) - Euro</SelectItem>
+                    <SelectItem value="DZD">DZD (DA) - Dinar Algérien</SelectItem>
+                    <SelectItem value="USD">USD ($) - Dollar US</SelectItem>
+                    <SelectItem value="GBP">GBP (£) - Livre Sterling</SelectItem>
+                    <SelectItem value="CHF">CHF (₣) - Franc Suisse</SelectItem>
+                    <SelectItem value="EGP">EGP (E£) - Livre Égyptienne</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-[10px] text-slate-400 italic">Cette devise sera utilisée comme référence principale pour les calculs internes.</p>
               </div>
             </CardContent>
           </Card>

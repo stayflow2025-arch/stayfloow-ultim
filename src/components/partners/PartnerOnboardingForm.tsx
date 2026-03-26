@@ -40,6 +40,7 @@ const NORMALIZATION_RATES: Record<string, number> = {
   DZD: 145.2,
   USD: 1.08,
   GBP: 0.83,
+  CHF: 0.95,
   EGP: 52.5,
 };
 
@@ -141,6 +142,8 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
     amenities: [] as string[],
     availableDates: [] as Date[],
     applyDiscount: false, // Nouvelle option
+    useOccupancyPricing: false,
+    occupancyPrices: {} as Record<number, number>,
   });
 
   const steps = [
@@ -248,6 +251,13 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
         photos: photos,
         rating: 8.0,
         isBoosted: formData.applyDiscount, // Enregistrement de la mise en avant
+        useOccupancyPricing: formData.useOccupancyPricing,
+        occupancyPrices: Object.fromEntries(
+          Object.entries(formData.occupancyPrices).map(([occ, price]) => [
+            occ, 
+            (price / (NORMALIZATION_RATES[formData.listingCurrency] || 1))
+          ])
+        ),
         createdAt: new Date().toISOString()
       };
 
@@ -393,18 +403,73 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="EUR">EUR (€)</SelectItem>
-                    <SelectItem value="DZD">DZD (DA)</SelectItem>
-                    <SelectItem value="USD">USD ($)</SelectItem>
+                    <SelectItem value="EUR">EUR (€) - Euro</SelectItem>
+                    <SelectItem value="DZD">DZD (DA) - Dinar Algérien</SelectItem>
+                    <SelectItem value="USD">USD ($) - Dollar US</SelectItem>
+                    <SelectItem value="GBP">GBP (£) - Livre Sterling</SelectItem>
+                    <SelectItem value="CHF">CHF (₣) - Franc Suisse</SelectItem>
+                    <SelectItem value="EGP">EGP (E£) - Livre Égyptienne</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-3">
                 <Label className="font-black text-lg">Prix unitaire (en {formData.listingCurrency}) *</Label>
-                <Input type="number" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="h-14 text-xl font-black rounded-2xl bg-slate-50" placeholder="Ex: 75" />
-                <p className="text-[10px] text-slate-400 italic">Ce prix sera converti en Euro pour le stockage de référence.</p>
+                <Input type="number" value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} className="h-14 text-xl font-black rounded-2xl bg-slate-50" placeholder="Ex: 75" disabled={formData.useOccupancyPricing} />
+                <p className="text-[10px] text-slate-400 italic">Ce prix sera converti en Euro pour le stockage de référence. {formData.useOccupancyPricing && "(Désactivé car le prix par personne est activé)"}</p>
               </div>
             </div>
+
+            {/* SECTION PRIX PAR NOMBRE DE PERSONNES (OCCUPANCY) */}
+            {initialCategory === 'accommodation' && (
+              <div className="space-y-6 bg-slate-50 p-8 rounded-[2rem] border border-slate-100">
+                <div 
+                  className="flex items-center space-x-4 cursor-pointer group" 
+                  onClick={() => setFormData({...formData, useOccupancyPricing: !formData.useOccupancyPricing})}
+                >
+                  <div className={cn(
+                    "w-7 h-7 rounded-lg border-2 flex items-center justify-center transition-all shadow-sm",
+                    formData.useOccupancyPricing ? "bg-primary border-primary text-white" : "bg-white border-slate-300 text-transparent"
+                  )}>
+                    <CheckCircle2 className="h-5 w-5" />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="font-black text-slate-900 cursor-pointer text-base">Définir des prix différents selon le nombre de personnes</Label>
+                    <p className="text-xs text-slate-500 font-medium italic text-primary">Pratique pour les appartements, villas et maisons.</p>
+                  </div>
+                </div>
+
+                {formData.useOccupancyPricing && (
+                  <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                    {Array.from({ length: formData.maxCapacity }, (_, i) => i + 1).map((occ) => (
+                      <div key={occ} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-2">
+                        <Label className="text-[10px] font-black uppercase text-slate-400 flex items-center gap-2">
+                          <Users className="h-3 w-3 text-primary" /> Prix pour {occ} {occ > 1 ? 'personnes' : 'personne'}
+                        </Label>
+                        <div className="relative">
+                          <Input 
+                            type="number" 
+                            placeholder="Prix" 
+                            className="pl-8 h-12 font-black border-slate-100" 
+                            value={formData.occupancyPrices[occ] || ''} 
+                            onChange={(e) => setFormData({
+                              ...formData, 
+                              occupancyPrices: { ...formData.occupancyPrices, [occ]: parseFloat(e.target.value) }
+                            })}
+                          />
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">
+                            {formData.listingCurrency === 'DZD' ? 'DA' : 
+                             formData.listingCurrency === 'EUR' ? '€' : 
+                             formData.listingCurrency === 'USD' ? '$' : 
+                             formData.listingCurrency === 'GBP' ? '£' : 
+                             formData.listingCurrency === 'CHF' ? 'CHF' : 'E£'}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* NOUVELLES OPTIONS : BOOST & MENTION FRAIS */}
             <div className="space-y-6 bg-slate-50 p-8 rounded-[2rem] border border-slate-100">

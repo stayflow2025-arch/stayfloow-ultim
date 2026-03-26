@@ -49,13 +49,29 @@ function SearchResultsContent() {
         );
         const querySnapshot = await getDocs(q);
         
+        const adults = parseInt(searchParams.get('adults') || '2');
+        const children = parseInt(searchParams.get('children') || '0');
+        const totalGuests = adults + children;
+
         const dbListings = querySnapshot.docs.map(doc => {
           const data = doc.data();
+          
+          // Calcul du prix dynamique pour la recherche
+          let displayPrice = data.price || 0;
+          if (data.useOccupancyPricing && data.occupancyPrices) {
+            const guestCount = Math.min(totalGuests, data.details?.maxCapacity || 10);
+            const occupancyPrice = data.occupancyPrices[guestCount.toString()] || 
+                                   data.occupancyPrices[Object.keys(data.occupancyPrices).sort().pop() || ""];
+            if (occupancyPrice) {
+              displayPrice = occupancyPrice;
+            }
+          }
+
           return {
             id: doc.id,
             name: data.details?.name || 'Hébergement',
             location: data.location?.address || 'Non spécifié',
-            price: data.price || 0,
+            price: displayPrice,
             rating: data.rating || 8.0,
             description: data.details?.description || '',
             images: data.photos || [],
@@ -63,7 +79,6 @@ function SearchResultsContent() {
             type: data.details?.type || 'Hôtel',
             isBoosted: data.isBoosted || false,
             stars: data.details?.stars ? parseInt(data.details.stars) : undefined,
-            // Score IA pour les nourrissons
             isInfantFriendly: data.details?.amenities?.includes("Lit bébé / lit supplémentaire") || data.details?.propertyType === 'hotel'
           } as Property & { isInfantFriendly?: boolean };
         });
