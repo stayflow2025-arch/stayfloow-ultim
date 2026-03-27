@@ -1,74 +1,33 @@
-
 'use client';
-
-import { collection, addDoc, onSnapshot, Firestore } from 'firebase/firestore';
 
 /**
  * @fileOverview Utilitaire pour créer une session de paiement Stripe.
- * L'extension Firebase surveille la collection 'checkout_sessions' et génère l'URL de paiement.
+ * Appelle l'API Next.js /api/stripe/checkout pour créer la session côté serveur.
  */
 
 export async function createStripeCheckout(
-  db: Firestore, 
-  userId: string, 
-  amount: number, // Montant total (ex: 120.00)
-  currency: string, // Devise (ex: "EUR")
-  productName: string, // Nom affiché sur Stripe
-  successUrl: string, 
+  amount: number,       // Montant total (ex: 16.80)
+  currency: string,     // Devise (ex: "EUR")
+  productName: string,  // Nom affiché sur Stripe
+  successUrl: string,
   cancelUrl: string
-) {
+): Promise<string | null> {
   try {
-    const sessionsRef = collection(db, 'customers', userId, 'checkout_sessions');
-    
-    // 1. Ajouter un document pour demander une session dynamiquement
-    const docRef = await addDoc(sessionsRef, {
-      line_items: [
-        {
-          price_data: {
-            currency: currency.toLowerCase(),
-            product_data: {
-              name: productName,
-            },
-            unit_amount: Math.round(amount * 100), // Stripe attend des centimes
-          },
-          quantity: 1,
-        },
-      ],
-      mode: 'payment',
-      success_url: successUrl,
-      cancel_url: cancelUrl,
-      collect_shipping_address: false,
+    const response = await fetch('/api/stripe/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount, currency, productName, successUrl, cancelUrl }),
     });
 
-    // 2. Écouter le document jusqu'à ce que l'extension Stripe ajoute l'URL
-    return new Promise<string | null>((resolve, reject) => {
-      // Sécurité : Timeout après 10 secondes si l'extension ne répond pas
-      const timeoutId = setTimeout(() => {
-        unsubscribe();
-        resolve(null); 
-      }, 10000);
+    const data = await response.json();
 
-      const unsubscribe = onSnapshot(docRef, (snap) => {
-        const data = snap.data();
-        if (!data) return;
+    if (!response.ok) {
+      throw new Error(data.error || 'Erreur lors de la création de la session Stripe');
+    }
 
-        const { error, url } = data as any;
-        
-        if (error) {
-          clearTimeout(timeoutId);
-          unsubscribe();
-          reject(new Error(`Stripe Error: ${error.message}`));
-        }
-        
-        if (url) {
-          clearTimeout(timeoutId);
-          unsubscribe();
-          resolve(url); 
-        }
-      });
-    });
+    return data.url || null;
   } catch (err) {
-    console.error("Erreur lors de la création de la session Stripe", err);
+    console.error('Erreur Stripe Checkout:', err);
     throw err;
   }
 }

@@ -84,8 +84,6 @@ function CircuitBookingContent() {
     try {
       if (values.paymentMethod === 'card') {
         const url = await createStripeCheckout(
-          db, 
-          finalUserId, 
           depositAmount, 
           "EUR", 
           `Acompte Circuit: ${circuit?.details?.name || circuit?.title || "Circuit StayFloow"}`, 

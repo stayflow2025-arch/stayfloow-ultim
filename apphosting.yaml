@@ -11,3 +11,8 @@ env:
     availability:
       - BUILD
       - RUNTIME
+
+  - variable: STRIPE_SECRET_KEY
+    secret: stripe-secret-key
+    availability:
+      - RUNTIME

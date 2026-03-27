@@ -69,7 +69,7 @@ function PropertyBookingContent({ id }: { id: string }) {
   });
   
   const docRef = useMemoFirebase(() => doc(db, 'listings', id), [db, id]);
-  const { data: property, loading } = useDoc(docRef);
+  const { data: property, isLoading: loading } = useDoc(docRef);
 
   const form = useForm<z.infer<typeof bookingSchema>>({
     resolver: zodResolver(bookingSchema),
@@ -104,10 +104,8 @@ function PropertyBookingContent({ id }: { id: string }) {
       // 1. Déclencher le paiement réel si Carte sélectionnée
       if (values.paymentMethod === 'card') {
         const checkoutUrl = await createStripeCheckout(
-          db, 
-          finalUserId, 
-          depositPrice, // L'acompte de 14%
-          "EUR", // Devise
+          depositPrice,
+          "EUR",
           `Acompte Séjour: ${property?.details?.name || "Hébergement StayFloow"}`, 
           window.location.origin + "/profile/bookings?success=true", 
           window.location.href

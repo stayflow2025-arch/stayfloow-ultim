@@ -118,8 +118,6 @@ function BookCarContent() {
     try {
       if (values.paymentMethod === 'card') {
         const url = await createStripeCheckout(
-          db, 
-          finalUserId, 
           depositTotal, 
           "EUR", 
           `Acompte Location Voiture: ${displayCar.name}`, 
