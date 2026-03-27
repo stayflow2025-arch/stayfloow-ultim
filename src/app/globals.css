@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 161 84% 39%; /* StayFloow Green #10B981 */
+    --primary-foreground: 161 40% 98%;
+    --secondary: 111 100% 54%; /* Fluorescent Green #39FF14 */
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 161 84% 95%;
+    --accent-foreground: 161 84% 30%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 161 84% 39%;
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+/* FIX NAVIGATION, SELECTS & CALENDARS IN PORTALS/DIALOGS */
+[data-radix-portal] {
+  pointer-events: auto !important;
+  z-index: 99999 !important;
+}
+
+[data-radix-portal] * {
+  pointer-events: auto !important;
+}
+
+/* Force les boutons de calendrier à être réactifs */
+[data-radix-portal] button, 
+[data-radix-portal] [role="button"],
+[data-radix-portal] [role="gridcell"] {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+.pointer-events-auto {
+  pointer-events: auto !important;
+}
+
+.page-fade-in {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+button:active, a:active {
+  transform: scale(0.98);
+  transition: transform 0.1s;
+}

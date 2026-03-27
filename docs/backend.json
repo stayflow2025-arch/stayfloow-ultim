@@ -1,0 +1,94 @@
+
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "firstName": { "type": "string" },
+        "lastName": { "type": "string" },
+        "phoneNumber": { "type": "string" },
+        "role": { "type": "string", "enum": ["client", "partner", "admin"] },
+        "status": { "type": "string", "enum": ["active", "suspended"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "email", "firstName", "lastName"]
+    },
+    "PartnerProfile": {
+      "title": "PartnerProfile",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "companyName": { "type": "string" },
+        "businessType": { "type": "string" },
+        "verified": { "type": "boolean" },
+        "totalEarnings": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "PartnerListing": {
+      "title": "PartnerListing",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "category": { "type": "string", "enum": ["accommodation", "car_rental", "circuit"] },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected", "inactive"] },
+        "price": { "type": "number" },
+        "currency": { "type": "string" },
+        "details": { "type": "object" },
+        "location": { "type": "object" },
+        "photos": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Booking": {
+      "title": "Booking",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "partnerId": { "type": "string" },
+        "listingId": { "type": "string" },
+        "itemName": { "type": "string" },
+        "totalPrice": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected", "cancelled"] },
+        "startDate": { "type": "string" },
+        "endDate": { "type": "string" },
+        "createdAt": { "type": "string" }
+      }
+    },
+    "EmailRequest": {
+      "title": "EmailRequest",
+      "type": "object",
+      "description": "Structure requise par l'extension Trigger Email",
+      "properties": {
+        "to": { "type": "string" },
+        "message": {
+          "type": "object",
+          "properties": {
+            "subject": { "type": "string" },
+            "html": { "type": "string" }
+          }
+        }
+      }
+    }
+  },
+  "auth": {
+    "providers": ["password", "anonymous"]
+  },
+  "firestore": {
+    "/users/{userId}": { "schema": { "$ref": "#/backend/entities/UserProfile" }, "description": "User profiles" },
+    "/partners/{partnerId}": { "schema": { "$ref": "#/backend/entities/PartnerProfile" }, "description": "Professional partner details" },
+    "/listings/{listingId}": { "schema": { "$ref": "#/backend/entities/PartnerListing" }, "description": "Global listings" },
+    "/bookings/{bookingId}": { "schema": { "$ref": "#/backend/entities/Booking" }, "description": "Reservations" },
+    "/settings/siteConfig": { "schema": { "type": "object" }, "description": "Platform configuration" },
+    "/adminLogs/{logId}": { "schema": { "type": "object" }, "description": "Admin action logs" },
+    "/conversations/{convId}": { "schema": { "type": "object" }, "description": "Chat sessions" },
+    "/customers/{uid}/checkout_sessions/{id}": { "schema": { "type": "object" }, "description": "Stripe Checkout Sessions (Extension)" },
+    "/products/{id}": { "schema": { "type": "object" }, "description": "Stripe Products (Extension)" },
+    "/mail/{mailId}": { "schema": { "$ref": "#/backend/entities/EmailRequest" }, "description": "Trigger Email requests collection" }
+  }
+}

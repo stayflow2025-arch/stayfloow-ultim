@@ -1,0 +1,79 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- FONCTIONS DE SÉCURITÉ ---
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.uid == "Kb7jQGxp4pf1cjdfbMwz4HnujQi2" ||
+        request.auth.token.email == "stayflow2025@gmail.com" ||
+        request.auth.uid == "G4d04MgUW4fguFOjmhQBbWezheB2" ||
+        request.auth.uid == "CChLqb7OxdbbSpjNRKMAt2vJNa12" ||
+        request.auth.uid == "3rixbVLeMaUARuODthz3ds80WeS2" ||
+        request.auth.uid == "dqUISCFanPajTlrvC23iAXTr4BI2" ||
+        request.auth.uid == "cJujCOjr1nRe4YSBZ9FY3WLLvO93"
+      );
+    }
+
+    // --- RÈGLES GLOBALES ---
+
+    match /{document=**} {
+      allow read, write: if isAdmin();
+    }
+
+    // --- RÈGLES SPÉCIFIQUES ---
+
+    match /bookings/{bookingId} {
+      // Autoriser le listage global pour l'admin et le listage filtré pour l'utilisateur
+      allow list: if isSignedIn();
+      
+      allow get: if isAdmin() || (isSignedIn() && (
+        resource.data.userId == request.auth.uid ||
+        resource.data.partnerId == request.auth.uid
+      ));
+      
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow read, write: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
+    }
+
+    match /listings/{listingId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update, delete: if isAdmin() || (isSignedIn() && resource.data.ownerId == request.auth.uid);
+    }
+
+    match /partners/{partnerId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || (isSignedIn() && request.auth.uid == partnerId);
+    }
+
+    match /conversations/{convId} {
+      allow read, write: if isAdmin() || (isSignedIn() && request.auth.uid in resource.data.participants);
+      match /messages/{msgId} {
+        allow read, write: if isSignedIn();
+      }
+    }
+
+    match /mail/{mailId} {
+      allow create: if true;
+      allow read: if isAdmin();
+    }
+
+    match /customers/{uid}/{any=**} {
+      allow read, write: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
+    }
+
+    match /products/{id} {
+      allow read: if true;
+    }
+  }
+}

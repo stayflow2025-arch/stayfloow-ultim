@@ -1,0 +1,13 @@
+# Configuration pour Firebase App Hosting
+runConfig:
+  maxInstances: 10
+  minInstances: 0
+  memory: 1Gi
+  cpu: 1
+
+env:
+  - variable: NEXT_PUBLIC_BASE_URL
+    value: "https://www.stayfloow.com"
+    availability:
+      - BUILD
+      - RUNTIME
