@@ -101,26 +101,7 @@ function PropertyBookingContent({ id }: { id: string }) {
     const reservationNumber = `ST-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
     try {
-      // 1. Déclencher le paiement réel si Carte sélectionnée
-      if (values.paymentMethod === 'card') {
-        const checkoutUrl = await createStripeCheckout(
-          depositPrice,
-          "EUR",
-          `Acompte Séjour: ${property?.details?.name || "Hébergement StayFloow"}`, 
-          window.location.origin + "/profile/bookings?success=true", 
-          window.location.href
-        );
-
-        if (checkoutUrl) {
-          // Redirection vers Stripe
-          window.location.href = checkoutUrl;
-          return;
-        } else {
-          throw new Error("Impossible de générer la session de paiement.");
-        }
-      }
-
-      // 2. Enregistrement en base de données (si paiement réussi ou autre méthode)
+      // 1. Enregistrement en base de données avec statut 'pending_payment'
       await addDoc(collection(db, "bookings"), {
         userId: finalUserId,
         partnerId: property?.ownerId || "admin",
@@ -132,13 +113,14 @@ function PropertyBookingContent({ id }: { id: string }) {
         customerEmail: values.email,
         totalPrice: fullPrice,
         depositPaid: depositPrice,
-        status: 'approved',
+        status: values.paymentMethod === 'card' ? 'pending_payment' : 'approved',
         startDate: date.from.toISOString(),
         endDate: date.to.toISOString(),
         createdAt: new Date().toISOString(),
         reservationNumber
       });
 
+      // 2. Envoi email de confirmation
       await sendBookingConfirmationEmail({
         customerName: values.fullName,
         customerEmail: values.email,
@@ -156,6 +138,24 @@ function PropertyBookingContent({ id }: { id: string }) {
           depositAmount: depositPrice
         }
       });
+
+      // 3. Paiement Stripe : Redirection Seulement APRÈS sauvegarde
+      if (values.paymentMethod === 'card') {
+        const checkoutUrl = await createStripeCheckout(
+          depositPrice,
+          "EUR",
+          `Acompte Séjour: ${property?.details?.name || "Hébergement StayFloow"}`, 
+          window.location.origin + "/profile/bookings?success=true", 
+          window.location.href
+        );
+
+        if (checkoutUrl) {
+          window.location.href = checkoutUrl;
+          return;
+        } else {
+          throw new Error("Impossible de générer la session de paiement.");
+        }
+      }
 
       setIsSuccess(true);
     } catch (error) {

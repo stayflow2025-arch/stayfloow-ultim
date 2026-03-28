@@ -110,23 +110,6 @@ function BookCarContent() {
     const resNum = `ST-CAR-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 
     try {
-      if (values.paymentMethod === 'card') {
-        const url = await createStripeCheckout(
-          depositTotal, 
-          "EUR", 
-          `Acompte Location Voiture: ${displayCar.name}`, 
-          window.location.origin + "/profile/bookings?success=true", 
-          window.location.href
-        );
-        
-        if (url) {
-          window.location.href = url;
-          return;
-        } else {
-          throw new Error("Impossible de générer la session de paiement.");
-        }
-      }
-
       await addDoc(collection(db, "bookings"), {
         userId: finalUserId,
         partnerId: dbCar?.ownerId || "stayfloow_fleet",
@@ -138,7 +121,7 @@ function BookCarContent() {
         customerEmail: values.email,
         totalPrice: fullTotal,
         depositPaid: depositTotal,
-        status: 'approved',
+        status: values.paymentMethod === 'card' ? 'pending_payment' : 'approved',
         startDate: fromParam || new Date().toISOString(),
         endDate: toParam || addDays(new Date(), days).toISOString(),
         createdAt: new Date().toISOString(),
@@ -162,6 +145,23 @@ function BookCarContent() {
           depositAmount: depositTotal
         }
       });
+
+      if (values.paymentMethod === 'card') {
+        const url = await createStripeCheckout(
+          depositTotal, 
+          "EUR", 
+          `Acompte Location Voiture: ${displayCar.name}`, 
+          window.location.origin + "/profile/bookings?success=true", 
+          window.location.href
+        );
+        
+        if (url) {
+          window.location.href = url;
+          return;
+        } else {
+          throw new Error("Impossible de générer la session de paiement.");
+        }
+      }
 
       setIsSuccess(true);
     } catch (e) {

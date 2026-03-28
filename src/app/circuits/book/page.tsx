@@ -74,29 +74,12 @@ function CircuitBookingContent() {
   });
 
 
-
   const onSubmit = async (values: z.infer<typeof bookingSchema>) => {
     setIsSubmitting(true);
     const finalUserId = user?.uid || `guest_${Date.now()}`;
     const resNum = `ST-TOUR-${Math.floor(1000 + Math.random() * 8999)}`;
     
     try {
-      if (values.paymentMethod === 'card') {
-        const url = await createStripeCheckout(
-          depositAmount, 
-          "EUR", 
-          `Acompte Circuit: ${circuit?.details?.name || circuit?.title || "Circuit StayFloow"}`, 
-          window.location.origin + "/profile/bookings?success=true", 
-          window.location.href
-        );
-        if (url) {
-          window.location.href = url;
-          return;
-        } else {
-          throw new Error("Impossible de générer la session de paiement.");
-        }
-      }
-      
       await addDoc(collection(db, "bookings"), { 
         userId: finalUserId, 
         partnerId: circuit?.ownerId || "guide_stayfloow", 
@@ -108,7 +91,7 @@ function CircuitBookingContent() {
         customerEmail: values.email, 
         totalPrice: fullTotalAmount, 
         depositPaid: depositAmount, 
-        status: 'approved', 
+        status: values.paymentMethod === 'card' ? 'pending_payment' : 'approved', 
         startDate: tourDate, 
         endDate: endDate || tourDate, 
         createdAt: new Date().toISOString(), 
@@ -126,6 +109,22 @@ function CircuitBookingContent() {
         hostPhone: "+213 550 00 00 00", 
         bookingDetails: { startDate: tourDate, endDate: endDate, totalPrice: fullTotalAmount, depositAmount: depositAmount } 
       });
+
+      if (values.paymentMethod === 'card') {
+        const url = await createStripeCheckout(
+          depositAmount, 
+          "EUR", 
+          `Acompte Circuit: ${circuit?.details?.name || circuit?.title || "Circuit StayFloow"}`, 
+          window.location.origin + "/profile/bookings?success=true", 
+          window.location.href
+        );
+        if (url) {
+          window.location.href = url;
+          return;
+        } else {
+          throw new Error("Impossible de générer la session de paiement.");
+        }
+      }
 
       setIsConfirmed(true);
     } catch (e) { 
