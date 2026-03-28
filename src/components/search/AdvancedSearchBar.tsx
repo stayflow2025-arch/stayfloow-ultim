@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 type Category = 'accommodations' | 'cars' | 'circuits';
 
@@ -35,6 +36,7 @@ export default function AdvancedSearchBar({ hideTabs = false, hideLocation = fal
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const { toast } = useToast();
   
   const [isClient, setIsClient] = useState(false);
   const [activeCategory, setActiveCategory] = useState<Category>('accommodations');
@@ -132,6 +134,15 @@ export default function AdvancedSearchBar({ hideTabs = false, hideLocation = fal
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!destination || destination.trim().length === 0) {
+      toast({
+        variant: "destructive",
+        title: "Veuillez indiquer une destination pour lancer la recherche."
+      });
+      return;
+    }
+
     const from = dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : '';
     const to = dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : '';
     

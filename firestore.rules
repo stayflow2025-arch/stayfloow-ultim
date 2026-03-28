@@ -37,7 +37,7 @@ service cloud.firestore {
         resource.data.partnerId == request.auth.uid
       ));
       
-      allow create: if isSignedIn();
+      allow create: if true;
       allow update, delete: if isAdmin();
     }
 
