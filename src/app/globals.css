@@ -79,3 +79,24 @@ button:active, a:active {
   transform: scale(0.98);
   transition: transform 0.1s;
 }
+
+/* Google Translate Hidden Styles */
+.goog-te-banner-frame.skiptranslate, .goog-te-gadget-icon, #google_translate_element {
+    display: none !important;
+}
+body {
+    top: 0px !important;
+}
+.goog-tooltip {
+    display: none !important;
+    box-shadow: none !important;
+}
+.goog-tooltip:hover {
+    display: none !important;
+    box-shadow: none !important;
+}
+.goog-text-highlight {
+    background-color: transparent !important;
+    border: none !important; 
+    box-shadow: none !important;
+}

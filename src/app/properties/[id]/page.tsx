@@ -68,7 +68,14 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
   const docRef = useMemoFirebase(() => doc(db, 'listings', id), [db, id]);
   const { data: dbProperty, isLoading: loading } = useDoc(docRef);
 
-  const property = useMemo(() => dbProperty || mockProperties.find(p => p.id === id), [dbProperty, id]);
+  const property = useMemo(() => {
+    if (dbProperty) return dbProperty;
+    if (typeof window !== 'undefined') {
+      const hiddenMocks = JSON.parse(localStorage.getItem('stayfloow_hidden_mocks') || '[]');
+      if (hiddenMocks.includes(id)) return null;
+    }
+    return mockProperties.find(p => p.id === id);
+  }, [dbProperty, id]);
 
   useEffect(() => {
     setIsMounted(true);

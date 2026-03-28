@@ -9,6 +9,7 @@ import { ChatLoader } from '@/components/chat-loader';
 import ClientProviders from '@/components/client-providers';
 import AuthSync from '@/components/AuthSync';
 import StructuredData from '@/components/structured-data';
+import { GoogleTranslate } from '@/components/google-translate';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -108,6 +109,7 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased bg-background min-h-screen flex flex-col overflow-x-hidden" suppressHydrationWarning>
+        <GoogleTranslate />
         <FirebaseClientProvider>
           <ClientProviders>
             <Header />

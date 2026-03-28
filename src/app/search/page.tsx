@@ -30,6 +30,8 @@ function SearchResultsContent() {
   const [allApproved, setAllApproved] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([]);
   const [selectedRatings, setSelectedRatings] = useState<string[]>([]);
@@ -83,10 +85,15 @@ function SearchResultsContent() {
           } as Property & { isInfantFriendly?: boolean };
         });
 
-        setAllApproved([...mockProperties, ...dbListings]);
+        const hiddenMocks = JSON.parse(localStorage.getItem('stayfloow_hidden_mocks') || '[]');
+        const visibleMocks = mockProperties.filter(p => !hiddenMocks.includes(p.id));
+
+        setAllApproved([...visibleMocks, ...dbListings]);
       } catch (error) {
         console.error("Error fetching listings:", error);
-        setAllApproved(mockProperties);
+        const hiddenMocks = JSON.parse(localStorage.getItem('stayfloow_hidden_mocks') || '[]');
+        const visibleMocks = mockProperties.filter(p => !hiddenMocks.includes(p.id));
+        setAllApproved(visibleMocks);
       } finally {
         setTimeout(() => setLoading(false), 600);
       }
@@ -157,6 +164,17 @@ function SearchResultsContent() {
 
     return results;
   }, [allApproved, locationParam, selectedAmenities, selectedRatings, hasInfants]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [locationParam, selectedAmenities, selectedRatings, hasInfants]);
+
+  const paginatedResults = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredResults.slice(start, start + itemsPerPage);
+  }, [filteredResults, currentPage]);
+
+  const totalPages = Math.ceil(filteredResults.length / itemsPerPage);
 
   const handleToggleAmenity = (amenity: string) => {
     setSelectedAmenities(prev => 
@@ -279,9 +297,9 @@ function SearchResultsContent() {
               <Loader2 className="h-10 w-10 animate-spin text-primary" />
               <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Recherche des meilleures offres...</p>
             </div>
-          ) : filteredResults.length > 0 ? (
+          ) : paginatedResults.length > 0 ? (
             <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 gap-4" : "flex flex-col gap-4"}>
-              {filteredResults.map((property) => (
+              {paginatedResults.map((property) => (
                 <PropertyCard key={property.id} property={property} viewMode={viewMode} />
               ))}
             </div>
@@ -302,13 +320,38 @@ function SearchResultsContent() {
             </div>
           )}
 
-          {filteredResults.length > 0 && (
+          {totalPages > 1 && (
             <div className="flex justify-center pt-10 pb-20">
-              <div className="flex gap-1">
-                {[1, 2, 3].map(n => (
-                  <Button key={n} variant={n === 1 ? "outline" : "ghost"} className={`w-10 h-10 rounded-md ${n === 1 ? 'border-primary text-primary' : ''}`}>{n}</Button>
-                ))}
-                <Button variant="ghost" className="w-10 h-10 rounded-md"><ChevronRight className="h-4 w-4" /></Button>
+              <div className="flex gap-1 items-center">
+                {Array.from({ length: totalPages }).map((_, idx) => {
+                  const n = idx + 1;
+                  return (
+                    <Button 
+                      key={n} 
+                      variant={n === currentPage ? "outline" : "ghost"} 
+                      className={`w-10 h-10 rounded-md transition-colors ${n === currentPage ? 'border-primary text-primary font-black bg-primary/5' : 'text-slate-500 font-bold hover:bg-slate-100'}`}
+                      onClick={() => {
+                        setCurrentPage(n);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                    >
+                      {n}
+                    </Button>
+                  );
+                })}
+                <Button 
+                  variant="ghost" 
+                  className="w-10 h-10 rounded-md text-slate-500 hover:bg-slate-100"
+                  disabled={currentPage === totalPages}
+                  onClick={() => {
+                    if (currentPage < totalPages) {
+                      setCurrentPage(prev => prev + 1);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                  }}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
               </div>
             </div>
           )}

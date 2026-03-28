@@ -46,15 +46,21 @@ export function HomeClient() {
   // On récupère les paramètres de recherche actuels pour les transmettre aux liens
   const currentParams = searchParams.toString();
 
+  const visibleProps = useMemo(() => {
+    if (!isClient) return properties;
+    const hiddenMocks = JSON.parse(localStorage.getItem('stayfloow_hidden_mocks') || '[]');
+    return properties.filter(p => !hiddenMocks.includes(p.id));
+  }, [isClient]);
+
   // Calcul dynamique des hébergements par type
   const counts = useMemo(() => {
     return {
-      hotel: properties.filter(p => p.type.toLowerCase().includes('hôtel') || p.type.toLowerCase().includes('riad')).length,
-      apartment: properties.filter(p => p.type.toLowerCase().includes('appartement')).length,
-      resort: properties.filter(p => p.type.toLowerCase().includes('complexe') || p.type.toLowerCase().includes('resort') || p.type.toLowerCase().includes('glamping')).length,
-      villa: properties.filter(p => p.type.toLowerCase().includes('villa')).length,
+      hotel: visibleProps.filter(p => p.type.toLowerCase().includes('hôtel') || p.type.toLowerCase().includes('riad')).length,
+      apartment: visibleProps.filter(p => p.type.toLowerCase().includes('appartement')).length,
+      resort: visibleProps.filter(p => p.type.toLowerCase().includes('complexe') || p.type.toLowerCase().includes('resort') || p.type.toLowerCase().includes('glamping')).length,
+      villa: visibleProps.filter(p => p.type.toLowerCase().includes('villa')).length,
     };
-  }, []);
+  }, [visibleProps]);
 
   const getImage = (id: string) => PlaceHolderImages.find(img => img.id === id)?.imageUrl || '';
 
@@ -85,7 +91,7 @@ export function HomeClient() {
     },
   ];
 
-  const uniqueStays = properties.slice(0, 4);
+  const uniqueStays = visibleProps.slice(0, 4);
 
   if (!isClient) return <div className="min-h-screen bg-slate-50 animate-pulse" />;
 

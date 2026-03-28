@@ -167,6 +167,24 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
     }
   }, [locale, mounted]);
 
+  const handleSetLocale = (newLocale: Locale) => {
+    if (newLocale === locale) return;
+    setLocale(newLocale);
+    localStorage.setItem('stayfloow_locale', newLocale);
+    
+    // Configurer le cookie Google Translate
+    if (newLocale !== 'fr') {
+      document.cookie = `googtrans=/fr/${newLocale}; path=/`;
+      document.cookie = `googtrans=/fr/${newLocale}; domain=.${window.location.hostname}; path=/`;
+    } else {
+      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=.${window.location.hostname}; path=/;`;
+    }
+    
+    // Forcer le rechargement de la page pour appliquer la traduction 100% Google Translate
+    window.location.reload();
+  };
+
   const t = useCallback((key: string): string => {
     if (!mounted) return key;
     return translations[key]?.[locale] || key;
@@ -179,7 +197,7 @@ export const LanguageProvider = ({ children }: { children: React.ReactNode }) =>
   return (
     <LanguageContext.Provider value={{ 
       locale, 
-      setLocale, 
+      setLocale: handleSetLocale, 
       t, 
       getLocaleDetails, 
       availableLocales: Object.keys(localeDetails) as Locale[] 

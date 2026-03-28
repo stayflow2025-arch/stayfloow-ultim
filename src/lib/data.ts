@@ -31,39 +31,7 @@ export type Property = {
 };
 
 export const properties: Property[] = [
-  { 
-    id: "prop-1", 
-    name: "Riad Dar Al-Andalus", 
-    rating: 9.8, 
-    location: "Fès, Maroc",
-    price: 85,
-    description: "Niché au cœur de la médina, ce riad historique offre une expérience immersive unique. Entièrement restauré par des artisans locaux, il dispose d'un patio arboré et d'un grand salon traditionnel.",
-    images: ["https://images.unsplash.com/photo-1761828122922-5a839ada5b76?w=1200", "https://picsum.photos/seed/riad2/800/600"],
-    amenities: ["Wi-Fi gratuit", "Petit-déjeuner inclus", "Climatisation", "Réception 24h/24", "Salle de bain privée"],
-    type: "Riad",
-    stars: 5,
-    reviewsCount: 124,
-    meals: ["Petit-déjeuner inclus"],
-    isBoosted: true,
-    isHighDemand: true,
-    livingRoomsCount: 1,
-    gardensCount: 1
-  },
-  { 
-    id: "prop-2", 
-    name: "Desert Cave Hotel", 
-    rating: 9.5, 
-    location: "Ghardaïa, Algérie",
-    price: 55,
-    description: "Un séjour insolite au flanc des collines du M'zab. Architecture troglodyte moderne avec un jardin minéral suspendu.",
-    images: ["https://picsum.photos/seed/cave1/800/600", "https://picsum.photos/seed/cave2/800/600"],
-    amenities: ["Wi-Fi gratuit", "Restaurant sur place", "Climatisation", "Terrasse / balcon / vue"],
-    type: "Hôtel Insolite",
-    stars: 4,
-    reviewsCount: 89,
-    isWeekendOffer: true,
-    gardensCount: 1
-  },
+
   { 
     id: "prop-3", 
     name: "Villa Sahara Dream", 
@@ -80,21 +48,7 @@ export const properties: Property[] = [
     livingRoomsCount: 2,
     gardensCount: 2
   },
-  { 
-    id: "prop-4", 
-    name: "Nile Floating Palace", 
-    rating: 9.6, 
-    location: "Louxor, Égypte",
-    price: 100,
-    description: "Dormez sur le Nil à bord d'un palais flottant traditionnel. Comprend des suites parentales avec vue panoramique.",
-    images: ["https://images.unsplash.com/photo-1519852476561-ec618b0183ba?w=1200"],
-    amenities: ["Wi-Fi gratuit", "Restaurant sur place", "Climatisation", "Réception 24h/24"],
-    type: "Bateau-Hôtel",
-    stars: 5,
-    reviewsCount: 210,
-    isBoosted: true,
-    parentalSuitesCount: 4
-  },
+
   { 
     id: "prop-5", 
     name: "Algeria Business Tower", 
