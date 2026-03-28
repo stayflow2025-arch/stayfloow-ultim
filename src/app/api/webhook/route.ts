@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { initializeFirebase } from '@/firebase';
-import { sendBookingConfirmationEmail } from '@/lib/mail';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,6 +40,11 @@ export async function POST(req: Request) {
     }
 
     try {
+      // Importation dynamique pour éviter l'initialisation Firebase au Build
+      const { doc, getDoc, updateDoc } = await import('firebase/firestore');
+      const { initializeFirebase } = await import('@/firebase');
+      const { sendBookingConfirmationEmail } = await import('@/lib/mail');
+
       const { firestore } = initializeFirebase();
       if (!firestore) throw new Error("Firestore introuvable");
 
