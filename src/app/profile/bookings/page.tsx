@@ -15,9 +15,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { format } from "date-fns";
+import { format, addDays } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useCurrency } from "@/context/currency-context";
+import { cn } from "@/lib/utils";
 
 export default function UserBookingsPage() {
   const { user, isUserLoading } = useUser();
@@ -39,15 +40,23 @@ export default function UserBookingsPage() {
   const categorized = useMemo(() => {
     if (!bookings) return { upcoming: [], ongoing: [], past: [] };
     const now = new Date();
+    
+    // Fonction de sécurité pour parser les dates
+    const safeDate = (dateStr: any) => {
+      if (!dateStr) return new Date();
+      const d = new Date(dateStr);
+      return isNaN(d.getTime()) ? new Date() : d;
+    };
+
     return {
-      upcoming: bookings.filter(b => new Date(b.startDate) > now),
+      upcoming: bookings.filter(b => safeDate(b.startDate) > now),
       ongoing: bookings.filter(b => {
-        const start = new Date(b.startDate);
-        const end = b.endDate ? new Date(b.endDate) : addDays(start, 1);
+        const start = safeDate(b.startDate);
+        const end = b.endDate ? safeDate(b.endDate) : addDays(start, 1);
         return start <= now && end >= now;
       }),
       past: bookings.filter(b => {
-        const end = b.endDate ? new Date(b.endDate) : new Date(b.startDate);
+        const end = b.endDate ? safeDate(b.endDate) : safeDate(b.startDate);
         return end < now;
       }),
     };
@@ -164,7 +173,18 @@ function BookingList({ items, formatPrice, onContact, emptyMsg }: any) {
               <div>
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Période du séjour</p>
                 <p className="font-black text-slate-700 text-sm">
-                  {format(new Date(booking.startDate), "dd MMM", { locale: fr })} — {booking.endDate ? format(new Date(booking.endDate), "dd MMM yyyy", { locale: fr }) : "À confirmer"}
+                  {(() => {
+                    const start = new Date(booking.startDate);
+                    if (isNaN(start.getTime())) return "Date inconnue";
+                    const formattedStart = format(start, "dd MMM", { locale: fr });
+                    
+                    if (booking.endDate) {
+                      const end = new Date(booking.endDate);
+                      if (isNaN(end.getTime())) return formattedStart;
+                      return `${formattedStart} — ${format(end, "dd MMM yyyy", { locale: fr })}`;
+                    }
+                    return formattedStart;
+                  })()}
                 </p>
               </div>
             </div>
