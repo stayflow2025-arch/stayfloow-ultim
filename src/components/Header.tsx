@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "./ui/button";
-import { LogOut, User as UserIcon, LayoutDashboard, ShieldCheck, Building, Car, Compass, ChevronDown, Menu, X } from "lucide-react";
+import { LogOut, User as UserIcon, LayoutDashboard, ShieldCheck, Building, Car, Compass, ChevronDown, Menu, X, Mail } from "lucide-react";
 import { useLanguage } from "@/context/language-context";
 import { useCurrency } from "@/context/currency-context";
 import { useEffect, useState, useMemo } from "react";
@@ -86,6 +86,7 @@ export function Header() {
                 <MobileLink href="/search" icon={<Building />} label={t("accommodations")} onClick={() => setIsMobileMenuOpen(false)} />
                 <MobileLink href="/cars" icon={<Car />} label={t("car_rental")} onClick={() => setIsMobileMenuOpen(false)} />
                 <MobileLink href="/circuits" icon={<Compass />} label={t("tours")} onClick={() => setIsMobileMenuOpen(false)} />
+                <MobileLink href="/contact" icon={<Mail />} label={t("contact")} onClick={() => setIsMobileMenuOpen(false)} />
                 <div className="h-px bg-slate-100 my-4" />
                 <p className="px-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Paramètres</p>
                 <div className="grid grid-cols-2 gap-2 px-4">
@@ -133,6 +134,9 @@ export function Header() {
             </Link>
             <Link href="/circuits" className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold hover:bg-white/10 transition-colors">
               <Compass className="h-4 w-4" /> {t("tours")}
+            </Link>
+            <Link href="/contact" className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold hover:bg-white/10 transition-colors">
+              <Mail className="h-4 w-4" /> {t("contact")}
             </Link>
           </nav>
         </div>

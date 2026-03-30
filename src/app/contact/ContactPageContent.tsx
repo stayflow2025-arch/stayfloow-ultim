@@ -75,7 +75,7 @@ export default function ContactPageContent({ t, toast }: ContactPageContentProps
           <ContactInfoCard 
             icon={<Mail className="text-primary" />}
             title="Email"
-            value="support@stayfloow.com"
+            value="stayflow2025@gmail.com"
           />
           <ContactInfoCard 
             icon={<MapPin className="text-primary" />}

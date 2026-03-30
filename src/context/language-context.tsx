@@ -62,6 +62,13 @@ const translations: Record<string, Record<Locale, string>> = {
     "from_price": { fr: "À partir de", en: "From", ar: "تبدأ من", es: "Desde" },
     "recently_viewed": { fr: "Consultés récemment", en: "Recently viewed", ar: "تمت مشاهدتها مؤخراً", es: "Vistos recientemente" },
     "inspired_by_visit": { fr: "Inspirés par votre visite", en: "Inspired by your visit", ar: "مستوحى من زيارتك", es: "Inspirado por tu visita" },
+    "trust_payment_title": { fr: "Paiements Sécurisés", en: "Secure Payments", ar: "مدفوعات آمنة", es: "Pagos Seguros" },
+    "trust_payment_desc": { fr: "Transaction cryptée via StayFloow Pay.", en: "Encrypted transactions via StayFloow Pay.", ar: "معاملات مشفرة عبر StayFloow Pay.", es: "Transacciones cifradas a través de StayFloow Pay." },
+    "trust_gps_title": { fr: "Géo-localisation", en: "Geo-location", ar: "الموقع الجغرافي", es: "Geolocalización" },
+    "trust_gps_desc": { fr: "Position exacte de vos hébergements.", en: "Exact location of your accommodations.", ar: "الموقع الدقيق لأماكن إقامتك.", es: "Ubicación exacta de sus alojamientos." },
+    "unique_stays_desc": { fr: "Découvrez des pépites soigneusement sélectionnées par nos experts locaux.", en: "Discover hidden gems carefully selected by our local experts.", ar: "اكتشف الجواهر الخفية التي تم اختيارها بعناية من قبل خبرائنا المحليين.", es: "Descubra gemas ocultas cuidadosamente seleccionadas por nuestros expertos locales." },
+    "search_result_singular": { fr: "établissement trouvé", en: "accommodation found", ar: "تم العثور على مكان إقامة واحد", es: "establecimiento encontrado" },
+    "search_results_plural": { fr: "établissements trouvés", en: "accommodations found", ar: "أماكن إقامة موجودة", es: "establecimientos encontrados" },
 
     // === FILTERS & SIDEBAR ===
     "smart_filters": { fr: "Filtres intelligents", en: "Smart filters", ar: "فلاتر ذكية", es: "Filtros inteligentes" },

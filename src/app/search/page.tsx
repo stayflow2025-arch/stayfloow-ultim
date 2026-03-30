@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { PropertyCard } from '@/components/property-card';
 import { FilterSidebar, type FilterStats } from '@/components/filter-sidebar';
 import AdvancedSearchBar from '@/components/search/AdvancedSearchBar';
+import { useLanguage } from '@/context/language-context';
 import { properties as mockProperties, type Property } from '@/lib/data';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
@@ -24,6 +25,7 @@ import {
 } from "@/components/ui/sheet";
 
 function SearchResultsContent() {
+  const { t } = useLanguage();
   const searchParams = useSearchParams();
   const db = useFirestore();
   
@@ -260,7 +262,7 @@ function SearchResultsContent() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <h1 className="text-xl md:text-2xl font-black text-slate-900 leading-tight">
-                {locationParam || 'Toutes les destinations'} : {filteredResults.length} établissements trouvés
+                {locationParam || 'Toutes les destinations'} : {filteredResults.length} {filteredResults.length === 1 ? t('search_result_singular') : t('search_results_plural')}
               </h1>
             </div>
             <div className="hidden md:flex items-center gap-2">
