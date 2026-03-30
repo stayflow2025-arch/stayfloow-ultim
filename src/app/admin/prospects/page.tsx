@@ -20,7 +20,7 @@ import {
 } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { checkIsAdmin } from "@/lib/admin-config";
-import { sendProspectEmail } from "@/lib/mail";
+import { sendProspectEmailAction } from "@/app/actions/mail";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ProspectManagementPage() {
@@ -73,7 +73,7 @@ export default function ProspectManagementPage() {
 
     setSendingEmailId(prospect.id);
     try {
-      const res = await sendProspectEmail({
+      const res = await sendProspectEmailAction({
         prospectName: prospect.name,
         prospectEmail: prospect.email,
         sourcePlatform: prospect.sourcePlatform

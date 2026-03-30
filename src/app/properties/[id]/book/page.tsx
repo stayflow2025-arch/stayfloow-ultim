@@ -30,7 +30,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useCurrency } from "@/context/currency-context";
-import { sendBookingConfirmationEmail } from "@/lib/mail";
+import { sendBookingConfirmationEmailAction } from "@/app/actions/mail";
 import { Separator } from "@/components/ui/separator";
 import { CrossSellCard } from "@/components/cross-sell-card";
 import { createStripeCheckout } from "@/lib/stripe-payment";
@@ -141,7 +141,7 @@ function PropertyBookingContent({ id }: { id: string }) {
         }
       } else {
         // Envoi de l'email immédiat si mode hors stripe (Paypal / sur place)
-        await sendBookingConfirmationEmail({
+        await sendBookingConfirmationEmailAction({
           customerName: values.fullName,
           customerEmail: values.email,
           reservationNumber,
