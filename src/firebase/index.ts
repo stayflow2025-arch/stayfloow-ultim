@@ -1,6 +1,3 @@
-
-'use client';
-
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, FirebaseApp, getApp } from 'firebase/app';
 import { getAuth as getAuthInstance, Auth } from 'firebase/auth';
@@ -8,12 +5,11 @@ import { getFirestore as getFirestoreInstance, Firestore } from 'firebase/firest
 
 /**
  * @fileOverview Initialisation Firebase Singleton ultra-robuste.
- * Utilise un cache global nommé pour garantir qu'aucune instance n'est recréée,
- * éliminant définitivement l'erreur INTERNAL ASSERTION FAILED (ID: ca9).
+ * Compatible Client et Serveur (API Routes).
  */
 
 export function initializeFirebase() {
-  // Gestion du Singleton côté client via globalThis pour persister entre les rechargements HMR
+  // Chemin Client (Navigateur)
   if (typeof window !== 'undefined') {
     const g = globalThis as any;
     
@@ -26,7 +22,6 @@ export function initializeFirebase() {
           firestore: getFirestoreInstance(app),
         };
       } catch (e) {
-        // Fallback de sécurité en cas d'initialisation concurrente
         const app = getApp();
         g.__STAYFLOOW_FIREBASE_INSTANCE__ = {
           app,
@@ -43,9 +38,8 @@ export function initializeFirebase() {
     };
   }
 
-  // SSR Path (Initialisation simple pour le rendu serveur)
+  // Chemin Serveur (SSR / API Routes)
   if (!firebaseConfig.apiKey) {
-    // Return empty stubs to allow the build to proceed
     return {
       firebaseApp: null as any,
       auth: null as any,
@@ -53,11 +47,21 @@ export function initializeFirebase() {
     };
   }
 
-  const ssrApp = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+  // Utiliser un cache global pour le serveur aussi pour éviter les réinitialisations multiples
+  const gssr = globalThis as any;
+  if (!gssr.__STAYFLOOW_SERVER_FIREBASE__) {
+    const ssrApp = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    gssr.__STAYFLOOW_SERVER_FIREBASE__ = {
+      app: ssrApp,
+      auth: getAuthInstance(ssrApp),
+      firestore: getFirestoreInstance(ssrApp),
+    };
+  }
+
   return {
-    firebaseApp: ssrApp,
-    auth: getAuthInstance(ssrApp),
-    firestore: getFirestoreInstance(ssrApp),
+    firebaseApp: gssr.__STAYFLOOW_SERVER_FIREBASE__.app,
+    auth: gssr.__STAYFLOOW_SERVER_FIREBASE__.auth,
+    firestore: gssr.__STAYFLOOW_SERVER_FIREBASE__.firestore,
   };
 }
 

@@ -20,31 +20,45 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Nom et (Email ou Téléphone) requis' }, { status: 400 });
     }
 
-    // Dynamic import to avoid build-time Firebase initialization issues
-    const { collection, addDoc } = await import('firebase/firestore');
-    const { initializeFirebase } = await import('@/firebase');
-    
-    const { firestore } = initializeFirebase();
-    if (!firestore) throw new Error("Firestore introuvable");
+    try {
+      const { collection, addDoc, serverTimestamp } = await import('firebase/firestore');
+      const { initializeFirebase } = await import('@/firebase');
+      
+      const { firestore } = initializeFirebase();
+      
+      if (!firestore) {
+        throw new Error("Firestore non initialisé sur le serveur.");
+      }
 
-    const prospectsRef = collection(firestore, 'prospects');
-    
-    const newProspect = {
-      name,
-      email: email || '',
-      phone: phone || '',
-      location: location || '',
-      sourcePlatform: sourcePlatform || 'Inconnu',
-      propertyLink: propertyLink || '',
-      type: type || 'Autre', // Hôtel, Voiture, Circuit
-      status: 'Nouveau', // Nouveau, Contacté, Converti, Refusé
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
+      const newProspect = {
+        name,
+        email: email || '',
+        phone: phone || '',
+        location: location || '',
+        sourcePlatform: sourcePlatform || 'Inconnu',
+        propertyLink: propertyLink || '',
+        type: type || 'Autre',
+        status: 'Nouveau',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
 
-    const docRef = await addDoc(prospectsRef, newProspect);
+      const docRef = await addDoc(collection(firestore, 'prospects'), newProspect);
 
-    return NextResponse.json({ success: true, id: docRef.id, prospect: newProspect }, { status: 201 });
+      return NextResponse.json({ 
+        success: true, 
+        id: docRef.id, 
+        message: "Prospect enregistré avec succès" 
+      }, { status: 201 });
+
+    } catch (firebaseError: any) {
+      console.error("[Webhook] Erreur Firebase détaillée:", firebaseError);
+      return NextResponse.json({ 
+        success: false, 
+        error: "Erreur de base de données Firebase",
+        details: firebaseError.message 
+      }, { status: 500 });
+    }
 
   } catch (error: any) {
     console.error('Erreur Webhook Prospects:', error);
