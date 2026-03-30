@@ -18,5 +18,6 @@ env:
       - RUNTIME
 
   - variable: STAYFLOOW_PROSPECTS_SECRET
+    value: MonSecretB2B2026
     availability:
       - RUNTIME
