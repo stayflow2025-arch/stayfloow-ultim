@@ -26,7 +26,7 @@ import { CrossSellCard } from "@/components/cross-sell-card";
 import { useFirestore, useUser, useDoc, useMemoFirebase } from "@/firebase";
 import { collection, addDoc, doc } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
-import { sendBookingConfirmationEmail } from "@/lib/mail";
+import { sendBookingConfirmationEmailAction } from "@/app/actions/mail";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { createStripeCheckout } from "@/lib/stripe-payment";
 import { useForm } from "react-hook-form";
@@ -148,7 +148,7 @@ function BookCarContent() {
           throw new Error("Impossible de générer la session de paiement.");
         }
       } else {
-        await sendBookingConfirmationEmail({
+        await sendBookingConfirmationEmailAction({
           customerName: `${values.firstName} ${values.lastName}`,
           customerEmail: values.email,
           reservationNumber: resNum,

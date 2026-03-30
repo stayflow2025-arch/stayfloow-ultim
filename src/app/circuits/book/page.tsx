@@ -20,7 +20,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useCurrency } from '@/context/currency-context';
 import { useLanguage } from '@/context/language-context';
-import { sendBookingConfirmationEmail } from '@/lib/mail';
+import { sendBookingConfirmationEmailAction } from '@/app/actions/mail';
 import { circuits as mockCircuits } from '@/lib/data';
 import { cn } from "@/lib/utils";
 import { createStripeCheckout } from "@/lib/stripe-payment";
@@ -116,7 +116,7 @@ function CircuitBookingContent() {
           throw new Error("Impossible de générer la session de paiement.");
         }
       } else {
-        await sendBookingConfirmationEmail({ 
+        await sendBookingConfirmationEmailAction({ 
           customerName: values.fullName, 
           customerEmail: values.email, 
           reservationNumber: resNum, 

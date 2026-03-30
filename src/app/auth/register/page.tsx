@@ -12,7 +12,7 @@ import { doc, serverTimestamp } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import ReCAPTCHA from "react-google-recaptcha";
-import { sendRegistrationWelcomeEmail } from "@/lib/mail";
+import { sendRegistrationWelcomeEmailAction } from "@/app/actions/mail";
 
 import {
   Form,
@@ -87,7 +87,7 @@ export default function RegisterPage() {
       }, { merge: true });
 
       // 4. Envoi de l'email de bienvenue
-      await sendRegistrationWelcomeEmail({
+      await sendRegistrationWelcomeEmailAction({
         userName: values.fullName,
         userEmail: values.email
       });
