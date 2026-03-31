@@ -16,6 +16,11 @@ import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { CrossSellCard } from "@/components/cross-sell-card";
 import { CheckCircle } from "lucide-react";
+import { useCurrency } from "@/context/currency-context";
+import Image from "next/image";
+import { cn } from "@/lib/utils";
+import { addDays, format } from "date-fns";
+import { fr } from "date-fns/locale";
 
 function UserBookingsContent() {
   const { user, isUserLoading } = useUser();
