@@ -7,7 +7,6 @@ import { Footer } from '@/components/Footer';
 import { Header } from '@/components/Header';
 import { ChatLoader } from '@/components/chat-loader';
 import ClientProviders from '@/components/client-providers';
-import AuthSync from '@/components/AuthSync';
 import StructuredData from '@/components/structured-data';
 import { GoogleTranslate } from '@/components/google-translate';
 
