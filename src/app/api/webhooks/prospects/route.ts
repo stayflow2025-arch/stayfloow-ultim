@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { adminDb } from '@/firebase/admin';
+import * as admin from 'firebase-admin';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,15 +23,6 @@ export async function POST(req: Request) {
     }
 
     try {
-      const { collection, addDoc, serverTimestamp } = await import('firebase/firestore');
-      const { initializeFirebase } = await import('@/firebase');
-      
-      const { firestore } = initializeFirebase();
-      
-      if (!firestore) {
-        throw new Error("Firestore non initialisé sur le serveur.");
-      }
-
       const newProspect = {
         name,
         email: email || '',
@@ -39,11 +32,11 @@ export async function POST(req: Request) {
         propertyLink: propertyLink || '',
         type: type || 'Autre',
         status: 'Nouveau',
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
       };
 
-      const docRef = await addDoc(collection(firestore, 'prospects'), newProspect);
+      const docRef = await adminDb.collection('prospects').add(newProspect);
 
       return NextResponse.json({ 
         success: true, 
@@ -52,10 +45,10 @@ export async function POST(req: Request) {
       }, { status: 201 });
 
     } catch (firebaseError: any) {
-      console.error("[Webhook] Erreur Firebase détaillée:", firebaseError);
+      console.error("[Webhook] Erreur Firebase Admin détaillée:", firebaseError);
       return NextResponse.json({ 
         success: false, 
-        error: "Erreur de base de données Firebase",
+        error: "Erreur de base de données Firebase Admin",
         details: firebaseError.message 
       }, { status: 500 });
     }
