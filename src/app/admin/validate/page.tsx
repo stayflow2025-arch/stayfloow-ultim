@@ -10,7 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { 
   CheckCircle, XCircle, Clock, MapPin, Phone, 
   Mail, Users, Image as ImageIcon, Loader2, ArrowLeft,
-  Bed, Bath, Utensils, Sofa, Trees, Star, AlertCircle
+  Bed, Bath, Utensils, Sofa, Trees, Star, AlertCircle,
+  Gauge, Fuel, Route, Globe, Languages, Calendar as CalendarIcon
 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { sendPartnerListingStatusUpdateAction } from '@/app/actions/mail';
@@ -174,7 +175,7 @@ export default function AdminValidatePage() {
                 <div className="flex flex-wrap items-center gap-4 mt-4 text-slate-500 font-bold text-sm">
                   <MapPin className="h-4 w-4 text-primary" /> {selected.location?.address}
                   <div className="h-1 w-1 bg-slate-300 rounded-full" />
-                  <span className="text-primary bg-primary/5 px-4 py-1.5 rounded-full text-lg">{selected.price.toLocaleString()} {selected.currency || '€'}</span>
+                  <span className="text-primary bg-primary/5 px-4 py-1.5 rounded-full text-lg">{(selected.price || 0).toLocaleString()} {selected.currency || '€'}</span>
                 </div>
               </div>
               <div className="flex flex-col gap-4 w-full lg:w-96">
@@ -239,6 +240,22 @@ export default function AdminValidatePage() {
                         <SpecItem icon={<Bath/>} label="SDB" value={selected.details?.bathroomsCount || 0} />
                         <SpecItem icon={<Sofa/>} label="Salons" value={selected.details?.livingRoomsCount || 0} />
                         <SpecItem icon={<Trees/>} label="Jardins" value={selected.details?.gardensCount || 0} />
+                      </>
+                    )}
+                    {selected.category === 'car_rental' && (
+                      <>
+                        <SpecItem icon={<Gauge/>} label="Transmission" value={selected.details?.transmission || 'N/A'} />
+                        <SpecItem icon={<Fuel/>} label="Carburant" value={selected.details?.fuel || 'N/A'} />
+                        <SpecItem icon={<Users/>} label="Places" value={selected.details?.seats || 0} />
+                        <SpecItem icon={<CalendarIcon/>} label="Année" value={selected.details?.year || 'N/A'} />
+                      </>
+                    )}
+                    {selected.category === 'circuit' && (
+                      <>
+                        <SpecItem icon={<Clock/>} label="Durée" value={selected.details?.duration || 'N/A'} />
+                        <SpecItem icon={<Users/>} label="Max Groupe" value={selected.details?.maxGroupSize || 0} />
+                        <SpecItem icon={<Languages/>} label="Langues" value={selected.details?.languages?.join(', ') || 'N/A'} />
+                        <SpecItem icon={<Star/>} label="Difficulté" value="Modérée" />
                       </>
                     )}
                   </div>

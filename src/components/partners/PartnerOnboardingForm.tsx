@@ -24,8 +24,9 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { generatePartnerDescription } from '@/ai/flows/partner-description-generator';
-import { doc, collection } from 'firebase/firestore';
+import { doc, collection, setDoc } from 'firebase/firestore';
 import { useFirestore, useUser, setDocumentNonBlocking } from '@/firebase';
+import { optimizeImage } from '@/lib/image-optimizer';
 import { useToast } from '@/hooks/use-toast';
 import { OnboardingMap } from '@/components/onboarding-map';
 import { useLanguage } from '@/context/language-context';
@@ -262,7 +263,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
       };
 
       const listingRef = doc(db, 'listings', listingId);
-      setDocumentNonBlocking(listingRef, finalData, { merge: false });
+      await setDoc(listingRef, finalData);
 
       await sendWelcomeEmailAction({
         hostName: formData.firstName,
@@ -291,16 +292,32 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
     }
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [isProcessingPhotos, setIsProcessingPhotos] = useState(false);
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files) {
-      Array.from(files).forEach(file => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setPhotos(prev => [...prev, reader.result as string].slice(0, 10));
-        };
-        reader.readAsDataURL(file);
-      });
+      setIsProcessingPhotos(true);
+      try {
+        const newPhotos: string[] = [];
+        for (const file of Array.from(files)) {
+          const reader = new FileReader();
+          const base64 = await new Promise<string>((resolve) => {
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(file);
+          });
+          
+          // Optimisation HD avant ajout
+          const optimized = await optimizeImage(base64);
+          newPhotos.push(optimized);
+        }
+        setPhotos(prev => [...prev, ...newPhotos].slice(0, 10));
+      } catch (err) {
+        console.error("Photo optimization error:", err);
+        toast({ variant: 'destructive', title: 'Erreur photo', description: 'Une ou plusieurs photos n\'ont pas pu être traitées.' });
+      } finally {
+        setIsProcessingPhotos(false);
+      }
     }
   };
 
