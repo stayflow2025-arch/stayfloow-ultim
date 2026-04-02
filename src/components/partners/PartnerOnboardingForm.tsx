@@ -35,6 +35,7 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import ReCAPTCHA from "react-google-recaptcha";
 import { sendWelcomeEmailAction, sendAdminNewListingNotificationAction } from "@/app/actions/mail";
+import { createListingAction } from "@/app/actions/listing";
 
 const NORMALIZATION_RATES: Record<string, number> = {
   EUR: 1,
@@ -262,8 +263,12 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
         createdAt: new Date().toISOString()
       };
 
-      const listingRef = doc(db, 'listings', listingId);
-      await setDoc(listingRef, finalData);
+      // Persistance Côté Serveur (Plus robuste/Permissions bypass)
+      const result = await createListingAction(finalData as any);
+      
+      if (!result.success) {
+        throw new Error(result.error || "Échec de l'enregistrement sur le serveur");
+      }
 
       await sendWelcomeEmailAction({
         hostName: formData.firstName,
@@ -284,9 +289,13 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
       });
 
       setCurrentStep(5);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Submission Error:", error);
-      toast({ variant: 'destructive', title: 'Erreur', description: 'Échec de la soumission. Veuillez réessayer.' });
+      toast({ 
+        variant: 'destructive', 
+        title: 'Échec de la soumission', 
+        description: error.message || 'Une erreur est survenue lors de l\'enregistrement. Veuillez réessayer.' 
+      });
     } finally {
       setIsSubmitting(false);
     }

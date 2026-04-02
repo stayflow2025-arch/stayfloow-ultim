@@ -6,11 +6,11 @@
 /**
  * Optimise une image Base64 en la redimensionnant et en la compressant.
  * @param base64 L'image source en format Data URL.
- * @param maxWidth Largeur maximale d'arrivée (défaut 1400px pour HD).
- * @param quality Qualité de compression JPEG (0.0 à 1.0).
+ * @param maxWidth Largeur maximale d'arrivée (800px pour sécurité Firestore).
+ * @param quality Qualité de compression JPEG (0.6 pour équilibre poids/visuel).
  * @returns Promise<string> L'image optimisée en Base64.
  */
-export async function optimizeImage(base64: string, maxWidth = 1400, quality = 0.75): Promise<string> {
+export async function optimizeImage(base64: string, maxWidth = 800, quality = 0.6): Promise<string> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.src = base64;
