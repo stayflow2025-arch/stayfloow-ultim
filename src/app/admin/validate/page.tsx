@@ -10,8 +10,10 @@ import { Badge } from '@/components/ui/badge';
 import { 
   CheckCircle, XCircle, Clock, MapPin, Phone, 
   Mail, Users, Image as ImageIcon, Loader2, ArrowLeft,
-  Bed, Bath, Utensils, Sofa, Trees, Star
+  Bed, Bath, Utensils, Sofa, Trees, Star, AlertCircle
 } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { sendPartnerListingStatusUpdateAction } from '@/app/actions/mail';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -43,36 +45,99 @@ export default function AdminValidatePage() {
   
   const { data: listings, isLoading: loading } = useCollection(listingsRef);
   const [selectedId, setSelectedId] = useState<string | null>(initialId);
+  const [adminMessage, setAdminMessage] = useState("");
+  const [isActing, setIsActing] = useState(false);
 
-  const handleApprove = (id: string) => {
-    if (!isAdmin) return;
-    const docRef = doc(db, 'listings', id);
-    updateDoc(docRef, { status: 'approved' })
-      .then(() => {
-        toast({ title: "Annonce approuvée" });
-        if (selectedId === id) setSelectedId(null);
-      })
-      .catch(async (err) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'update' }));
+  const handleApprove = async (listing: any) => {
+    if (!isAdmin || isActing) return;
+    setIsActing(true);
+    try {
+      const docRef = doc(db, 'listings', listing.id);
+      await updateDoc(docRef, { status: 'approved' });
+      
+      await sendPartnerListingStatusUpdateAction({
+        status: 'approved',
+        listingId: listing.id,
+        itemName: listing.details?.name,
+        hostName: listing.partnerInfo?.firstName,
+        hostEmail: listing.partnerInfo?.email,
+        adminMessage: adminMessage || "Votre annonce a été validée avec succès."
       });
+
+      toast({ title: "Annonce approuvée et partenaire notifié" });
+      setAdminMessage("");
+      if (selectedId === listing.id) setSelectedId(null);
+    } catch (err) {
+      console.error(err);
+      toast({ variant: "destructive", title: "Erreur lors de l'approbation" });
+    } finally {
+      setIsActing(false);
+    }
   };
 
-  const handleReject = (id: string) => {
-    if (!isAdmin) return;
-    const docRef = doc(db, 'listings', id);
-    updateDoc(docRef, { status: 'rejected' })
-      .then(() => {
-        toast({ variant: "destructive", title: "Annonce refusée" });
-        if (selectedId === id) setSelectedId(null);
-      })
-      .catch(async (err) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'update' }));
+  const handleReject = async (listing: any) => {
+    if (!isAdmin || isActing) return;
+    setIsActing(true);
+    try {
+      const docRef = doc(db, 'listings', listing.id);
+      await updateDoc(docRef, { status: 'rejected' });
+
+      await sendPartnerListingStatusUpdateAction({
+        status: 'rejected',
+        listingId: listing.id,
+        itemName: listing.details?.name,
+        hostName: listing.partnerInfo?.firstName,
+        hostEmail: listing.partnerInfo?.email,
+        adminMessage: adminMessage || "Malheureusement, votre annonce ne correspond pas à nos critères actuels."
       });
+
+      toast({ variant: "destructive", title: "Annonce refusée et partenaire notifié" });
+      setAdminMessage("");
+      if (selectedId === listing.id) setSelectedId(null);
+    } catch (err) {
+      console.error(err);
+      toast({ variant: "destructive", title: "Erreur lors du refus" });
+    } finally {
+      setIsActing(false);
+    }
+  };
+
+  const handleHold = async (listing: any) => {
+    if (!isAdmin || isActing || !adminMessage) {
+      toast({ variant: "destructive", title: "Message requis", description: "Veuillez expliquer les modifications nécessaires." });
+      return;
+    }
+    setIsActing(true);
+    try {
+      const docRef = doc(db, 'listings', listing.id);
+      await updateDoc(docRef, { 
+        status: 'on_hold',
+        lastAdminComment: adminMessage
+      });
+
+      await sendPartnerListingStatusUpdateAction({
+        status: 'on_hold',
+        listingId: listing.id,
+        itemName: listing.details?.name,
+        hostName: listing.partnerInfo?.firstName,
+        hostEmail: listing.partnerInfo?.email,
+        adminMessage: adminMessage
+      });
+
+      toast({ title: "Demande de modification envoyée" });
+      setAdminMessage("");
+      if (selectedId === listing.id) setSelectedId(null);
+    } catch (err) {
+      console.error(err);
+      toast({ variant: "destructive", title: "Erreur lors de la mise en attente" });
+    } finally {
+      setIsActing(false);
+    }
   };
 
   if (isUserLoading || !isAdmin) return <div className="flex h-screen items-center justify-center bg-slate-900 text-white"><Loader2 className="animate-spin h-10 w-10 text-primary" /></div>;
 
-  const pending = listings?.filter(l => l.status === 'pending') || [];
+  const pending = listings?.filter(l => l.status === 'pending' || l.status === 'on_hold') || [];
   const selected = listings?.find(l => l.id === (selectedId || initialId));
 
   return (
@@ -112,9 +177,43 @@ export default function AdminValidatePage() {
                   <span className="text-primary bg-primary/5 px-4 py-1.5 rounded-full text-lg">{selected.price.toLocaleString()} {selected.currency || '€'}</span>
                 </div>
               </div>
-              <div className="flex gap-4 w-full lg:w-auto">
-                <Button variant="outline" onClick={() => handleReject(selected.id)} className="flex-1 border-red-200 text-red-600 h-14 px-8 font-black rounded-2xl transition-all uppercase text-[10px]">Refuser</Button>
-                <Button onClick={() => handleApprove(selected.id)} className="flex-1 bg-primary text-white h-14 px-10 font-black rounded-2xl shadow-xl transition-all uppercase text-[10px]">Approuver</Button>
+              <div className="flex flex-col gap-4 w-full lg:w-96">
+                <div className="space-y-4 bg-slate-50 p-6 rounded-3xl border border-slate-100 shadow-inner">
+                  <h4 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    <AlertCircle className="h-3 w-3" /> Actions Administrateur
+                  </h4>
+                  <Textarea 
+                    placeholder="Écrivez un message ou une consigne pour le partenaire (obligatoire pour 'En attente')..."
+                    className="h-24 bg-white border-slate-200 rounded-xl resize-none text-xs font-medium"
+                    value={adminMessage}
+                    onChange={(e) => setAdminMessage(e.target.value)}
+                  />
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => handleHold(selected)} 
+                      disabled={isActing}
+                      className="flex-1 bg-amber-50 border-amber-200 text-amber-700 h-10 font-black rounded-xl text-[9px] uppercase transition-all hover:bg-amber-100"
+                    >
+                      En attente
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => handleReject(selected)} 
+                      disabled={isActing}
+                      className="flex-1 bg-red-50 border-red-200 text-red-700 h-10 font-black rounded-xl text-[9px] uppercase transition-all hover:bg-red-100"
+                    >
+                      Refuser
+                    </Button>
+                  </div>
+                  <Button 
+                    onClick={() => handleApprove(selected)} 
+                    disabled={isActing}
+                    className="w-full bg-primary text-white h-12 font-black rounded-xl shadow-lg shadow-primary/20 text-[10px] uppercase transition-all hover:scale-[1.02]"
+                  >
+                    {isActing ? <Loader2 className="animate-spin h-4 w-4" /> : "Approuver et Publier"}
+                  </Button>
+                </div>
               </div>
             </div>
 

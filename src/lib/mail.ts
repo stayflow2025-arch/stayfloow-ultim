@@ -185,3 +185,30 @@ export const sendProspectEmail = async ({ prospectName, prospectEmail, sourcePla
   return triggerEmail(prospectEmail, subject, body);
 };
 
+/**
+ * Prévient l'admin (stayflow2025@gmail.com) d'une nouvelle annonce.
+ */
+export const sendAdminNewListingNotification = async (data: any) => {
+  const adminEmail = "stayflow2025@gmail.com";
+  const { subject, body } = await getEmailTemplate("adminListingNotification", data);
+  return triggerEmail(adminEmail, subject, body);
+};
+
+/**
+ * Informe le partenaire du résultat de la validation de son annonce.
+ */
+export const sendPartnerListingStatusUpdate = async (data: any) => {
+  const statusLabels: Record<string, string> = {
+    'approved': 'Approuvée (En ligne) ✅',
+    'rejected': 'Refusée ❌',
+    'on_hold': 'En attente de modifications 📝'
+  };
+
+  const { subject, body } = await getEmailTemplate("partnerListingUpdate", {
+    ...data,
+    statusLabel: statusLabels[data.status] || data.status
+  });
+
+  return triggerEmail(data.hostEmail, subject, body);
+};
+

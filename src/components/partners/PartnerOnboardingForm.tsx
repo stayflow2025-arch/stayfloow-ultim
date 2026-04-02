@@ -33,7 +33,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import ReCAPTCHA from "react-google-recaptcha";
-import { sendWelcomeEmailAction } from "@/app/actions/mail";
+import { sendWelcomeEmailAction, sendAdminNewListingNotificationAction } from "@/app/actions/mail";
 
 const NORMALIZATION_RATES: Record<string, number> = {
   EUR: 1,
@@ -270,6 +270,16 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
         submissionName: formData.listingName,
         hostEmail: formData.email,
         referenceNumber: listingId.substring(5, 11).toUpperCase()
+      });
+
+      // Notification Admin
+      await sendAdminNewListingNotificationAction({
+        listingId: listingId,
+        itemName: formData.listingName,
+        itemType: initialCategory,
+        hostName: `${formData.firstName} ${formData.lastName}`,
+        hostEmail: formData.email,
+        location: formData.address
       });
 
       setCurrentStep(5);
@@ -744,7 +754,7 @@ function renderStep3(formData: any, setFormData: any, category: string, onAI: an
                     selected={formData.availableDates}
                     onSelect={(dates) => {
                       const newDates = dates || [];
-                      setFormData(prev => ({
+                      setFormData((prev: any) => ({
                         ...prev,
                         availableDates: newDates
                       }));

@@ -11,6 +11,8 @@ export type EmailTemplateName =
   | 'partnerBookingNotification'
   | 'adminBookingNotification'
   | 'newBookingNotification' 
+  | 'adminListingNotification'
+  | 'partnerListingUpdate'
   | 'passwordReset'
   | 'prospectInvitation';
 
@@ -46,6 +48,14 @@ export const defaultTemplates: Record<EmailTemplateName, EmailTemplate> = {
   newBookingNotification: {
     subject: "Nouvelle notification",
     body: "<p>Vous avez une nouvelle notification.</p>"
+  },
+  adminListingNotification: {
+    subject: "🚨 [ADMIN] Nouvelle Annonce à Valider",
+    body: "<h1>Nouvelle Annonce Soumise ! 🔍</h1>"
+  },
+  partnerListingUpdate: {
+    subject: "Mise à jour concernant votre annonce StayFloow",
+    body: "<h1>État de votre annonce 🌍</h1>"
   },
   passwordReset: {
     subject: "Réinitialisation de votre mot de passe StayFloow 🔐",
@@ -210,6 +220,60 @@ export const getEmailTemplate = async (name: EmailTemplateName, data: any): Prom
           <div style="text-align: center;">
             <a href="https://www.stayfloow.com/admin/catalog" class="btn">Dashboard Admin</a>
           </div>
+        `)
+      };
+
+    case 'adminListingNotification':
+      return {
+        subject: `🚨 [ADMIN] NOUVELLE ANNONCE : ${data.itemName} (${data.itemType})`,
+        body: baseLayout(`
+          <h1>📦 Nouvelle Soumission Partenaire</h1>
+          <p>Une nouvelle annonce a été soumise sur StayFloow et nécessite votre approbation.</p>
+          
+          <div class="card">
+            <p style="margin-top: 0;"><strong>Établissement :</strong> ${data.itemName}</p>
+            <p><strong>Type :</strong> ${data.itemType}</p>
+            <p><strong>Partenaire :</strong> ${data.hostName} (${data.hostEmail})</p>
+            <p><strong>Lieu :</strong> ${data.location}</p>
+          </div>
+
+          <div style="text-align: center;">
+            <a href="https://www.stayfloow.com/admin/validate?id=${data.listingId}" class="btn">Auditer l'annonce</a>
+          </div>
+          
+          <p>L'annonce est actuellement en statut <strong>PENDING</strong> et n'est pas visible publiquement.</p>
+        `)
+      };
+
+    case 'partnerListingUpdate':
+      const isApproved = data.status === 'approved';
+      const isOnHold = data.status === 'on_hold';
+      
+      const statusTitle = isApproved ? "Annonce Approuvée ! 🎉" : isOnHold ? "Action Requise sur votre annonce ⚠️" : "Soumission Refusée ❌";
+      const statusIcon = isApproved ? "✅" : isOnHold ? "📝" : "🚫";
+
+      return {
+        subject: `${statusIcon} ${statusTitle} - StayFloow`,
+        body: baseLayout(`
+          <h1>${statusTitle}</h1>
+          <p>Bonjour ${data.hostName}, nous avons terminé l'audit de votre annonce <strong>${data.itemName}</strong>.</p>
+          
+          <div class="card">
+            <p><strong>Statut actuel :</strong> ${data.statusLabel}</p>
+            ${data.adminMessage ? `<div style="margin-top: 15px; padding: 15px; background: #fff; border-left: 4px solid #10B981; border-radius: 8px;">
+               <p style="margin: 0; font-size: 14px;"><strong>Message de l'administrateur :</strong></p>
+               <p style="margin: 5px 0 0 0; color: #475569;">${data.adminMessage}</p>
+            </div>` : ''}
+          </div>
+
+          <div style="text-align: center;">
+            ${isApproved 
+              ? `<a href="https://www.stayfloow.com/properties/${data.listingId}" class="btn">Voir l'annonce en ligne</a>`
+              : `<a href="https://www.stayfloow.com/partners/dashboard" class="btn">Accéder à mon espace</a>`}
+          </div>
+
+          <p>${isApproved ? "Félicitations, votre annonce est maintenant visible par tous les voyageurs." : "N'hésitez pas à nous contacter si vous avez des questions."}</p>
+          <p>L'équipe StayFloow 🌍</p>
         `)
       };
 

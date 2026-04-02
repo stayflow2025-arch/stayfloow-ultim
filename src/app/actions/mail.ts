@@ -26,3 +26,11 @@ export async function sendPasswordResetEmailAction(params: { userEmail: string; 
 export async function sendProspectEmailAction(params: { prospectName: string, prospectEmail: string, sourcePlatform: string }) {
   return await mail.sendProspectEmail(params);
 }
+
+export async function sendAdminNewListingNotificationAction(params: any) {
+  return await mail.sendAdminNewListingNotification(params);
+}
+
+export async function sendPartnerListingStatusUpdateAction(params: any) {
+  return await mail.sendPartnerListingStatusUpdate(params);
+}
