@@ -40,11 +40,19 @@ export default function PartnerDashboardPage() {
   // Calcul des statistiques
   const stats = useMemo(() => {
     if (!listings || !bookings) return { active: 0, pending: 0, revenue: 0, bookingsCount: 0 };
+    
+    // Sécurité supplémentaire : s'assurer que listings et bookings sont des tableaux
+    const safeListings = Array.isArray(listings) ? listings : [];
+    const safeBookings = Array.isArray(bookings) ? bookings : [];
+
+    const approvedBookings = safeBookings.filter(b => b && b.status === 'approved');
+    const revenueValue = approvedBookings.reduce((acc, b) => acc + (Number(b?.totalPrice) || 0), 0) * 0.85;
+
     return {
-      active: listings.filter(l => l.status === 'approved').length,
-      pending: listings.filter(l => l.status === 'pending').length,
-      bookingsCount: bookings.length,
-      revenue: bookings.filter(b => b.status === 'approved').reduce((acc, b) => acc + (b.totalPrice || 0), 0) * 0.85
+      active: safeListings.filter(l => l && l.status === 'approved').length,
+      pending: safeListings.filter(l => l && (l.status === 'pending' || l.status === 'on_hold')).length,
+      bookingsCount: safeBookings.length,
+      revenue: isNaN(revenueValue) ? 0 : revenueValue
     };
   }, [listings, bookings]);
 
