@@ -156,8 +156,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
       // Note: Dans le cas d'un onboarding pur, listingId n'existe pas encore.
       // Cette logique est prête pour le cas d'une édition ou si un listingId est fourni.
       // @ts-ignore - On pourrait passer l'id du listing en prop si disponible
-      const currentListingId = formData.id || null; 
-      if (!currentListingId) return;
+      if (!currentListingId || !db) return;
 
       try {
         const q = query(
@@ -450,7 +449,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
           </div>
         )}
 
-        {currentStep === 3 && renderStep3(formData, setFormData, initialCategory, handleAIEnhance, isGenerating, t)}
+        {currentStep === 3 && renderStep3(formData, setFormData, initialCategory, handleAIEnhance, isGenerating, t, bookedDates)}
         
         {currentStep === 4 && (
           <div className="space-y-10">
@@ -614,7 +613,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
   );
 }
 
-function renderStep3(formData: any, setFormData: any, category: string, onAI: any, isGen: boolean, t: any) {
+function renderStep3(formData: any, setFormData: any, category: string, onAI: any, isGen: boolean, t: any, bookedDates: Date[]) {
   const toggleAmenity = (id: string) => {
     setFormData((prev: any) => ({
       ...prev,
@@ -767,7 +766,7 @@ function renderStep3(formData: any, setFormData: any, category: string, onAI: an
                   </div>
                 </div>
 
-                <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-white flex justify-center">
+                <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-white flex justify-center w-full max-w-[350px] mx-auto relative">
                   <Calendar
                     mode="multiple"
                     selected={formData.availableDates}
@@ -784,6 +783,10 @@ function renderStep3(formData: any, setFormData: any, category: string, onAI: an
                     ]}
                     className="border-none p-0"
                     numberOfMonths={1}
+                    classNames={{
+                      button_previous: "absolute left-4",
+                      button_next: "absolute right-4",
+                    }}
                   />
                 </div>
               </div>
@@ -898,7 +901,7 @@ function renderStep3(formData: any, setFormData: any, category: string, onAI: an
                     )}
                   </div>
                 </div>
-                <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-white flex justify-center">
+                <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-white flex justify-center w-full max-w-[350px] mx-auto relative">
                   <Calendar
                     mode="multiple"
                     selected={formData.availableDates}
@@ -910,8 +913,15 @@ function renderStep3(formData: any, setFormData: any, category: string, onAI: an
                       }));
                     }}
                     locale={fr}
-                    disabled={{ before: new Date() }}
+                    disabled={[
+                      { before: new Date() },
+                      ...bookedDates.map(d => ({ from: d, to: d }))
+                    ]}
                     className="border-none p-0"
+                    classNames={{
+                      button_previous: "absolute left-4",
+                      button_next: "absolute right-4",
+                    }}
                   />
                 </div>
               </div>
