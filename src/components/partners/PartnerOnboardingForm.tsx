@@ -158,6 +158,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
       // Note: Dans le cas d'un onboarding pur, listingId n'existe pas encore.
       // Cette logique est prête pour le cas d'une édition ou si un listingId est fourni.
       // @ts-ignore - On pourrait passer l'id du listing en prop si disponible
+      const currentListingId = (formData as any).id || null; 
       if (!currentListingId || !db) return;
 
       try {
