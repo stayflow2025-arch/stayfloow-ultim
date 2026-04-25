@@ -31,8 +31,13 @@ export function FirebaseErrorListener() {
 
   // On re-render, if an error exists in state, throw it.
   if (error) {
+    // On ignore ou on réduit la sévérité des erreurs sur la collection 'reviews' (non bloquantes)
+    if (error.message?.toLowerCase().includes('reviews') || (error as any).path?.includes('reviews')) {
+      console.warn("[STAYFLOOW REVIEWS INFO] Les avis sont masqués car vous n'êtes pas connecté ou les permissions sont restreintes.");
+      return null;
+    }
+    
     console.error("[STAYFLOOW FIREBASE ERROR]", error);
-    // throw error; // Temporairement désactivé pour éviter de faire planter tout le site sur une erreur d'avis
   }
 
   // This component renders nothing.
