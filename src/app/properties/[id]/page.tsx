@@ -12,8 +12,10 @@ import {
   Leaf, Info, Train, Plane, FerrisWheel, Bed, Bath,
   Globe, Languages, Map as MapIcon, Calendar as CalendarIcon,
   Search, Menu, User, Bell, Heart as HeartIcon,
-  Image as ImageIcon, Share
+  Image as ImageIcon, Share,
+  ThumbsUp, ThumbsDown, MessageSquare
 } from 'lucide-react';
+import { Progress } from "@/components/ui/progress";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -46,6 +48,15 @@ import AdvancedSearchBar from '@/components/search/AdvancedSearchBar';
 
 export default function PropertyPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-slate-50"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>}>
+      <PropertyPageContent id={id} />
+    </Suspense>
+  );
+}
+
+function PropertyPageContent({ id }: { id: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const db = useFirestore();
@@ -175,7 +186,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
   const surroundings = useMemo(() => {
     if (!property) return [];
     const address = property.location?.address || property.location || "";
-    if (typeof address !== 'string') return [];
+    if (typeof address !== 'string' || address.length < 2) return [];
     
     const locationLower = address.toLowerCase();
     const data = [
@@ -218,6 +229,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
   const photos = property.photos || property.images || [];
   const propertyName = property.details?.name || property.name;
   const rating = property.rating || 8.5;
+  const placeholderImg = 'https://picsum.photos/seed/stay/800/600';
 
   return (
     <div className="min-h-screen bg-white pb-20">
@@ -237,13 +249,13 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
             <div className="space-y-2">
               <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight leading-tight">{propertyName}</h1>
               <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(property.location?.address || property.location)}`}
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(String(property.location?.address || property.location || ""))}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-sm text-slate-600 hover:text-primary transition-colors cursor-pointer"
               >
                 <MapPin className="h-4 w-4 text-primary shrink-0" />
-                <span className="underline decoration-dotted underline-offset-4">{property.location?.address || property.location}</span>
+                <span className="underline decoration-dotted underline-offset-4">{String(property.location?.address || property.location || "")}</span>
               </a>
             </div>
             <div className="flex items-center gap-3 w-full md:w-auto">
@@ -256,13 +268,13 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
               className="md:col-span-2 md:row-span-2 relative cursor-pointer group"
               onClick={() => { setCurrentPhotoIndex(0); setLightboxOpen(true); }}
             >
-              <Image src={photos[0]} alt="Stay" fill className="object-cover group-hover:opacity-90 transition-opacity" />
+              <Image src={photos[0] || placeholderImg} alt="Stay" fill className="object-cover group-hover:opacity-90 transition-opacity" />
             </div>
             <div
               className="hidden md:block relative cursor-pointer group"
               onClick={() => { setCurrentPhotoIndex(1 >= photos.length ? 0 : 1); setLightboxOpen(true); }}
             >
-              <Image src={photos[1] || photos[0]} alt="Stay" fill className="object-cover group-hover:opacity-90 transition-opacity" />
+              <Image src={photos[1] || photos[0] || placeholderImg} alt="Stay" fill className="object-cover group-hover:opacity-90 transition-opacity" />
             </div>
             <div className="md:row-span-2 relative bg-primary flex flex-col items-center justify-center text-white p-4">
               <div className="text-4xl font-black mb-1">{aggregateRating.overall}</div>
@@ -273,7 +285,7 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
               className="hidden md:block relative cursor-pointer group"
               onClick={() => { setCurrentPhotoIndex(2 >= photos.length ? 0 : 2); setLightboxOpen(true); }}
             >
-              <Image src={photos[2] || photos[0]} alt="Stay" fill className="object-cover group-hover:opacity-90 transition-opacity" />
+              <Image src={photos[2] || photos[0] || placeholderImg} alt="Stay" fill className="object-cover group-hover:opacity-90 transition-opacity" />
             </div>
           </div>
         </section>
@@ -295,10 +307,10 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                   <TableRow key={room.id} className="hover:bg-slate-50 border-slate-100">
                     <TableCell className="py-6">
                       <h4 className="font-black text-primary text-lg">{room.name}</h4>
-                      <ul className="mt-2 space-y-1">{room.specs.map((s, i) => <li key={i} className="text-xs text-slate-500 flex items-center gap-2"><Check className="h-3 w-3 text-primary" /> {s}</li>)}</ul>
+                      <ul className="mt-2 space-y-1">{(room.specs || []).map((s: string, i: number) => <li key={i} className="text-xs text-slate-500 flex items-center gap-2"><Check className="h-3 w-3 text-primary" /> {s}</li>)}</ul>
                     </TableCell>
                     <TableCell className="py-6"><p className="text-green-600 text-xs font-bold flex items-center gap-1"><Check className="h-3 w-3" /> Annulation GRATUITE</p></TableCell>
-                    <TableCell className="py-6"><p className="text-xl font-black text-slate-900">{isMounted ? formatPrice(room.price * nights) : '...'}</p><p className="text-[10px] text-slate-400 uppercase font-black">Taxes incluses</p></TableCell>
+                    <TableCell className="py-6"><p className="text-xl font-black text-slate-900">{isMounted ? formatPrice((room.price || 85) * nights) : '...'}</p><p className="text-[10px] text-slate-400 uppercase font-black">Taxes incluses</p></TableCell>
                     <TableCell className="py-6">
                       <Select value={selectedRooms[room.id]?.toString() || "0"} onValueChange={(v) => setSelectedRooms({ ...selectedRooms, [room.id]: parseInt(v) })}>
                         <SelectTrigger className="w-24 h-12 bg-white font-black"><SelectValue /></SelectTrigger>
@@ -385,59 +397,64 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
                       <span>{c.label}</span>
                       <span>{(aggregateRating.categories as any)[c.key] || '8.5'}</span>
                    </div>
-                   <Progress value={(parseFloat((aggregateRating.categories as any)[c.key] || '8.5') / 4) * 100} className="h-1.5 bg-slate-100" />
+                   <Progress value={(parseFloat((aggregateRating.categories as any)[c.key] || '8.5') / 10) * 100} className="h-1.5 bg-slate-100" />
                 </div>
               ))}
            </div>
 
            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
-              {reviews?.map((r: any) => (
-                <Card key={r.id} className="border-none shadow-xl rounded-3xl p-8 bg-white hover:scale-[1.01] transition-transform">
-                   <div className="flex justify-between items-start mb-6">
-                      <div className="flex items-center gap-4">
-                         <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center text-primary font-black text-xl">
-                            {r.customerName?.charAt(0) || 'C'}
-                         </div>
-                         <div>
-                            <h4 className="font-black text-slate-900">{r.customerName}</h4>
-                            <p className="text-[10px] text-slate-400 font-black uppercase tracking-tighter">
-                               Voyage en {r.transport || 'voiture'} • {format(new Date(r.createdAt), 'MMMM yyyy', { locale: fr })}
-                            </p>
-                         </div>
-                      </div>
-                      <div className="bg-primary/10 text-primary font-black px-3 py-1 rounded-lg text-lg">
-                         {r.overallRating}
-                      </div>
-                   </div>
-
-                   <h5 className="font-black text-lg text-slate-800 mb-4 italic leading-tight">"{r.commentSummary}"</h5>
-                   
-                   <div className="space-y-3">
-                      {r.commentLikes && (
-                        <div className="flex gap-3 text-sm font-medium text-slate-600">
-                           <ThumbsUp className="h-4 w-4 text-green-500 shrink-0 mt-0.5" />
-                           <p>{r.commentLikes}</p>
-                        </div>
-                      )}
-                      {r.commentDislikes && (
-                        <div className="flex gap-3 text-sm font-medium text-slate-500">
-                           <ThumbsDown className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" />
-                           <p>{r.commentDislikes}</p>
-                        </div>
-                      )}
-                   </div>
-
-                   {r.photos && r.photos.length > 0 && (
-                     <div className="flex gap-2 mt-6 overflow-x-auto pb-2 no-scrollbar">
-                        {r.photos.map((p: string, i: number) => (
-                          <div key={i} className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-slate-100">
-                             <Image src={p} alt="Review" fill className="object-cover" />
+              {reviews?.map((r: any) => {
+                const reviewDate = r.createdAt?.toDate ? r.createdAt.toDate() : new Date(r.createdAt || Date.now());
+                const safeDate = isNaN(reviewDate.getTime()) ? new Date() : reviewDate;
+                
+                return (
+                  <Card key={r.id} className="border-none shadow-xl rounded-3xl p-8 bg-white hover:scale-[1.01] transition-transform">
+                    <div className="flex justify-between items-start mb-6">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center text-primary font-black text-xl">
+                              {r.customerName?.charAt(0) || 'C'}
                           </div>
-                        ))}
-                     </div>
-                   )}
-                </Card>
-              ))}
+                          <div>
+                              <h4 className="font-black text-slate-900">{r.customerName || 'Voyageur StayFloow'}</h4>
+                              <p className="text-[10px] text-slate-400 font-black uppercase tracking-tighter">
+                                Voyage en {r.transport || 'voiture'} • {format(safeDate, 'MMMM yyyy', { locale: fr })}
+                              </p>
+                          </div>
+                        </div>
+                        <div className="bg-primary/10 text-primary font-black px-3 py-1 rounded-lg text-lg">
+                          {r.overallRating || 8}
+                        </div>
+                    </div>
+
+                    <h5 className="font-black text-lg text-slate-800 mb-4 italic leading-tight">"{r.commentSummary || 'Aucun résumé disponible'}"</h5>
+                    
+                    <div className="space-y-3">
+                        {r.commentLikes && (
+                          <div className="flex gap-3 text-sm font-medium text-slate-600">
+                             <ThumbsUp className="h-4 w-4 text-green-500 shrink-0 mt-0.5" />
+                             <p>{r.commentLikes}</p>
+                          </div>
+                        )}
+                        {r.commentDislikes && (
+                          <div className="flex gap-3 text-sm font-medium text-slate-500">
+                             <ThumbsDown className="h-4 w-4 text-slate-400 shrink-0 mt-0.5" />
+                             <p>{r.commentDislikes}</p>
+                          </div>
+                        )}
+                    </div>
+
+                    {r.photos && r.photos.length > 0 && (
+                      <div className="flex gap-2 mt-6 overflow-x-auto pb-2 no-scrollbar">
+                          {r.photos.map((p: string, i: number) => (
+                            <div key={i} className="relative w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-slate-100">
+                                <Image src={p || placeholderImg} alt="Review" fill className="object-cover" />
+                            </div>
+                          ))}
+                      </div>
+                    )}
+                  </Card>
+                );
+              })}
 
               {(!reviews || reviews.length === 0) && (
                 <div className="md:col-span-2 py-20 text-center bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
@@ -502,10 +519,15 @@ export default function PropertyPage({ params }: { params: Promise<{ id: string 
   );
 
   function handleBookingClick() {
-    const query = new URLSearchParams({ from: dates.from.toISOString(), to: dates.to.toISOString(), total: totalBookingPrice.toString() }).toString();
+    const query = new URLSearchParams({ 
+      from: dates.from instanceof Date && !isNaN(dates.from.getTime()) ? dates.from.toISOString() : new Date().toISOString(), 
+      to: dates.to instanceof Date && !isNaN(dates.to.getTime()) ? dates.to.toISOString() : addDays(new Date(), 3).toISOString(), 
+      total: (totalBookingPrice || 0).toString() 
+    }).toString();
     router.push(`/properties/${id}/book?${query}`);
   }
 }
+
 
 function TabButton({ active, label, onClick }: any) {
   return (

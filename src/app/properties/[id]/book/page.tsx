@@ -22,6 +22,7 @@ import { addDays, differenceInDays, format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { properties as mockProperties } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -69,7 +70,12 @@ function PropertyBookingContent({ id }: { id: string }) {
   });
   
   const docRef = useMemoFirebase(() => doc(db, 'listings', id), [db, id]);
-  const { data: property, isLoading: loading } = useDoc(docRef);
+  const { data: dbProperty, isLoading: loading } = useDoc(docRef);
+
+  const property = React.useMemo(() => {
+    if (dbProperty) return dbProperty;
+    return mockProperties.find(p => p.id === id);
+  }, [dbProperty, id]);
 
   const form = useForm<z.infer<typeof bookingSchema>>({
     resolver: zodResolver(bookingSchema),
@@ -180,7 +186,10 @@ function PropertyBookingContent({ id }: { id: string }) {
             <p className="text-slate-500 mb-8 font-medium">Félicitations, votre séjour est officiellement réservé.</p>
             <Button className="w-full h-14 bg-primary text-white font-black rounded-xl shadow-lg" onClick={() => router.push('/profile/bookings')}>Voir mes réservations</Button>
           </Card>
-          <CrossSellCard location={property?.location?.address?.split(',')[0].trim() || "Alger"} bookedItemType="property" />
+          <CrossSellCard 
+            location={typeof property?.location === 'string' ? property.location.split(',')[0].trim() : property?.location?.address?.split(',')[0].trim() || "Alger"} 
+            bookedItemType="property" 
+          />
         </div>
       </div>
     );
@@ -270,7 +279,7 @@ function PropertyBookingContent({ id }: { id: string }) {
                 <CardContent className="p-8 space-y-6">
                   <h2 className="text-2xl font-black truncate leading-tight">{property?.details?.name}</h2>
                   <div className="flex flex-col gap-2 text-xs font-bold text-slate-400">
-                    <div className="flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" /> {property?.location?.address || property?.location}</div>
+                    <div className="flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" /> {String(property?.location?.address || property?.location || "")}</div>
                     <div className="flex items-center gap-2"><CalendarIcon className="h-4 w-4 text-primary" /> Du {format(date.from, "dd MMM", { locale: fr })} au {format(date.to, "dd MMM yyyy", { locale: fr })}</div>
                   </div>
                   <Separator />
