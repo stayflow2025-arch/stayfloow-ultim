@@ -1,24 +1,11 @@
 import { HomeClient } from '@/components/home-client';
-import { getAdminDb } from '@/firebase/admin';
 
 /**
- * Page racine de StayFloow.com (Version Locale Master).
- * Implémentée en tant que Server Component pour un SEO et une vitesse de build optimisés.
+ * Page racine de StayFloow.com.
+ * Version stabilisée sans appels Admin au premier rendu pour éviter les crashs Runtime Firebase.
  */
 export default async function Home() {
-  let siteConfig = null;
-
-  try {
-    const db = getAdminDb();
-    if (db) {
-      const configSnap = await db.collection("settings").doc("siteConfig").get();
-      if (configSnap.exists) {
-        siteConfig = configSnap.data();
-      }
-    }
-  } catch (error) {
-    console.error("Erreur récupération siteConfig SSR:", error);
-  }
-
-  return <HomeClient initialSiteConfig={siteConfig} />;
+  // Désactivation temporaire du fetch SSR pour garantir l'affichage du site
+  return <HomeClient initialSiteConfig={null} />;
 }
+
