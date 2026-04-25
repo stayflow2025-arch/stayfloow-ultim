@@ -6,14 +6,16 @@ import { translations, Locale } from './translations';
  * Récupère la locale actuelle côté serveur.
  */
 export async function getLocaleServer(): Promise<Locale> {
-  const cookieStore = await cookies();
-  const locale = cookieStore.get('stayfloow_locale')?.value as Locale;
-  
-  if (locale && ['fr', 'en', 'ar', 'es'].includes(locale)) {
-    return locale;
+  try {
+    const cookieStore = await cookies();
+    const locale = cookieStore.get('stayfloow_locale')?.value as Locale;
+    if (locale && (locale === 'fr' || locale === 'en' || locale === 'ar' || locale === 'es')) {
+      return locale;
+    }
+  } catch (e) {
+    console.error("Error reading locale cookies:", e);
   }
-  
-  return 'fr'; // Par défaut
+  return 'fr'; // Default
 }
 
 /**

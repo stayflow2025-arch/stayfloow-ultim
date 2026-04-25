@@ -9,9 +9,11 @@ export default async function Home() {
   let siteConfig = null;
 
   try {
-    const configSnap = await adminDb.collection("settings").doc("siteConfig").get();
-    if (configSnap.exists) {
-      siteConfig = configSnap.data();
+    if (adminDb) {
+      const configSnap = await adminDb.collection("settings").doc("siteConfig").get();
+      if (configSnap.exists) {
+        siteConfig = configSnap.data();
+      }
     }
   } catch (error) {
     console.error("Erreur récupération siteConfig SSR:", error);

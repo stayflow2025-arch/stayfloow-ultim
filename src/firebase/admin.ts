@@ -12,13 +12,20 @@ let adminApp: App;
 
 if (getApps().length === 0) {
   adminApp = adminInitializeApp({
-    projectId: "studio-6933176808-a0512",
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || process.env.GCLOUD_PROJECT || "studio-6933176808-a0512",
   });
 } else {
   adminApp = getApps()[0];
 }
 
-const adminDb = getFirestore(adminApp);
-const adminAuth = getAuth(adminApp);
+let adminDb: any = null;
+let adminAuth: any = null;
+
+try {
+  adminDb = getFirestore(adminApp);
+  adminAuth = getAuth(adminApp);
+} catch (error) {
+  console.error("Firebase Admin SDK initialization error:", error);
+}
 
 export { adminDb, adminAuth, adminApp };
