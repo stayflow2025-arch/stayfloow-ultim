@@ -30,12 +30,16 @@ export default function PartnerDashboardPage() {
   }, [db, user]);
   const { data: listings, isLoading: listingsLoading } = useCollection(listingsRef);
 
+  // 2. Charger les réservations du partenaire
+  const bookingsRef = useMemoFirebase(() => {
+    if (!user) return null;
+    return query(collection(db, "bookings"), where("ownerId", "==", user.uid), orderBy("createdAt", "desc"), limit(10));
+  }, [db, user]);
+  const { data: bookings, isLoading: bookingsLoading } = useCollection(bookingsRef);
+
   // 3. Charger les avis pour les annonces du partenaire
   const reviewsRef = useMemoFirebase(() => {
     if (!user) return null;
-    // On pourrait filtrer par listingId si on en a beaucoup, 
-    // mais ici on prend les derniers avis publiés pour le partenaire (ownerId ou listingId)
-    // Note: Pour simplifier, on prend les avis où listingId est dans les annonces du partenaire
     return query(collection(db, "reviews"), orderBy("createdAt", "desc"), limit(10));
   }, [db, user]);
   const { data: reviews, isLoading: reviewsLoading } = useCollection(reviewsRef);
