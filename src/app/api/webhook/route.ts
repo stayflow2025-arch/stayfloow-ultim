@@ -41,10 +41,13 @@ export async function POST(req: Request) {
 
     try {
       // Utilisation du SDK Admin pour outrepasser les Security Rules
-      const { adminDb } = await import('@/firebase/admin');
+      const { getAdminDb } = await import('@/firebase/admin');
       const { sendBookingConfirmationEmail } = await import('@/lib/mail');
 
-      const bookingRef = adminDb.collection('bookings').doc(bookingId);
+      const db = getAdminDb();
+      if (!db) throw new Error("Service Admin non disponible");
+
+      const bookingRef = db.collection('bookings').doc(bookingId);
       const bookingDoc = await bookingRef.get();
 
       if (!bookingDoc.exists) {
