@@ -22,7 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { PropertiesMap } from '@/components/properties-map';
+import { DynamicMap } from '@/components/dynamic-map';
 import {
   Sheet,
   SheetContent,
@@ -231,7 +231,7 @@ function SearchResultsContent() {
                 </DialogTitle>
               </DialogHeader>
               <div className="flex-1 relative h-full">
-                <PropertiesMap items={filteredResults} />
+                <DynamicMap items={filteredResults} />
               </div>
             </DialogContent>
           </Dialog>
