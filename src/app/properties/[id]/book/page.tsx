@@ -101,6 +101,10 @@ function PropertyBookingContent({ id }: { id: string }) {
   const fullPrice = totalParam ? parseFloat(totalParam) : (property?.price || 85) * nights;
   const depositPrice = fullPrice * 0.14;
   const onSitePrice = fullPrice * 0.86;
+  const minNights = property?.details?.minNights || 1;
+  const cancellationPolicy = property?.details?.cancellationPolicy || "Flexible";
+  const isBoosted = property?.isBoosted || false;
+  const isValidDuration = nights >= minNights;
 
   const formatCardNumber = (value: string) => {
     return value.replace(/\W/gi, '').replace(/(.{4})/g, '$1 ').trim().substring(0, 19);
@@ -270,7 +274,17 @@ function PropertyBookingContent({ id }: { id: string }) {
                     )}
                   </div>
 
-                  <Button type="submit" disabled={isSubmitting} className="w-full h-16 text-xl font-black bg-primary hover:bg-primary/90 text-white rounded-2xl shadow-xl shadow-primary/20 transition-all active:scale-95 mt-10">
+                  {/* Avertissement de durée minimum */}
+                  {!isValidDuration && (
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-2xl">
+                      <p className="text-sm font-bold text-red-600 flex items-center gap-2">
+                        <Lock className="h-4 w-4" /> Durée minimum de séjour : {minNights} nuits
+                      </p>
+                      <p className="text-xs text-red-500 mt-1">Vous avez sélectionné {nights} nuit(s). Veuillez modifier vos dates pour continuer.</p>
+                    </div>
+                  )}
+
+                  <Button type="submit" disabled={isSubmitting || !isValidDuration} className="w-full h-16 text-xl font-black bg-primary hover:bg-primary/90 text-white rounded-2xl shadow-xl shadow-primary/20 transition-all active:scale-95 mt-10">
                     {isSubmitting ? <Loader2 className="h-6 w-6 animate-spin" /> : (
                       <span>Confirmer & Payer {isMounted && `(${formatPrice(depositPrice)})`}</span>
                     )}
@@ -289,12 +303,20 @@ function PropertyBookingContent({ id }: { id: string }) {
                   <h2 className="text-2xl font-black truncate leading-tight">{property?.details?.name}</h2>
                   <div className="flex flex-col gap-2 text-xs font-bold text-slate-400">
                     <div className="flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" /> {String(property?.location?.address || property?.location || "")}</div>
-                    <div className="flex items-center gap-2"><CalendarIcon className="h-4 w-4 text-primary" /> Du {format(date.from, "dd MMM", { locale: fr })} au {format(date.to, "dd MMM yyyy", { locale: fr })}</div>
+                    <div className="flex items-center gap-2"><CalendarIcon className="h-4 w-4 text-primary" /> Du {format(date.from, "dd MMM", { locale: fr })} au {format(date.to, "dd MMM yyyy", { locale: fr })} ({nights} nuits)</div>
+                    <div className="flex items-center gap-2 text-slate-600 mt-1">
+                      <ShieldCheck className="h-4 w-4 text-emerald-500" /> Annulation : <span className="font-black">{cancellationPolicy}</span>
+                    </div>
                   </div>
                   <Separator />
                   <div className="space-y-4">
+                    {isBoosted && (
+                       <div className="bg-secondary/10 text-secondary px-3 py-2 rounded-xl text-[10px] font-black uppercase flex justify-between items-center">
+                         <span>Offre Promotionnelle (-10% appliqués)</span>
+                       </div>
+                    )}
                     <div className="flex justify-between items-center text-sm font-medium">
-                      <span className="text-slate-500">Prix total</span>
+                      <span className="text-slate-500">Prix total {isBoosted && <span className="line-through text-slate-300 ml-2">{formatPrice(fullPrice / 0.9)}</span>}</span>
                       <span className="font-black text-slate-900">{isMounted ? formatPrice(fullPrice) : "..."}</span>
                     </div>
                     <div className="flex justify-between items-center p-3 bg-primary/5 rounded-xl border border-primary/10">

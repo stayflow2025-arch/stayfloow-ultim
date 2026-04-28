@@ -29,12 +29,24 @@ export function OnboardingMap({ location }: { location?: string }) {
     const timeoutId = setTimeout(async () => {
       setIsLoading(true);
       try {
-        // Utilisation de l'API Nominatim d'OpenStreetMap pour le géocodage (Recherche par texte -> Coordonnées)
-        // Cette API est gratuite et autonome, permettant de découvrir de nouvelles villes automatiquement.
-        const response = await fetch(
+        // 1er essai : recherche complète
+        let response = await fetch(
           `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(location)}&limit=1`
         );
-        const data = await response.json();
+        let data = await response.json();
+        
+        // S'il n'y a pas de résultat, on tente de simplifier la requête
+        // En cherchant juste la dernière partie après la dernière virgule (généralement la ville)
+        if ((!data || data.length === 0) && location.includes(',')) {
+           const parts = location.split(',');
+           const cityPart = parts[parts.length - 1].trim();
+           if (cityPart.length > 2) {
+             response = await fetch(
+               `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cityPart)}&limit=1`
+             );
+             data = await response.json();
+           }
+        }
         
         if (data && data.length > 0) {
           setCoords({

@@ -31,7 +31,35 @@ export type Property = {
 };
 
 export const properties: Property[] = [
-
+  { 
+    id: "hyatt-regency-algiers", 
+    name: "Hyatt Regency Algiers Airport", 
+    rating: 9.4, 
+    location: "Houari Boumediene Airport, Alger, Algérie",
+    price: 155,
+    description: "Hôtel 5 étoiles contemporain situé face au nouveau terminal de l'aéroport international Houari Boumediene. Idéal pour les voyageurs d'affaires.",
+    images: ["/images/listings/hyatt-regency.png"],
+    amenities: ["Wi-Fi gratuit", "Piscine", "Fitness", "Navette Aéroport", "Restaurant", "Business Center"],
+    type: "Hôtel ★★★★★",
+    stars: 5,
+    reviewsCount: 128,
+    isBoosted: true,
+    doubleRoomsCount: 320
+  },
+  { 
+    id: "hotel-el-aurassi", 
+    name: "Hôtel El Aurassi", 
+    rating: 9.1, 
+    location: "2 Boulevard Frantz Fanon, Alger, Algérie",
+    price: 130,
+    description: "Icône de l'hôtellerie algérienne perché sur les hauteurs d'Alger, offrant une vue imprenable sur la baie. Service de prestige.",
+    images: ["/images/listings/el-aurassi.png"],
+    amenities: ["Vue sur mer", "Piscine extérieure", "Tennis", "Parking gratuit", "Restaurants gastronomiques", "Salles de conférence"],
+    type: "Hôtel ★★★★★ (Palace)",
+    stars: 5,
+    reviewsCount: 245,
+    parentalSuitesCount: 15
+  },
   { 
     id: "prop-3", 
     name: "Villa Sahara Dream", 

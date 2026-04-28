@@ -92,8 +92,9 @@ function SearchResultsContent() {
             type: data.details?.type || 'Hôtel',
             isBoosted: data.isBoosted || false,
             stars: data.details?.stars ? parseInt(data.details.stars) : undefined,
+            blockedDates: data.details?.blockedDates || [],
             isInfantFriendly: data.details?.amenities?.includes("Lit bébé / lit supplémentaire") || data.details?.propertyType === 'hotel'
-          } as Property & { isInfantFriendly?: boolean };
+          } as Property & { isInfantFriendly?: boolean, blockedDates?: string[] };
         });
 
         const hiddenMocks = JSON.parse(localStorage.getItem('stayfloow_hidden_mocks') || '[]');
@@ -158,6 +159,21 @@ function SearchResultsContent() {
       if (selectedRatings.length > 0) {
         const minRating = Math.min(...selectedRatings.map(r => parseInt(r)));
         if (p.rating < minRating) return false;
+      }
+
+      // Vérification des dates
+      const fromParam = searchParams.get('from');
+      const toParam = searchParams.get('to');
+      if (fromParam && toParam) {
+        const fromDate = new Date(fromParam);
+        const toDate = new Date(toParam);
+        const blocked = (p as any).blockedDates || [];
+        // Si l'une des dates bloquées se situe dans la plage demandée, on rejette
+        const isBlocked = blocked.some((bDateStr: string) => {
+          const bDate = new Date(bDateStr);
+          return bDate >= fromDate && bDate <= toDate;
+        });
+        if (isBlocked) return false;
       }
 
       return true;

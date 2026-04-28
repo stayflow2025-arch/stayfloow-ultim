@@ -142,7 +142,11 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
     maxGroupSize: 10,
     languages: [] as string[],
     amenities: [] as string[],
-    availableDates: [] as Date[],
+    blockedDates: [] as Date[], // Remplacé availableDates par blockedDates
+    cancellationPolicy: 'Flexible', // Flexible, Modérée, Stricte
+    minNights: 1,
+    iCalUrl: '',
+    stars: 4, // Pour les hôtels
     applyDiscount: false, // Nouvelle option
     useOccupancyPricing: false,
     occupancyPrices: {} as Record<number, number>,
@@ -265,7 +269,10 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
           name: formData.listingName,
           description: formData.description,
           amenities: formData.amenities,
-          availableDates: formData.availableDates.map(d => d.toISOString()),
+          blockedDates: formData.blockedDates.map(d => d.toISOString()),
+          cancellationPolicy: formData.cancellationPolicy,
+          minNights: formData.minNights,
+          iCalUrl: formData.iCalUrl,
           ...(initialCategory === 'accommodation' ? {
             propertyType: formData.propertyType,
             roomsCount: formData.roomsCount,
@@ -278,7 +285,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
             singleRoomsCount: formData.singleRoomsCount,
             doubleRoomsCount: formData.doubleRoomsCount,
             parentalSuitesCount: formData.parentalSuitesCount,
-            stars: 4
+            stars: formData.stars
           } : initialCategory === 'car_rental' ? {
             brand: formData.brand,
             model: formData.model,
@@ -656,13 +663,17 @@ function renderStep3(formData: any, setFormData: any, category: string, onAI: an
           <div className="space-y-6">
             <div className="p-10 bg-slate-50/50 rounded-[3rem] border border-slate-100">
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
-                <Counter icon={<Bed className="h-5 w-5"/>} label="Chambres" value={formData.roomsCount} onChange={(v: number) => setFormData({...formData, roomsCount: v})} />
+                {formData.propertyType !== 'hotel' && (
+                  <Counter icon={<Bed className="h-5 w-5"/>} label="Chambres" value={formData.roomsCount} onChange={(v: number) => setFormData({...formData, roomsCount: v})} />
+                )}
                 <Counter icon={<Bath className="h-5 w-5"/>} label="SDB" value={formData.bathroomsCount} onChange={(v: number) => setFormData({...formData, bathroomsCount: v})} />
                 <Counter icon={<Utensils className="h-5 w-5"/>} label="Cuisines" value={formData.cuisinesCount} onChange={(v: number) => setFormData({...formData, cuisinesCount: v})} /> 
                 <Counter icon={<Users className="h-5 w-5"/>} label="Toilettes" value={formData.toiletsCount} onChange={(v: number) => setFormData({...formData, toiletsCount: v})} /> 
                 <Counter icon={<Sofa className="h-5 w-5"/>} label="Salons" value={formData.livingRoomsCount} onChange={(v: number) => setFormData({...formData, livingRoomsCount: v})} />
                 <Counter icon={<Trees className="h-5 w-5"/>} label="Jardins" value={formData.gardensCount} onChange={(v: number) => setFormData({...formData, gardensCount: v})} />
-                <Counter icon={<Users className="h-5 w-5"/>} label="Capacité" value={formData.maxCapacity} onChange={(v: number) => setFormData({...formData, maxCapacity: v})} />
+                {formData.propertyType !== 'hotel' && (
+                  <Counter icon={<Users className="h-5 w-5"/>} label="Capacité" value={formData.maxCapacity} onChange={(v: number) => setFormData({...formData, maxCapacity: v})} />
+                )}
               </div>
             </div>
           </div>
@@ -670,17 +681,60 @@ function renderStep3(formData: any, setFormData: any, category: string, onAI: an
           {formData.propertyType === 'hotel' && (
             <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500 bg-primary/5 p-8 rounded-[2.5rem] border border-primary/10">
               <h4 className="font-black text-lg text-primary flex items-center gap-2">
-                <Star className="h-5 w-5 fill-primary" /> Configuration des chambres de l'hôtel
+                <Star className="h-5 w-5 fill-primary" /> Configuration de l'hôtel
               </h4>
-              <p className="text-xs text-slate-500 font-bold uppercase tracking-tight">Précisez le nombre de chambres disponibles par catégorie :</p>
+              <div className="mb-6 space-y-2">
+                <Label className="font-bold text-slate-700">Nombre d'étoiles</Label>
+                <Select value={String(formData.stars)} onValueChange={(v) => setFormData({...formData, stars: parseInt(v)})}>
+                  <SelectTrigger className="w-32 bg-white rounded-xl h-12 font-black text-primary">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[1, 2, 3, 4, 5].map(s => (
+                      <SelectItem key={s} value={String(s)}>{s} Étoile{s > 1 ? 's' : ''}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <p className="text-xs text-slate-500 font-bold uppercase tracking-tight">Précisez le nombre de chambres disponibles par catégorie sur StayFloow :</p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <Counter icon={<Bed/>} label="Chambres Seules" value={formData.singleRoomsCount} onChange={(v: number) => setFormData({...formData, singleRoomsCount: v})} light />
+                <Counter icon={<Bed/>} label="Chambres Simples" value={formData.singleRoomsCount} onChange={(v: number) => setFormData({...formData, singleRoomsCount: v})} light />
                 <Counter icon={<Users/>} label="Chambres Doubles" value={formData.doubleRoomsCount} onChange={(v: number) => setFormData({...formData, doubleRoomsCount: v})} light />
-                <Counter icon={<Star/>} label="Suites Parentales (King)" value={formData.parentalSuitesCount} onChange={(v: number) => setFormData({...formData, parentalSuitesCount: v})} light />
+                <Counter icon={<Star/>} label="Suites Parentales" value={formData.parentalSuitesCount} onChange={(v: number) => setFormData({...formData, parentalSuitesCount: v})} light />
               </div>
             </div>
+
           )}
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm">
+            <div className="space-y-3">
+              <Label className="font-bold text-slate-700">Politique d'annulation *</Label>
+              <Select value={formData.cancellationPolicy} onValueChange={(v) => setFormData({...formData, cancellationPolicy: v})}>
+                <SelectTrigger className="w-full bg-slate-50 rounded-xl h-12 font-bold">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Flexible">Flexible (Remboursement jusqu'à 48h avant)</SelectItem>
+                  <SelectItem value="Modérée">Modérée (Remboursement jusqu'à 7 jours avant)</SelectItem>
+                  <SelectItem value="Stricte">Stricte (Non remboursable)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-3">
+              <Label className="font-bold text-slate-700">Durée minimum de séjour *</Label>
+              <Select value={String(formData.minNights)} onValueChange={(v) => setFormData({...formData, minNights: parseInt(v)})}>
+                <SelectTrigger className="w-full bg-slate-50 rounded-xl h-12 font-bold">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1 nuit</SelectItem>
+                  <SelectItem value="2">2 nuits minimum</SelectItem>
+                  <SelectItem value="3">3 nuits minimum</SelectItem>
+                  <SelectItem value="5">5 nuits minimum</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
 
           <div className="space-y-4">
             <Label className="font-black text-lg">Équipements & Inclusions *</Label>
@@ -721,52 +775,69 @@ function renderStep3(formData: any, setFormData: any, category: string, onAI: an
                 <div className="space-y-6">
                   <div className="space-y-3">
                     <p className="text-sm text-slate-500 font-medium leading-relaxed">
-                      Définissez vos périodes de disponibilité par plages de dates. 
+                      Votre hébergement est <strong>visible par défaut</strong>. Bloquez les dates non disponibles si nécessaire (fermeture, ménage).
                     </p>
-                    <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 space-y-2">
-                       <p className="text-[11px] text-primary font-black uppercase tracking-widest flex items-center gap-2">
-                         <Wand2 className="h-3 w-3" /> Comment faire ?
+                    <div className="p-4 bg-red-50 rounded-2xl border border-red-100 space-y-2">
+                       <p className="text-[11px] text-red-600 font-black uppercase tracking-widest flex items-center gap-2">
+                         <Wand2 className="h-3 w-3" /> Comment bloquer des dates ?
                        </p>
                        <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                         1. Cliquez sur le <strong>début</strong> de votre période.<br/>
+                         1. Cliquez sur le <strong>début</strong> de la période à bloquer.<br/>
                          2. Cliquez sur la <strong>fin</strong> de la période.<br/>
-                         3. Répétez pour ajouter d'autres plages distinctes.
+                         3. Répétez pour bloquer d'autres plages distinctes.
                        </p>
                     </div>
                   </div>
                   
                   <div className="flex flex-wrap gap-2">
-                    {formData.availableDates.length > 0 ? (
-                      formData.availableDates.sort((a: Date, b: Date) => a.getTime() - b.getTime()).slice(0, 8).map((date: Date, idx: number) => (
-                        <Badge key={idx} variant="secondary" className="bg-white border-slate-200 text-slate-700 px-3 py-2 rounded-xl font-bold flex items-center gap-2 shadow-sm animate-in fade-in zoom-in-95">
+                    {formData.blockedDates.length > 0 ? (
+                      formData.blockedDates.sort((a: Date, b: Date) => a.getTime() - b.getTime()).slice(0, 8).map((date: Date, idx: number) => (
+                        <Badge key={idx} variant="secondary" className="bg-red-50 border-red-200 text-red-700 px-3 py-2 rounded-xl font-bold flex items-center gap-2 shadow-sm animate-in fade-in zoom-in-95">
                           {format(date, "dd MMM", { locale: fr })}
-                          <X className="h-3.5 w-3.5 cursor-pointer text-red-400 hover:text-red-600 transition-colors" onClick={() => setFormData({...formData, availableDates: formData.availableDates.filter((d: any) => d.getTime() !== date.getTime())})} />
+                          <X className="h-3.5 w-3.5 cursor-pointer hover:text-red-900 transition-colors" onClick={() => setFormData({...formData, blockedDates: formData.blockedDates.filter((d: any) => d.getTime() !== date.getTime())})} />
                         </Badge>
                       ))
                     ) : (
-                      <div className="p-4 bg-amber-50 border border-amber-100 rounded-xl w-full">
-                        <p className="text-xs font-bold text-amber-600 flex items-center gap-2">
-                          <Info className="h-4 w-4" /> Aucun jour sélectionné. Votre bien ne sera pas visible.
+                      <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl w-full">
+                        <p className="text-xs font-bold text-emerald-700 flex items-center gap-2">
+                          <CheckCircle2 className="h-4 w-4" /> Aucun jour bloqué. Votre bien est visible toute l'année.
                         </p>
                       </div>
                     )}
-                    {formData.availableDates.length > 8 && (
+                    {formData.blockedDates.length > 8 && (
                       <Badge variant="outline" className="px-3 py-2 rounded-xl font-bold border-slate-200 bg-white">
-                        + {formData.availableDates.length - 8} autres jours
+                        + {formData.blockedDates.length - 8} autres jours bloqués
                       </Badge>
                     )}
+                  </div>
+
+                  {/* Synchronisation iCal */}
+                  <div className="pt-6 space-y-4 border-t border-slate-200">
+                    <Label className="font-bold text-sm text-slate-800">Synchronisation calendrier (iCal)</Label>
+                    <p className="text-xs text-slate-500">Importez les réservations d'autres plateformes (Booking.com, Airbnb) pour éviter les surréservations.</p>
+                    <Input 
+                      placeholder="Lien iCal externe (ex: https://www.booking.com/.../ical)" 
+                      className="bg-white h-12"
+                      value={formData.iCalUrl}
+                      onChange={(e) => setFormData({...formData, iCalUrl: e.target.value})}
+                    />
+                    <div className="flex items-center gap-2 text-xs text-primary bg-primary/5 p-3 rounded-xl border border-primary/10">
+                      <Globe className="h-4 w-4 shrink-0" />
+                      <span>Un lien d'export sera généré sur votre tableau de bord après la création.</span>
+                    </div>
                   </div>
 
                   {/* Légende */}
                   <div className="pt-6 space-y-3 border-t border-slate-200">
                     <div className="flex items-center gap-3">
-                      <div className="w-4 h-4 bg-primary rounded-full shadow-sm" />
-                      <span className="text-[10px] font-black uppercase text-slate-500">Disponible (Votre choix)</span>
+                      <div className="w-4 h-4 bg-white border-2 border-slate-200 rounded-full" />
+                      <span className="text-[10px] font-black uppercase text-slate-500">Disponible</span>
                     </div>
                     <div className="flex items-center gap-3">
-                      <div className="w-4 h-4 bg-slate-200 rounded-full" />
-                      <span className="text-[10px] font-black uppercase text-slate-400">Non mis en location</span>
+                      <div className="w-4 h-4 bg-red-400 rounded-full shadow-sm" />
+                      <span className="text-[10px] font-black uppercase text-slate-900">Bloqué (Votre choix)</span>
                     </div>
+
                     <div className="flex items-center gap-3">
                       <div className="w-4 h-4 bg-red-100 border border-red-200 rounded-full relative overflow-hidden">
                         <div className="absolute inset-0 bg-red-400/20" />
@@ -779,7 +850,7 @@ function renderStep3(formData: any, setFormData: any, category: string, onAI: an
                 <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-white flex justify-center w-full max-w-[350px] mx-auto relative">
                   <Calendar
                     mode="multiple"
-                    selected={formData.availableDates}
+                    selected={formData.blockedDates}
                     onDayClick={(day) => {
                       const date = startOfDay(day);
                       if (!rangeStart) {
@@ -787,7 +858,7 @@ function renderStep3(formData: any, setFormData: any, category: string, onAI: an
                         // Ajouter le jour cliqué
                         setFormData((prev: any) => ({
                           ...prev,
-                          availableDates: [...prev.availableDates.filter((d: Date) => !isSameDay(d, date)), date]
+                          blockedDates: [...prev.blockedDates.filter((d: Date) => !isSameDay(d, date)), date]
                         }));
                       } else {
                         const start = rangeStart < date ? rangeStart : date;
@@ -795,11 +866,11 @@ function renderStep3(formData: any, setFormData: any, category: string, onAI: an
                         const intervalDates = eachDayOfInterval({ start, end });
                         
                         setFormData((prev: any) => {
-                          const existingTimestamps = new Set(prev.availableDates.map((d: Date) => startOfDay(d).getTime()));
+                          const existingTimestamps = new Set(prev.blockedDates.map((d: Date) => startOfDay(d).getTime()));
                           intervalDates.forEach(d => existingTimestamps.add(startOfDay(d).getTime()));
                           return {
                             ...prev,
-                            availableDates: Array.from(existingTimestamps).map(t => new Date(t as number))
+                            blockedDates: Array.from(existingTimestamps).map(t => new Date(t as number))
                           };
                         });
                         setRangeStart(null);
@@ -822,8 +893,9 @@ function renderStep3(formData: any, setFormData: any, category: string, onAI: an
                       }
                     }}
                     modifiersClassNames={{
-                      rangeStart: "ring-2 ring-primary ring-offset-2 scale-110",
-                      rangeHover: "bg-primary/20",
+                      rangeStart: "ring-2 ring-red-400 ring-offset-2 scale-110",
+                      rangeHover: "bg-red-400/20",
+                      selected: "bg-red-400 text-white hover:bg-red-500 hover:text-white"
                     }}
                     className="border-none p-0"
                     numberOfMonths={1}
