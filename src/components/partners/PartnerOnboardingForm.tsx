@@ -130,9 +130,17 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
     livingRoomsCount: 0,
     gardensCount: 0,
     singleRoomsCount: 0,
+    singleRoomCapacity: 1,
+    singleRoomBeds: '1 lit simple',
     doubleRoomsCount: 0,
+    doubleRoomCapacity: 2,
+    doubleRoomBeds: '1 grand lit double',
     tripleRoomsCount: 0,
+    tripleRoomCapacity: 3,
+    tripleRoomBeds: '1 lit double + 1 lit simple',
     parentalSuitesCount: 0,
+    suiteCapacity: 4,
+    suiteBeds: '1 lit King Size',
     brand: '',
     model: '',
     year: '2023',
@@ -284,9 +292,17 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
             livingRoomsCount: formData.livingRoomsCount,
             gardensCount: formData.gardensCount,
             singleRoomsCount: formData.singleRoomsCount,
+            singleRoomCapacity: formData.singleRoomCapacity,
+            singleRoomBeds: formData.singleRoomBeds,
             doubleRoomsCount: formData.doubleRoomsCount,
+            doubleRoomCapacity: formData.doubleRoomCapacity,
+            doubleRoomBeds: formData.doubleRoomBeds,
             tripleRoomsCount: formData.tripleRoomsCount,
+            tripleRoomCapacity: formData.tripleRoomCapacity,
+            tripleRoomBeds: formData.tripleRoomBeds,
             parentalSuitesCount: formData.parentalSuitesCount,
+            suiteCapacity: formData.suiteCapacity,
+            suiteBeds: formData.suiteBeds,
             stars: formData.stars
           } : initialCategory === 'car_rental' ? {
             brand: formData.brand,
@@ -705,6 +721,112 @@ function renderStep3(formData: any, setFormData: any, category: string, onAI: an
                 <Counter icon={<Users/>} label="Chambres Triples" value={formData.tripleRoomsCount} onChange={(v: number) => setFormData({...formData, tripleRoomsCount: v})} light />
                 <Counter icon={<Star/>} label="Suites Parentales" value={formData.parentalSuitesCount} onChange={(v: number) => setFormData({...formData, parentalSuitesCount: v})} light />
               </div>
+
+              {/* Détails par chambre si sélectionnée */}
+              {(formData.singleRoomsCount > 0 || formData.doubleRoomsCount > 0 || formData.tripleRoomsCount > 0 || formData.parentalSuitesCount > 0) && (
+                <div className="mt-8 space-y-6 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+                  <p className="text-sm font-black text-slate-900 mb-4">Détails des chambres activées</p>
+                  
+                  {formData.singleRoomsCount > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4 border-b">
+                      <div>
+                        <Label className="text-xs text-slate-500 font-bold uppercase">Capacité (Chambre Simple)</Label>
+                        <Select value={formData.singleRoomCapacity.toString()} onValueChange={(v) => setFormData({...formData, singleRoomCapacity: parseInt(v)})}>
+                          <SelectTrigger className="mt-2"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {[1,2].map(n => <SelectItem key={n} value={n.toString()}>{n} voyageur{n>1?'s':''}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label className="text-xs text-slate-500 font-bold uppercase">Type de lit</Label>
+                        <Select value={formData.singleRoomBeds} onValueChange={(v) => setFormData({...formData, singleRoomBeds: v})}>
+                          <SelectTrigger className="mt-2"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1 lit simple">1 lit simple</SelectItem>
+                            <SelectItem value="1 grand lit double">1 grand lit double</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  )}
+
+                  {formData.doubleRoomsCount > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4 border-b">
+                      <div>
+                        <Label className="text-xs text-slate-500 font-bold uppercase">Capacité (Chambre Double)</Label>
+                        <Select value={formData.doubleRoomCapacity.toString()} onValueChange={(v) => setFormData({...formData, doubleRoomCapacity: parseInt(v)})}>
+                          <SelectTrigger className="mt-2"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {[1,2,3].map(n => <SelectItem key={n} value={n.toString()}>{n} voyageur{n>1?'s':''}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label className="text-xs text-slate-500 font-bold uppercase">Type de lit</Label>
+                        <Select value={formData.doubleRoomBeds} onValueChange={(v) => setFormData({...formData, doubleRoomBeds: v})}>
+                          <SelectTrigger className="mt-2"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1 grand lit double">1 grand lit double</SelectItem>
+                            <SelectItem value="2 lits simples">2 lits simples</SelectItem>
+                            <SelectItem value="1 lit double + 1 canapé-lit">1 lit double + 1 canapé-lit</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  )}
+
+                  {formData.tripleRoomsCount > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4 border-b">
+                      <div>
+                        <Label className="text-xs text-slate-500 font-bold uppercase">Capacité (Chambre Triple)</Label>
+                        <Select value={formData.tripleRoomCapacity.toString()} onValueChange={(v) => setFormData({...formData, tripleRoomCapacity: parseInt(v)})}>
+                          <SelectTrigger className="mt-2"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {[2,3,4].map(n => <SelectItem key={n} value={n.toString()}>{n} voyageurs</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label className="text-xs text-slate-500 font-bold uppercase">Type de lit</Label>
+                        <Select value={formData.tripleRoomBeds} onValueChange={(v) => setFormData({...formData, tripleRoomBeds: v})}>
+                          <SelectTrigger className="mt-2"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1 lit double + 1 lit simple">1 lit double + 1 lit simple</SelectItem>
+                            <SelectItem value="3 lits simples">3 lits simples</SelectItem>
+                            <SelectItem value="1 grand lit double + 1 canapé-lit">1 grand lit double + 1 canapé-lit</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  )}
+
+                  {formData.parentalSuitesCount > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
+                      <div>
+                        <Label className="text-xs text-slate-500 font-bold uppercase">Capacité (Suite Parentale)</Label>
+                        <Select value={formData.suiteCapacity.toString()} onValueChange={(v) => setFormData({...formData, suiteCapacity: parseInt(v)})}>
+                          <SelectTrigger className="mt-2"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {[2,3,4,5].map(n => <SelectItem key={n} value={n.toString()}>{n} voyageurs</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label className="text-xs text-slate-500 font-bold uppercase">Type de lit</Label>
+                        <Select value={formData.suiteBeds} onValueChange={(v) => setFormData({...formData, suiteBeds: v})}>
+                          <SelectTrigger className="mt-2"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1 lit King Size">1 lit King Size</SelectItem>
+                            <SelectItem value="1 lit King Size + 1 canapé-lit">1 lit King Size + 1 canapé-lit</SelectItem>
+                            <SelectItem value="1 lit King Size + 2 lits simples">1 lit King Size + 2 lits simples</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
           )}

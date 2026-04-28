@@ -179,19 +179,19 @@ function PropertyPageContent({ id }: { id: string }) {
       let added = false;
       
       if (Number(details.singleRoomsCount) > 0) {
-        types.push({ id: 'single', name: 'Chambre Simple', specs: ['1 lit simple', 'WiFi gratuit', 'Climatisation'], maxGuests: 1, price: basePrice * 0.7, stock: Number(details.singleRoomsCount) });
+        types.push({ id: 'single', name: 'Chambre Simple', specs: [details.singleRoomBeds || '1 lit simple', 'WiFi gratuit', 'Climatisation'], maxGuests: details.singleRoomCapacity || 1, price: basePrice * 0.7, stock: Number(details.singleRoomsCount) });
         added = true;
       }
       if (Number(details.doubleRoomsCount) > 0) {
-        types.push({ id: 'double', name: 'Chambre Double', specs: ['1 grand lit double', 'WiFi gratuit', 'Climatisation'], maxGuests: 2, price: basePrice, stock: Number(details.doubleRoomsCount) });
+        types.push({ id: 'double', name: 'Chambre Double', specs: [details.doubleRoomBeds || '1 grand lit double', 'WiFi gratuit', 'Climatisation'], maxGuests: details.doubleRoomCapacity || 2, price: basePrice, stock: Number(details.doubleRoomsCount) });
         added = true;
       }
       if (Number(details.tripleRoomsCount) > 0) {
-        types.push({ id: 'triple', name: 'Chambre Triple', specs: ['1 lit double + 1 lit simple', 'WiFi gratuit', 'Climatisation'], maxGuests: 3, price: basePrice * 1.3, stock: Number(details.tripleRoomsCount) });
+        types.push({ id: 'triple', name: 'Chambre Triple', specs: [details.tripleRoomBeds || '1 lit double + 1 lit simple', 'WiFi gratuit', 'Climatisation'], maxGuests: details.tripleRoomCapacity || 3, price: basePrice * 1.3, stock: Number(details.tripleRoomsCount) });
         added = true;
       }
       if (Number(details.parentalSuitesCount) > 0) {
-        types.push({ id: 'suite', name: 'Suite Parentale', specs: ['1 lit King Size', 'Espace salon', 'Vue panoramique'], maxGuests: 3, price: basePrice * 1.6, stock: Number(details.parentalSuitesCount) });
+        types.push({ id: 'suite', name: 'Suite Parentale', specs: [details.suiteBeds || '1 lit King Size', 'Espace salon', 'Vue panoramique'], maxGuests: details.suiteCapacity || 4, price: basePrice * 1.6, stock: Number(details.parentalSuitesCount) });
         added = true;
       }
 
@@ -335,6 +335,7 @@ function PropertyPageContent({ id }: { id: string }) {
               <TableHeader className="bg-slate-900">
                 <TableRow>
                   <TableHead className="text-white font-bold h-14">Type d'hébergement</TableHead>
+                  <TableHead className="text-white font-bold h-14">Capacité</TableHead>
                   <TableHead className="text-white font-bold h-14">Options</TableHead>
                   <TableHead className="text-white font-bold h-14">Tarif ({nights} nuits)</TableHead>
                   <TableHead className="text-white font-bold h-14">{quantityLabel}</TableHead>
@@ -346,6 +347,12 @@ function PropertyPageContent({ id }: { id: string }) {
                     <TableCell className="py-6">
                       <h4 className="font-black text-primary text-lg">{room.name}</h4>
                       <ul className="mt-2 space-y-1">{(room.specs || []).map((s: string, i: number) => <li key={i} className="text-xs text-slate-500 flex items-center gap-2"><Check className="h-3 w-3 text-primary" /> {s}</li>)}</ul>
+                    </TableCell>
+                    <TableCell className="py-6">
+                      <div className="flex items-center gap-1.5 text-slate-600 font-bold">
+                        <User className="h-5 w-5 text-primary" />
+                        <span>x {room.maxGuests}</span>
+                      </div>
                     </TableCell>
                     <TableCell className="py-6"><p className="text-green-600 text-xs font-bold flex items-center gap-1"><Check className="h-3 w-3" /> Annulation GRATUITE</p></TableCell>
                     <TableCell className="py-6"><p className="text-xl font-black text-slate-900">{isMounted ? formatPrice((room.price || 85) * nights) : '...'}</p><p className="text-[10px] text-slate-400 uppercase font-black">Taxes incluses</p></TableCell>
