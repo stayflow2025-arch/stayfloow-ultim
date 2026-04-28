@@ -13,7 +13,7 @@ import {
   Globe, Languages, Map as MapIcon, Calendar as CalendarIcon,
   Search, Menu, User, Bell, Heart as HeartIcon,
   Image as ImageIcon, Share,
-  ThumbsUp, ThumbsDown, MessageSquare
+  ThumbsUp, ThumbsDown, MessageSquare, BedDouble
 } from 'lucide-react';
 import { Progress } from "@/components/ui/progress";
 import { Button } from '@/components/ui/button';
@@ -346,7 +346,42 @@ function PropertyPageContent({ id }: { id: string }) {
                   <TableRow key={room.id} className="hover:bg-slate-50 border-slate-100">
                     <TableCell className="py-6">
                       <h4 className="font-black text-primary text-lg">{room.name}</h4>
-                      <ul className="mt-2 space-y-1">{(room.specs || []).map((s: string, i: number) => <li key={i} className="text-xs text-slate-500 flex items-center gap-2"><Check className="h-3 w-3 text-primary" /> {s}</li>)}</ul>
+                      {room.specs && room.specs.length > 0 && (
+                        <div className="mt-2 mb-3">
+                          <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
+                            <span>{room.specs[0]}</span>
+                            <span className="flex items-center gap-0.5 ml-1">
+                              {(() => {
+                                const str = room.specs[0].toLowerCase();
+                                const icons = [];
+                                let k = 0;
+                                if (str.includes('grand lit') || str.includes('king size') || str.includes('lit double')) {
+                                  icons.push(<BedDouble key={k++} className="w-5 h-5 text-slate-700" />);
+                                }
+                                if (str.includes('2 lits simples') || str.includes('jumeaux')) {
+                                  icons.push(<Bed key={k++} className="w-5 h-5 text-slate-700" />, <Bed key={k++} className="w-5 h-5 text-slate-700" />);
+                                } else if (str.includes('3 lits simples')) {
+                                  icons.push(<Bed key={k++} className="w-5 h-5 text-slate-700" />, <Bed key={k++} className="w-5 h-5 text-slate-700" />, <Bed key={k++} className="w-5 h-5 text-slate-700" />);
+                                } else if (str.includes('1 lit simple')) {
+                                  icons.push(<Bed key={k++} className="w-5 h-5 text-slate-700" />);
+                                }
+                                if (str.includes('canapé')) {
+                                  icons.push(<Sofa key={k++} className="w-5 h-5 text-slate-700" />);
+                                }
+                                if (icons.length === 0) icons.push(<Bed key={k++} className="w-5 h-5 text-slate-700" />);
+                                return icons;
+                              })()}
+                            </span>
+                          </div>
+                          <ul className="mt-2 space-y-1">
+                            {room.specs.slice(1).map((s: string, i: number) => (
+                              <li key={i} className="text-xs text-slate-500 flex items-center gap-2">
+                                <Check className="h-3 w-3 text-primary" /> {s}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell className="py-6">
                       <div className="flex items-center gap-1.5 text-slate-600 font-bold">
