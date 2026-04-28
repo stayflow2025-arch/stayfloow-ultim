@@ -195,7 +195,7 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
     };
 
     fetchBookings();
-  }, [formData.id, db]);
+  }, [(formData as any).id, db]);
 
   const steps = [
     { id: 1, title: t('step_info') },
