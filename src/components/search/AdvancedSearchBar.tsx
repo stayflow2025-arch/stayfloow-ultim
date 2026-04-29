@@ -135,7 +135,7 @@ export default function AdvancedSearchBar({ hideTabs = false, hideLocation = fal
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!destination || destination.trim().length === 0) {
+    if (!hideLocation && (!destination || destination.trim().length === 0)) {
       toast({
         variant: "destructive",
         title: "Veuillez indiquer une destination pour lancer la recherche."

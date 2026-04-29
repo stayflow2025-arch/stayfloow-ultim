@@ -13,7 +13,7 @@ import {
   Globe, Languages, Map as MapIcon, Calendar as CalendarIcon,
   Search, Menu, User, Bell, Heart as HeartIcon,
   Image as ImageIcon, Share,
-  ThumbsUp, ThumbsDown, MessageSquare, BedDouble
+  ThumbsUp, ThumbsDown, MessageSquare, BedDouble, Waves, Dumbbell, Bus, Ban, BellRing as BellConcierge, Flower2
 } from 'lucide-react';
 import { Progress } from "@/components/ui/progress";
 import { Button } from '@/components/ui/button';
@@ -346,7 +346,7 @@ function PropertyPageContent({ id }: { id: string }) {
                   <TableHead className="text-white font-bold h-14">Type d'hébergement</TableHead>
                   <TableHead className="text-white font-bold h-14">Capacité</TableHead>
                   <TableHead className="text-white font-bold h-14">Options</TableHead>
-                  <TableHead className="text-white font-bold h-14">Tarif ({nights} nuits)</TableHead>
+                  <TableHead className="text-white font-bold h-14">Tarif ({nights} {nights > 1 ? 'nuits' : 'nuit'})</TableHead>
                   <TableHead className="text-white font-bold h-14">{quantityLabel}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -419,6 +419,37 @@ function PropertyPageContent({ id }: { id: string }) {
               </div>
               <Button onClick={handleBookingClick} className="w-full md:w-auto bg-primary hover:bg-primary/90 text-white font-black text-xl px-16 h-16 rounded-2xl shadow-xl">Je réserve mon séjour</Button>
             </div>
+          )}
+        </section>
+
+        <section ref={facilitiesRef} className="pt-10 border-t space-y-8">
+          <h2 className="text-2xl font-black text-slate-900">Ses points forts</h2>
+          {property.details?.amenities && property.details.amenities.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {property.details.amenities.map((amenity: string, idx: number) => {
+                let Icon = Check;
+                const lower = amenity.toLowerCase();
+                if (lower.includes('wifi') || lower.includes('wi-fi')) Icon = Wifi;
+                else if (lower.includes('piscine')) Icon = Waves;
+                else if (lower.includes('parking')) Icon = Car;
+                else if (lower.includes('climatisation')) Icon = Wind;
+                else if (lower.includes('spa') || lower.includes('bien-être')) Icon = Flower2;
+                else if (lower.includes('salle de sport') || lower.includes('remise en forme')) Icon = Dumbbell;
+                else if (lower.includes('navette')) Icon = Bus;
+                else if (lower.includes('petit-déjeuner') || lower.includes('bouilloire')) Icon = Coffee;
+                else if (lower.includes('non-fumeurs')) Icon = Ban;
+                else if (lower.includes('service d\\'étage')) Icon = BellConcierge;
+
+                return (
+                  <div key={idx} className="flex items-center gap-3 text-slate-700">
+                    <Icon className="w-5 h-5 text-primary" />
+                    <span className="font-medium text-sm">{amenity}</span>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-slate-500">Aucun équipement spécifié.</p>
           )}
         </section>
 
