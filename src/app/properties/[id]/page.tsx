@@ -438,7 +438,7 @@ function PropertyPageContent({ id }: { id: string }) {
                 else if (lower.includes('navette')) Icon = Bus;
                 else if (lower.includes('petit-déjeuner') || lower.includes('bouilloire')) Icon = Coffee;
                 else if (lower.includes('non-fumeurs')) Icon = Ban;
-                else if (lower.includes('service d\\'étage')) Icon = BellConcierge;
+                else if (lower.includes("service d'étage")) Icon = BellConcierge;
 
                 return (
                   <div key={idx} className="flex items-center gap-3 text-slate-700">
