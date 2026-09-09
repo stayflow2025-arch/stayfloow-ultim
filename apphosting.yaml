@@ -13,7 +13,7 @@ env:
       - RUNTIME
 
   - variable: STRIPE_SECRET_KEY
-    secret: stripe-secret-key
+    value: "sk_test_placeholder"
     availability:
       - RUNTIME
 
