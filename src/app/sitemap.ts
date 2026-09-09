@@ -2,6 +2,8 @@ import { MetadataRoute } from 'next';
 import { getFirestore } from '@/firebase';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 
+export const dynamic = 'force-dynamic';
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://www.stayfloow.com';
   
