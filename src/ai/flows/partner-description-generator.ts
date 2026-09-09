@@ -25,7 +25,15 @@ const PartnerDescriptionGeneratorOutputSchema = z.object({
 export type PartnerDescriptionGeneratorOutput = z.infer<typeof PartnerDescriptionGeneratorOutputSchema>;
 
 export async function generatePartnerDescription(input: PartnerDescriptionGeneratorInput): Promise<PartnerDescriptionGeneratorOutput> {
-  return partnerDescriptionGeneratorFlow(input);
+  try {
+    console.log("generatePartnerDescription flow start for:", input.listingName);
+    const result = await partnerDescriptionGeneratorFlow(input);
+    console.log("generatePartnerDescription flow success!");
+    return result;
+  } catch (error: any) {
+    console.error("Error in generatePartnerDescription flow server-side:", error);
+    throw new Error(error.message || String(error));
+  }
 }
 
 const partnerDescriptionPrompt = ai.definePrompt({

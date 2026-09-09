@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 155 32" width="150" height="32">
+  <style>
+    .logo-text {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -0.05em;
+    }
+  </style>
+  <text x="2" y="24" class="logo-text">
+    <tspan fill="#10B981">Stay</tspan><tspan fill="#10B981">Floow</tspan><tspan fill="#39FF14">.com</tspan>
+  </text>
+</svg>

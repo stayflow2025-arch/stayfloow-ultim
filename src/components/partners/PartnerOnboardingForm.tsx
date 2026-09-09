@@ -232,8 +232,13 @@ export default function PartnerOnboardingForm({ initialCategory }: Props) {
         existingDescription: formData.description
       });
       setFormData(prev => ({ ...prev, description: result.generatedDescription }));
-    } catch (error) {
-      toast({ variant: 'destructive', title: 'Erreur IA', description: 'Impossible de générer la description.' });
+    } catch (error: any) {
+      console.error("Client handleAIEnhance error:", error);
+      toast({ 
+        variant: 'destructive', 
+        title: 'Erreur IA', 
+        description: error.message || 'Impossible de générer la description.' 
+      });
     } finally {
       setIsGenerating(false);
     }

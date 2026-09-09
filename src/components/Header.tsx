@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "./ui/button";
+import { Logo } from "./Logo";
 import { LogOut, User as UserIcon, LayoutDashboard, ShieldCheck, Building, Car, Compass, ChevronDown, Menu, X, Mail } from "lucide-react";
 import { useLanguage } from "@/context/language-context";
 import { useCurrency } from "@/context/currency-context";
@@ -80,7 +81,9 @@ export function Header() {
             </SheetTrigger>
             <SheetContent side="left" className="w-[300px] p-0 bg-white border-none">
               <SheetHeader className="p-6 bg-primary text-white">
-                <SheetTitle className="text-white font-black text-2xl tracking-tighter">StayFloow<span className="text-secondary">.com</span></SheetTitle>
+                <SheetTitle className="text-white font-black text-2xl tracking-tighter flex items-center gap-2">
+                  <Logo variant="light" size="md" />
+                </SheetTitle>
               </SheetHeader>
               <nav className="flex flex-col p-4">
                 <MobileLink href="/search" icon={<Building />} label={t("accommodations")} onClick={() => setIsMobileMenuOpen(false)} />
@@ -120,9 +123,7 @@ export function Header() {
           </Sheet>
 
           <Link href="/" className="flex items-center gap-2 group">
-            <span className="text-2xl font-black tracking-tighter text-white">
-              StayFloow<span className="text-secondary">.com</span>
-            </span>
+            <Logo variant="light" size="md" />
           </Link>
 
           <nav className="hidden xl:flex items-center gap-1">

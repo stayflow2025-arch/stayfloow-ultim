@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Logo } from "./Logo";
 import { Globe, ChevronDown } from "lucide-react";
 import { useCurrency } from "@/context/currency-context";
 import { useLanguage } from "@/context/language-context";
@@ -70,7 +71,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           <div className="flex flex-col gap-6">
             <Link href="/" className="flex items-center gap-2" prefetch={true}>
-              <span className="text-3xl font-black text-primary tracking-tighter">StayFloow<span className="text-secondary">.com</span></span>
+              <Logo variant="green" size="lg" />
             </Link>
 
             <p className="text-sm text-slate-500 font-medium leading-relaxed">{t("footer_tagline")}</p>

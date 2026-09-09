@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
 import { Locale, localeDetails, translations } from '@/lib/translations';
+export type { Locale };
 
 interface LanguageContextType {
   locale: Locale;
